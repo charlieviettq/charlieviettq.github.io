@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { GlobalSearch } from "@/components/GlobalSearch";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const links = [
   { href: "/", label: "Home" },
@@ -37,6 +38,7 @@ export function SiteNav() {
               </Link>
             ))}
           </nav>
+          <ThemeToggle />
           <GlobalSearch />
         </div>
       </div>
