@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { GlobalSearch } from "@/components/GlobalSearch";
 
 const links = [
   { href: "/", label: "Home" },
@@ -20,21 +21,24 @@ export function SiteNav() {
         >
           Trần Quốc Việt
         </Link>
-        <nav className="flex gap-6 text-sm font-medium text-zinc-600 dark:text-zinc-400">
-          {links.map(({ href, label }) => (
-            <Link
-              key={href}
-              href={href}
-              className="group relative transition-colors hover:text-sky-600 dark:hover:text-sky-400"
-            >
-              {label}
-              <span
-                className="pointer-events-none absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-200 group-hover:w-full"
-                aria-hidden
-              />
-            </Link>
-          ))}
-        </nav>
+        <div className="flex flex-wrap items-center gap-3 sm:gap-5">
+          <nav className="flex gap-4 text-sm font-medium text-zinc-600 sm:gap-6 dark:text-zinc-400">
+            {links.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className="group relative transition-colors hover:text-sky-600 dark:hover:text-sky-400"
+              >
+                {label}
+                <span
+                  className="pointer-events-none absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-200 group-hover:w-full"
+                  aria-hidden
+                />
+              </Link>
+            ))}
+          </nav>
+          <GlobalSearch />
+        </div>
       </div>
     </header>
   );
