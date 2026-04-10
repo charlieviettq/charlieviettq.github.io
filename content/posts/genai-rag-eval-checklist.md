@@ -1,7 +1,7 @@
 ---
 title: "Checklist đánh giá RAG — grounding và regression"
 date: "2026-04-05"
-excerpt: "Golden set, abstain khi không có bằng chứng, version corpus/prompt/reranker — và lỗi eval hay gặp."
+excerpt: "Golden set, abstain, version corpus/prompt/reranker — khung đầy đủ từ giới thiệu tới pitfall eval RAG."
 category: gen-ai
 ---
 
@@ -9,56 +9,92 @@ category: gen-ai
 
 ### TL;DR
 
-- **Grounding** không phải vibe: cần bộ câu hỏi cố định + tiêu chí pass/fail rõ (trích dẫn, số liệu khớp ngữ cảnh).
-- Mỗi lần đổi **chunk / embedding / reranker / prompt**, chạy lại **cùng một golden set** — đó mới là regression thật.
-- **Từ chối trả lời** (abstain) là feature: giảm hallucination có chủ đích.
+- **Grounding** cần bộ câu có tiêu chí pass/fail — không chỉ demo.
+- Mỗi lần đổi chunk/embed/rerank/prompt: chạy lại **cùng golden set**.
+- **Abstain** là tính năng: giảm bịa khi không có bằng chứng.
 
-Đánh giá RAG trong môi trường công việc khác demo: bạn cần chứng minh hệ **ít làm sai** khi tài liệu thay đổi, traffic tăng, hoặc người dùng hỏi méo mó.
+### Giới thiệu
 
-**Grounding — kiểm tra gì:**
+Dành cho kỹ sư triển khai **RAG** nội bộ: khi tài liệu, embedding, hoặc prompt đổi, chất lượng có thể **trượt ngầm**. Bài này cố định khung **đánh giá** và **regression** để team không phụ thuộc “cảm giác” sau khi ship.
 
-| Loại câu | Kỳ vọng |
-| -------- | ------- |
-| Fact trong doc | Trả lời khớp passage; có trích dẫn id/chunk |
-| Aggregates (sum/count) | Khớp bảng/đoạn nguồn; nếu không đủ → abstain |
-| Không có trong kho | Từ chối rõ ràng, không bịa nguồn |
-| Đa ý / mơ hồ | Hỏi làm rõ hoặc liệt kê giả định |
+### Khái niệm cốt lõi
 
-**Regression harness:** “đóng băng” một **golden set** (Q, ground truth hoặc rubric chấm). Mỗi release ghi **version**: corpus snapshot, embedding model id, reranker, prompt hash, top-k, temperature. So sánh không chỉ “LLM judge” một chiều — dùng judge có **rubric** và mẫu con người định kỳ cho subset nhạy cảm.
+- **Grounding:** câu trả lời bám trích dẫn / bảng nguồn; từ chối khi không đủ bằng chứng.
+- **Golden set:** tập Q cố định + rubric (hoặc nhãn) để tái chạy.
+- **Versioning:** snapshot corpus, model embedding, reranker, prompt hash, top-k.
 
-**Latency & cost:** log p50/p95 end-to-end; theo dõi token prompt; cache embedding truy vấn lặp; cap `top_k` và độ dài context — trade-off giữa recall và noise trong prompt.
+### Chi tiết và thực hành
 
-**Safety / privacy:** lọc PII trong index; phân quyền retrieval theo tenant; watermark nguồn nội bộ.
+Xây ma trận loại câu: fact trong doc, aggregate số, out-of-corpus, ambiguous. Với mỗi loại định nghĩa **pass**. Kết hợp judge tự động có rubric và spot-check con người định kỳ. Log **p95 latency**, token usage; cache embedding truy vấn lặp; cap context để cân recall vs nhiễu.
 
-**Failure modes:** golden set quá dễ (chỉ FAQ); để LLM tự chấm không có rubric → điểm “ảo”; thay đổi chunk nhưng không re-embed toàn bộ; benchmark không cover **ngôn ngữ** (VI/EN) mà prod thực sự dùng.
+**Ví dụ rubric ngắn (minh hoạ):**
 
-**Checklist trước khi ship:** abstain path tested; adversarial set có nhãn; monitor online: rate trích dẫn rỗng, feedback thumbs-down map tới ticket.
+| Loại | Pass khi |
+| ---- | -------- |
+| Fact | Trích đúng passage; không thêm fact không có |
+| Aggregate | Khớp nguồn hoặc abstain rõ |
+| OOC | Không bịa nguồn |
+
+### Checklist vận hành
+
+- [ ] Golden set được “đóng băng” trong git hoặc DVC.
+- [ ] Pipeline eval chạy trên PR đổi retrieval/prompt (nếu phạm vi cho phép).
+- [ ] Monitor online: rate abstain, feedback âm map ticket.
+- [ ] Quy trình PII trong index theo policy.
+
+### Rủi ro và lỗi thường gặp
+
+- Bộ benchmark quá dễ hoặc lệch ngôn ngữ so production.
+- LLM judge không có rubric → điểm không tin cậy.
+- Đổi chunk nhưng không re-embed đồng bộ.
+
+### Kết luận
+
+RAG bền vững nhờ **eval có khung** và **version hóa** mọi thành phần retrieval — không chỉ nhìn vào một demo đẹp.
 
 ## EN
 
 ### TL;DR
 
-- **Grounding** needs labeled expectations — not a feels-good demo.
-- True regression means **re-running a frozen golden set** after any retrieval change.
-- Teach the system **to abstain** when evidence is missing.
+- **Grounding** needs explicit pass/fail criteria — not vibes.
+- Re-run the same **golden set** after any retrieval or prompt change.
+- **Abstention** is a first-class behavior to curb hallucinations.
 
-RAG evaluation is about **failure budgets** as docs, embeddings, and prompts churn.
+### Introduction
 
-**Grounding matrix:**
+For teams shipping **internal RAG**, quality can silently regress as docs, embeddings, or prompts shift. This note frames **evaluation** and **regression** habits beyond one-off demos.
 
-| Query class | Expectation |
-| ----------- | ----------- |
-| Supported fact | Answer aligns with cited passage(s) |
-| Numeric totals | Matches source tables; else abstain |
-| Out-of-corpus | Clear “insufficient evidence” |
-| Ambiguous | Clarify or state assumptions |
+### Core concepts
 
-**Regression harness:** version **corpus snapshots**, **embedding & reranker IDs**, **prompt text/hash**, and retrieval hyperparameters. Automate runs on every change; keep human spot checks on high-risk slices.
+- **Grounding:** answers tied to citations / source tables; abstain when evidence is missing.
+- **Golden set:** frozen questions with rubrics or labels for replay.
+- **Versioning:** corpus snapshot IDs, embedding models, rerankers, prompt hashes, top-k.
 
-**Latency/cost:** watch p95 and token volumes; cache repeated query embeddings; tune `top_k` vs context noise.
+### Details and practice
 
-**Privacy:** index hygiene for sensitive fields; tenant-scoped retrieval; traceability for internal-only sources.
+Design query classes: in-doc facts, numeric aggregates, out-of-corpus, ambiguous prompts. Define **pass** per class. Pair automated judges with rubrics and periodic human audits. Track **p95 latency** and tokens; cache embeddings for repeats; cap context to balance recall vs noise.
 
-**Failure modes:** trivial benchmarks; uncritiqued LLM judges; partial re-embedding after chunking changes; language mismatch between eval set and production.
+**Illustrative rubric:**
 
-**Pre-ship checklist:** abstain behavior verified; adversarial suite labeled; production monitors tie thumbs-down to incident workflow.
+| Class | Pass when |
+| ----- | --------- |
+| Fact | Correct passage grounding; no fabricated facts |
+| Aggregate | Matches source or clear abstention |
+| OOC | No fake citations |
+
+### Operational checklist
+
+- [ ] Golden set frozen in git/DVC.
+- [ ] Eval runs on PRs touching retrieval/prompts when feasible.
+- [ ] Production monitors tie poor feedback to tickets.
+- [ ] PII hygiene in the index per policy.
+
+### Pitfalls and failure modes
+
+- Trivial or language-mismatched benchmarks.
+- Uncalibrated LLM judges.
+- Chunking changes without consistent re-embedding.
+
+### Takeaways
+
+Durable RAG needs **disciplined eval** and **component versioning** — not demo-driven luck.

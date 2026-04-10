@@ -4,11 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "predev": "node scripts/generate-search-index.mjs",
+    "prebuild": "node scripts/generate-search-index.mjs",
     "start": "next start",
     "lint": "eslint",
     "build": "next build"
   },
   "dependencies": {
+    "fuse.js": "^7.3.0",
     "github-slugger": "^2.0.0",
     "gray-matter": "^4.0.3",
     "next": "15.5.15",

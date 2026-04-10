@@ -1,7 +1,7 @@
 ---
 title: "OOT, population stability và sanity check cho risk model"
 date: "2026-04-01"
-excerpt: "Khung practitioner: OOT không phải tùy chọn, PSI/drift là tín hiệu cần ngữ cảnh — checklist monitor và lỗi thường gặp."
+excerpt: "Khung đầy đủ: OOT, PSI/drift, playbook monitor; từ giới thiệu tới checklist và pitfall khi triển khai risk model."
 category: data-science
 ---
 
@@ -9,54 +9,98 @@ category: data-science
 
 ### TL;DR
 
-- **OOT (out-of-time)** là “cửa sổ tương lai” bạn không được đụng khi fit; bỏ qua thì AUC trong lab dễ **lạc quan giả**.
-- **PSI** và các metric drift khác là **tín hiệu vận hành**, không phải phán xét tuyệt đối — phải cắt theo segment và thời gian.
-- Thiếu **tài liệu hóa ngưỡng + hành động** (playbook) là lỗi governance hay gặp hơn thiếu công thức.
+- **OOT** là cửa sổ thời gian “tương lai” không dùng khi fit; bỏ qua dễ **lạc quan giả** về AUC.
+- **PSI/drift** là tín hiệu vận hành — phải kết hợp segment, trend và performance cohort.
+- Governance: **playbook** khi vượt ngưỡng tốt hơn chỉ biết công thức.
 
-Khi huấn luyện mô hình rủi ro tín dụng, **in-sample** và cross-validation ngẫu nhiên chỉ trả lời “mô hình có học được pattern lịch sử không”. Rủi ro thực tế là **thời gian**: seasonality, chính sách, mix kênh thay đổi, hoặc feature “ăn theo” một kỳ đặc biệt. **Out-of-time (OOT)** giữ một khoảng thời gian hoàn toàn không dùng khi fit — thường là các tháng/ quý *sau* train — để mô phỏng “điểm cắt” gần với production hơn. OOT tốt mà train CV kém có thể gợi ý leakage hoặc cài đặt CV sai; ngược lại, CV tốt mà OOT xấu thường là dấu hiệu **overfit theo thời điểm** hoặc **population shift**.
+### Giới thiệu
 
-**Population Stability Index (PSI)** so sánh phân phối score (hoặc biến quan trọng) giữa baseline (train/accept) và mẫu mới. PSI cao *gợi ý* dân sách hoặc behaviour khác — nhưng không cho biết *tốt hay xấu* cho risk: một thay đổi có chủ đích (vd. dừng kênh rủi ro) cũng làm PSI nhảy. Do đó PSI phải đi cùng **business slice** (kênh, sản phẩm, geography), **xu hướng rolling**, và **performance theo cohort** (approval rate, default proxy nếu có).
+Bài này dành cho data scientist / risk analyst làm mô hình rủi ro tín dụng hoặc hệ thống chấm điểm có **tính thời gian** mạnh. Trong thực tế, mô hình “đẹp” trên cross-validation ngẫu nhiên vẫn có thể **fail ngoài mẫu thời gian** vì leakage, seasonality, hoặc thay đổi mix kênh. Mục tiêu là có **khung kiểm tra** và **monitor** nhất quán giữa DS, risk và vận hành.
 
-**Khi nào ưu tiên OOT sâu hơn:** mô hình quyết định cổng (application score), tần suất refresh thấp, hoặc lịch sử dữ liệu có “kỳ lạ” (đại dịch, campaign lớn). **Khi PSI dễ nhiễu:** mẫu nhỏ theo bin, feature tái xử lý liên tục, hoặc label delay ngắn.
+### Khái niệm cốt lõi
 
-**Checklist vận hành (rút gọn):**
+- **Out-of-time (OOT):** tập kiểm tra theo **trục thời gian**, thường là các kỳ *sau* khoảng train, không được dùng khi huấn luyện hay tune sâu.
+- **Population Stability Index (PSI):** đo lệch **phân phối** score (hoặc biến then chốt) giữa baseline và mẫu mới — không tự nói “tốt/xấu” cho risk.
+- **Calibration / performance theo cohort:** so khả năng rank và xác suất dự báo theo **khe thời gian** và segment nghiệp vụ.
 
-| Hạng mục | Ghi chú |
-| -------- | ------- |
-| Định nghĩa cửa sổ OOT | Ghi rõ timezone, cutoff application, rule loại trừ |
-| Baseline PSI | Ghi version model + mẫu baseline |
-| Segment drill-down | Tối thiểu: kênh, tier, vintage |
-| Calibration | So train vs OOT vs live; phát hiện flatten/shift |
-| Playbook | PSI > ngưỡng → ai xem, trong bao lâu, có pause scoring không |
+### Chi tiết và thực hành
 
-**Failure mode thường gặp:** (1) OOT trùng logic feature leakage (vd. dùng thông tin sau quyết định). (2) PSI trên score đã **tái scale** không nhất quán giữa kỳ. (3) Cảnh báo drift quá nhiều → team tắt monitor. (4) Không đồng bộ **ngưỡng** giữa DS và risk/legal — chỉ nên mô tả kỹ thuật trong blog; quyết định kinh doanh là tầng khác.
+OOT nên gắn với **định nghĩa ngày đơn xin / snapshot** thống nhất (timezone, cutoff). Nếu OOT quá ngắn, có thể nhiễu; quá dài có thể trộn nhiều chế độ kinh tế — cần **ghi lý do** trong tài liệu model.
 
-**Thực hành:** cố định lịch OOT trong tài liệu model; lưu artifact biểu đồ calibration; log PSI theo tuần/tháng; một trang wiki “model phù hợp tới đâu” cho stakeholder phi kỹ thuật.
+PSI nên được đọc cùng **drill-down** (kênh, tier sản phẩm, vintage). Ví dụ minh hoạ “khi nào PSI nhảy nhưng không phải sự cố model”: dừng một kênh rủi ro có chủ đích làm dân sách qua cổng thay đổi.
+
+**Bảng gợi ý tích hợp monitor (minh hoạ):**
+
+| Tín hiệu | Hành động gợi ý |
+| -------- | ---------------- |
+| PSI score tuần | So baseline + xem segment; trend 4 tuần |
+| Calibration OOT vs live | Workshop DS + risk nếu lệch hệ thống |
+| Approval mix đổi đột ngột | Kiểm tra policy / rule trước khi blame model |
+
+### Checklist vận hành
+
+- [ ] Tài liệu hóa cửa sổ OOT và **version** model gắn với baseline PSI.
+- [ ] Dashboard: PSI, phân phối score, calibration, tối thiểu 2–3 segment chuẩn.
+- [ ] Playbook: ai xử lý, SLA, khi nào cần **dừng scoring** (nếu có chính sách nội bộ).
+- [ ] Lưu artifact hình ảnh khi sign-off model để so sau này.
+
+### Rủi ro và lỗi thường gặp
+
+- OOT vẫn chứa **thông tin sau quyết định** → leakage tinh vi.
+- PSI trên score đã **rescale** không đồng nhất giữa các kỳ.
+- Cảnh báo quá nhiều → team **tắt monitor**; hoặc ngược lại, không ai sở hữu alert.
+- Chỉ báo cáo AUC lab mà không nối với **ngưỡng** và policy thực tế.
+
+### Kết luận
+
+OOT + PSI là “phanh an toàn” của risk model trong production thinking. Đầu tư vào **định nghĩa mẫu**, **tài liệu** và **playbook** thường mang lại ROI cao hơn thêm một feature marginal trong notebook.
 
 ## EN
 
 ### TL;DR
 
-- **OOT** is a held-out *future* window; skipping it is the fastest path to **false confidence** in credit risk.
-- **PSI** flags distribution movement — interpret it with **segments and trend**, not as good/bad by itself.
-- The usual gap is not math but **governance**: who acts, when, and how alerts tie to model version + sample definition.
+- **OOT** holds out a true **future** window; skipping it invites **false confidence**.
+- **PSI / drift** are **signals** — pair with segments, trends, and cohort performance.
+- **Governance** (who acts, when) beats a spreadsheet of thresholds alone.
 
-For credit risk models, random **cross-validation** alone answers whether you memorized history. **Out-of-time (OOT)** validation holds out a time range you never touch during training — often months *after* the fit window — to approximate the deployment cut. Strong in-CV but weak OOT commonly signals **temporal overfit** or subtle **leakage**; the reverse pattern also deserves investigation (e.g., misconfigured splits).
+### Introduction
 
-**Population Stability Index (PSI)** compares score (or key driver) distributions between a **baseline** cohort and a newer cohort. A spike suggests the through-the-door population differs — but deliberate portfolio moves also move PSI. Always pair PSI with **segment cuts**, **rolling trends**, and **vintage-style performance** where possible.
+This note is for practitioners building **time-sensitive credit risk** or gatekeeping scores. Great in-sample or random CV metrics can still fail when the world shifts or when subtle **leakage** enters features. The goal is a **repeatable validation story** and **monitoring** that risk and ops can trust.
 
-**When to invest more in OOT:** gatekeeping application scores, low refresh cadence, or history with regime breaks. **When PSI is noisy:** thin bins, unstable feature imputations, or short history after policy changes.
+### Core concepts
 
-**Operational checklist:**
+- **Out-of-time (OOT) validation:** a time-based holdout *after* the fit window, never used for training or heavy tuning.
+- **Population Stability Index (PSI):** compares **distributions** of scores or key drivers between a baseline cohort and newer traffic — not a moral judgment on portfolio quality.
+- **Calibration & cohort performance:** how probabilities and ranks behave across **time cuts** and business segments.
 
-| Item | Note |
-| ---- | ---- |
-| OOT window spec | Timezone, application date cutoff, exclusion rules |
-| PSI baseline | Frozen model version + baseline sample id |
-| Drill-downs | At least channel, product/tier, coarse geo |
-| Calibration | Train vs OOT vs live monitoring |
-| Playbook | Escalation owner, SLA, optional scoring pause criteria |
+### Details and practice
 
-**Common failure modes:** (1) OOT accidentally includes post-decision information. (2) PSI on scores that were **rescored/recalibrated** inconsistently. (3) Alert fatigue disables monitoring. (4) Threshold debates happen outside a documented **model risk** forum — keep public writing descriptive, not prescriptive on policy.
+Define OOT with explicit **application dates / as-of semantics** and document regime mixes (campaigns, COVID-like shocks, etc.). Short OOTs can be noisy; very long OOTs may average incompatible regimes — write the trade-off down.
 
-**Practice:** publish OOT policy with each major model version; archive calibration charts; trend PSI with clear baselines; maintain a short “what still fits?” note for non-technical partners.
+Read PSI with **segmentation**. A deliberate channel shutdown can spike PSI without implying “model broke.”
+
+**Illustrative monitoring integration:**
+
+| Signal | Suggested response |
+| ------ | ------------------- |
+| Weekly score PSI | Compare to baseline; inspect 4-week trend + segments |
+| OOT vs live calibration gap | Joint DS + risk review if systematic |
+| Sudden approval mix shift | Check policy/rules before blaming the score |
+
+### Operational checklist
+
+- [ ] Publish OOT windows with each **model version** + PSI baseline id.
+- [ ] Dashboards: PSI, score distribution, calibration, a few canonical segments.
+- [ ] Playbook: owners, SLA, criteria for **scoring pause** if your policy allows.
+- [ ] Archive charts at approval time for later comparisons.
+
+### Pitfalls and failure modes
+
+- OOT still contains **post-decision** information.
+- PSI on **incomparable score scales** across periods.
+- Alert fatigue disables monitoring — or alerts have **no owner**.
+- Reporting offline AUC only, disconnected from **thresholds** and live policy.
+
+### Takeaways
+
+OOT and PSI are production hygiene for risk models. Clarity on **samples**, **documentation**, and **runbooks** usually pays off more than marginal notebook gains.

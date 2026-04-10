@@ -1,7 +1,7 @@
 ---
 title: "Routing multi-agent và ranh giới công cụ"
 date: "2026-03-30"
-excerpt: "Router có schema, tool có scope và timeout, handoff có state object — tránh agent vạn năng và vòng lặp vô hạn."
+excerpt: "Router có schema, tool có scope/timeout, handoff state — bài đầy đủ từ intro tới pitfall multi-agent."
 category: gen-ai
 ---
 
@@ -9,58 +9,92 @@ category: gen-ai
 
 ### TL;DR
 
-- **Router** (classifier nhẹ hoặc LLM structured output) chọn *đường* phù hợp — RAG, code, hay agent chuyên môn — thay vì một agent làm hết.
-- **Tool** khai báo schema, quyền (read-only vs write), timeout; log mọi invocation.
-- **Handoff** dùng state có cấu trúc + **`max_steps`** + phát hiện lặp.
+- **Router** chọn đường (RAG / tool / chuyên gia) thay vì một agent “làm hết”.
+- **Tool** có schema, quyền, timeout, log tương quan.
+- **max_steps** + phát hiện lặp để tránh vòng lặp vô hạn.
 
-Kiến trúc multi-agent dễ trượt sang spaghetti: mỗi lớp cần **ranh giới trách nhiệm** và **observability** giống microservice.
+### Giới thiệu
 
-**Router — thiết kế:**
+Kiến trúc **multi-agent** dễ phình chi phí và rủi ro nếu không có ranh giới. Bài viết dành cho kỹ sư LLM đang thiết kế hệ có router + nhiều tool — cần khả năng **debug**, **kiểm soát chi phí**, và **an toàn dữ liệu**.
 
-| Thành phần | Gợi ý |
-| ---------- | ----- |
-| Input | Intent + constraints (ngôn ngữ, tenant, độ nhạy dữ liệu) |
-| Output | `route` + lý do ngắn (để debug) |
-| Fallback | Đường an toàn (RAG-only hoặc human handoff) |
+### Khái niệm cốt lõi
 
-**Khi nào không nên LLM-router:** latency chặt và tập intent ổn định — có thể **classifier** truyền thống + rule; LLM chỉ cho long-tail.
+- **Router:** output có cấu trúc (`route`, lý do ngắn) + fallback an toàn.
+- **Tool boundary:** JSON schema, quyền read-only mặc định cho DB, rate limit.
+- **Handoff:** state object gọn giữa agent thay vì forward chat dài.
 
-**Tool boundaries:** JSON schema đầu vào; **read-only** mặc định cho DB; write qua approval path riêng. Timeout cứng; rate limit theo user/service. Log correlation id để truy vết chuỗi tool.
+### Chi tiết và thực hành
 
-**Vòng lặp & lan rộng:** đặt **`max_steps`**; theo dõi lặp pattern (cùng tool + cùng args); cooldown sau N lần fail.
+Với intent ổn định và latency chặt, có thể **classifier** + rule thay LLM-router cho tầng đầu. LLM-router phù hợp long-tail. Mọi tool call log `correlation_id`, đối số, latency, lỗi. Đặt `max_steps`; nếu lặp cùng tool+args, dừng và báo.
 
-**Handoff giữa agent:** chuyển **state object** (JSON): mục tiêu, artifacts đã có, điều đã thử — thay vì forward full chat vô hạn.
+**Bảng gợi ý phân quyền tool (minh hoạ):**
 
-**Failure modes:** router nhầm intent do prompt mơ hồ; tool quyền quá rộng → sự cố dữ liệu; không có trace → debug bằng đoán; “agent vạn năng” làm chi phí token nổ.
+| Tool | Mặc định | Ghi chú |
+| ---- | --------- | ------- |
+| Đọc DB | Cho phép scoped | Predicate bắt buộc |
+| Ghi DB | Cần luồng approve | Không mở trong POC |
+| Gửi email | Chỉ sandbox | Tránh leak PII |
 
-**Eval router:** confusion matrix trên tập intent có nhãn; regression khi đổi prompt router.
+### Checklist vận hành
+
+- [ ] Spec router output (schema) + test unit với ví dụ.
+- [ ] Observability: trace span theo session.
+- [ ] Confusion matrix intent khi đổi prompt router.
+- [ ] Giới hạn token/step trên môi trường prod.
+
+### Rủi ro và lỗi thường gặp
+
+- Tool quyền quá rộng → sự cố dữ liệu.
+- Không trace → debug bằng đoán.
+- Agent vạn năng làm chi phí nổ.
+
+### Kết luận
+
+Multi-agent ổn định khi **router + tool + handoff** được thiết kế như service có SLA và log — không chỉ prompt xếp chồng.
 
 ## EN
 
 ### TL;DR
 
-- A **router** selects the right path (RAG vs tools vs specialists) instead of one omnibus agent.
-- **Tools** need schemas, scopes, timeouts, and structured logs.
-- **Handoffs** carry compact state; cap depth with **`max_steps`** and loop detection.
+- A **router** chooses paths (RAG / tools / specialists) instead of one mega-agent.
+- **Tools** carry schemas, scopes, timeouts, and correlation logs.
+- Enforce **max_steps** and loop detection.
 
-Multi-agent systems fail when boundaries blur.
+### Introduction
 
-**Router design:**
+**Multi-agent** stacks balloon in cost and risk without boundaries. This note targets engineers designing routers + tool ecosystems who need **debuggability**, **cost control**, and **data safety**.
 
-| Piece | Suggestion |
-| ----- | ---------- |
-| Input | Intent + constraints (language, tenant, sensitivity) |
-| Output | `route` + short rationale for debugging |
-| Fallback | Safe path or human escalation |
+### Core concepts
 
-**When not to use an LLM router:** tight latency and stable intents — use **classical classifiers + rules**; reserve LLM for long-tail.
+- **Router:** structured output (`route`, short rationale) with a safe fallback.
+- **Tool boundaries:** JSON schema; default read-only DB paths; rate limits.
+- **Handoffs:** compact **state objects** between agents rather than unbounded transcripts.
 
-**Tool governance:** strict JSON schemas; default **read-only** data paths; hard timeouts; per-user/service limits; **correlation IDs** across calls.
+### Details and practice
 
-**Loops:** enforce **`max_steps`**; detect repeated tool arguments; back off after repeated failures.
+For stable intents with tight latency, classical **classifiers + rules** may front the router; reserve LLM routing for long-tail cases. Log every tool invocation with correlation IDs. Cap steps; halt on repeated tool arguments. 
 
-**Agent handoffs:** pass structured **state** (goal, artifacts, attempts tried), not unbounded transcripts.
+**Illustrative tool policy:**
 
-**Failure modes:** ambiguous prompts mis-routing; overpowered tools; missing traces; runaway token cost from “do-everything” agents.
+| Tool | Default | Note |
+| ---- | ------- | ---- |
+| DB read | Scoped predicates | Required filtering |
+| DB write | Approval flow | Keep off POCs |
+| Email | Sandbox only | Guard PII |
 
-**Router eval:** labeled intent confusion matrix; rerun after prompt/router changes.
+### Operational checklist
+
+- [ ] Router schema + fixtures tested in CI.
+- [ ] Observability spans per session.
+- [ ] Intent confusion checks after prompt changes.
+- [ ] Token/step budgets in production configs.
+
+### Pitfalls and failure modes
+
+- Overpowered tools causing data incidents.
+- Missing traces — debugging by vibes.
+- Omnibus agents exploding token costs.
+
+### Takeaways
+
+Stable multi-agent systems treat **routers, tools, and handoffs** like services with logs and budgets — not prompt spaghetti.

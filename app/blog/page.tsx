@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BlogSearch } from "@/components/BlogSearch";
 import { GradientCard } from "@/components/GradientCard";
 import {
   BLOG_CATEGORY_ORDER,
@@ -24,6 +25,9 @@ export default function BlogIndexPage() {
           Notes / Ghi chép ngắn — song ngữ trong bài khi phù hợp. Bốn chuyên mục:
           Data Science, Data Engineering, Gen AI, Banking Domain.
         </p>
+        <div className="mt-6 max-w-2xl">
+          <BlogSearch />
+        </div>
         <nav
           className="mt-4 flex flex-wrap gap-2 text-sm"
           aria-label="Jump to category"

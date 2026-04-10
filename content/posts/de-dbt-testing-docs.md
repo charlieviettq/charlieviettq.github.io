@@ -1,7 +1,7 @@
 ---
 title: "dbt tests và docs như contract trên warehouse"
 date: "2026-03-22"
-excerpt: "Tests + lineage + exposures = contract nội bộ: lớp test ưu tiên, CI, anti-pattern BI trùng logic, và khi DAG fail."
+excerpt: "Tests, docs, lineage, exposures: contract dữ liệu từ ý tưởng tới checklist CI và anti-pattern BI trùng logic."
 category: data-engineering
 ---
 
@@ -9,56 +9,96 @@ category: data-engineering
 
 ### TL;DR
 
-- Coi **dbt tests** (built-in + generic + singular) như **SLA dữ liệu**: fail là tín hiệu merge/deploy cần dừng hoặc cảnh báo có owner.
-- **Docs + lineage + exposures** giảm “ai đổi cột này?” — đặc biệt khi mart phục vụ **scoring / báo cáo điều hành**.
-- Lỗi hay gặp: test chỉ chạy cục bộ, logic trùng giữa BI tool và dbt, exposures không map tới dashboard thật.
+- dbt **tests** là hợp đồng có thể fail pipeline — không chỉ comment.
+- **Docs + lineage + exposures** giảm downtime khi đổi schema; map tới dashboard thật.
+- Anti-pattern: metric sống trong BI tool thay vì repo SQL.
 
-dbt biến SQL trong repo thành **hợp đồng có thực thi**: mỗi lần `dbt build`, warehouse phải thỏa các invariant đã cam kết (`unique`, `not_null`, `relationships`, test generic theo cột, hoặc **singular** SQL kiểm tra nghiệp vụ). Trong tổ chức có Airflow/GitHub Actions, test fail có thể **chặn merge** hoặc **page** on-call — tương đương với việc không cho bảng “hỏng” lan xuống dashboard hay feature view mà không ai ký nhận.
+### Giới thiệu
 
-**Tài liệu & lineage** (manifest, graph trong dbt docs, mô tả cột) giúp người mới hiểu **nguồn** và **ý nghĩa** metric — tránh hiểu nhầm khi cùng tên cột ở hai mart khác nhau. **Exposures** nối model tới BI asset (Looker/Power BI/Metabase): khi schema đổi, bạn nhìn được **blast radius**.
+Bài viết cho data engineer / analytics engineer dùng **dbt** trên warehouse dùng chung cho báo cáo và đôi khi **feature** cho ML. Khi càng nhiều mart dùng chung, giá trị của **test**, **tài liệu**, và **phụ thuộc có hướng** càng lớn — đặc biệt khi mỗi PR có thể làm vỡ báo cáo điều hành hoặc score input.
 
-**Ưu tiên test (pragmatic):**
+### Khái niệm cốt lõi
 
-| Lớp | Ví dụ | Khi nào ưu tiên |
-| --- | ----- | ---------------- |
-| Khóa & grain | `unique` + `not_null` trên khóa tự nhiên mart | Mọi mart tiêu thụ bởi ML/report |
-| Tham chiếu | `relationships` tới dimension | Fact có FK logic |
-| Phạm vi nghiệp vụ | singular: tổng debit = tổng credit trong ngày T | Số tiền / hạch toán |
-| Freshness | source freshness | SLA ingest |
+- **Tests built-in/generic:** `unique`, `not_null`, `relationships`, custom generic theo domain.
+- **Singular tests:** SQL assert nghiệp vụ (đối soát, conservation of mass).
+- **Docs & lineage:** cột có nghĩa, graph phụ thuộc; **exposures** nối tới BI tool.
 
-**Khi không nên “test bừa”:** bảng thử sandbox; chi phí full-table scan quá lớn — dùng **sample** hoặc partition predicate có kiểm soát (vẫn ghi rõ trade-off).
+### Chi tiết và thực hành
 
-**Anti-pattern:** metric quan trọng chỉ được định nghĩa trong tool BI; khi dbt đổi, dashboard vẫn chạy nhưng **sai ngữ nghĩa**. Hướng xử lý: **single source** trong dbt (metric layer hoặc view chuẩn), BI chỉ visualize.
+Ưu tiên test trên **money path** và **khóa grain** của mart được nhiều team dùng. Freshness trên **sources** nếu SLA ingest là cổng vào. Trong CI: `dbt build --select state:modified+` hoặc chiến lược tương đương để vừa nhanh vừa an toàn.
 
-**Failure mode khi DAG fail:** phân biệt **lỗi ingest** vs **lỗi transform**; idempotency để rerun; log nhiệm vụ dbt với **job id** map tới PR. Nếu test fail sau khi data vendor đổi schema — cập nhật contract và thông báo consumer, không silent `warn` mãi.
+Khi test fail, log cần có **environment + git sha** để trace. Với warehouse lớn, cân nhắc predicate partition trong test custom để tránh scan full table vô ích.
 
-**Checklist triển khai:** tests trong CI; docs generate theo tag release; owners trên models (meta); exposures trùng với dashboard đang dùng thật.
+**Ma trận ưu tiên (minh hoạ):**
+
+| Ưu tiên | Loại test | Lý do |
+| ------- | --------- | ----- |
+| P0 | Grain + PK mart tiền | Lan nhanh nếu hỏng |
+| P1 | FK logic facts → dims | Orphan rows gây sai dashboard |
+| P2 | Freshness critical path | Phát hiện pipeline đến trễ |
+| P3 | Singular đối soát theo ngày | Sai số tiền / balance |
+
+### Checklist vận hành
+
+- [ ] Tests chạy trên PR; merge block khi fail ở P0/P1.
+- [ ] Generate docs theo release tag; lưu artifact.
+- [ ] `meta` owner trên model quan trọng.
+- [ ] Exposures trùng dashboard đang dùng (Metabase/Looker/PBI…).
+
+### Rủi ro và lỗi thường gặp
+
+- `warn` thay vì `error` mãi cho invariant tiền/bạc.
+- Docs không cập nhật nhưng cột đổi nghĩa — tin cậy wiki nội bộ sai.
+- Logic lặp giữa dbt và BI → drift ngữ nghĩa.
+
+### Kết luận
+
+dbt biến SQL thành **sản phẩm có kiểm soát chất lượng**. Đầu tư tests + lineage là bảo hiểm rẻ cho warehouse dùng chung.
 
 ## EN
 
 ### TL;DR
 
-- Treat dbt **tests** as **enforceable contracts**, not checkbox documentation.
-- **Docs + lineage + exposures** shorten incident time when a column meaning drifts.
-- The expensive mistake is **duplicated semantics** across dbt and a BI layer.
+- dbt **tests** enforce contracts — not decorative YAML.
+- **Docs, lineage, and exposures** shrink incident time; ground exposures in real BI assets.
+- Anti-pattern: metrics defined only in a BI layer.
 
-dbt makes warehouse SQL **executable policy**: `not_null`, `unique`, `relationships`, custom generic tests, and **singular** assertions express what “healthy” means for a mart. Wire failures into CI/CD or orchestration so bad tables do not silently feed **ML features** or exec dashboards.
+### Introduction
 
-**Documentation and lineage** reduce tribal knowledge — especially when similarly named fields differ by mart. **Exposures** link models to downstream BI assets so schema changes surface **blast radius** early.
+For engineers running **dbt** on shared warehouses feeding exec reporting and sometimes **ML features**, quality gates and discoverability scale better than heroics. This note frames how tests and documentation behave as **operating infrastructure**.
 
-**Pragmatic test prioritization:**
+### Core concepts
 
-| Layer | Examples | Prioritize when |
-| ----- | -------- | --------------- |
-| Keys & grain | natural keys on conformed marts | ML/report consumers |
-| Referential | `relationships` to dims | facts with logical FKs |
-| Business invariants | singular reconciliation checks | money / balances |
-| Freshness | `source` freshness | SLA-driven ingestion |
+- **Built-in / generic tests:** keys, nullability, relationships, domain generics.
+- **Singular tests:** business assertions and reconciliations.
+- **Docs & lineage:** meaning and DAG; **exposures** map to dashboards.
 
-**Avoid blind spots:** “tests only run on laptops”; massive scans without **partition filters**; accepting `warn` as permanent for money paths.
+### Details and practice
 
-**Anti-pattern:** the “true” metric lives only in a BI calculated field. Prefer **single-source** semantic views or metrics in dbt; let BI visualize.
+Prioritize tests on **money paths** and **conformed grains**. Track **source freshness** when SLAs matter. In CI, balance speed (`state:modified+` patterns) with breadth on main. On failure, logs should carry **git SHA** and environment. Add partition predicates to heavy checks when needed.
 
-**When DAGs fail:** separate ingest vs transform failures; ensure **idempotent** reruns; stamp runs with **git SHA**. Vendor schema drift should bump contracts and notify consumers — not hide behind warnings.
+**Priority illustration:**
 
-**Rollout checklist:** CI runs on PR; docs published per release; model **owners** in `meta`; exposures grounded in real dashboards.
+| Tier | Tests | Why |
+| ---- | ----- | --- |
+| P0 | Grain + money mart PKs | Fast, wide blast radius |
+| P1 | Logical FK checks | Orphan rows break trust |
+| P2 | Critical-path freshness | Late data detection |
+| P3 | Daily reconciliation SQL | Catches monetary drift |
+
+### Operational checklist
+
+- [ ] CI on PRs; block merges on P0/P1 failures.
+- [ ] Publish docs per release; archive artifacts.
+- [ ] Model **owners** in `meta`.
+- [ ] Exposures aligned with live dashboards.
+
+### Pitfalls and failure modes
+
+- Permanent `warn` on money invariants.
+- Stale docs while semantics drift.
+- Duplicated semantics across dbt and BI tools.
+
+### Takeaways
+
+dbt turns warehouse SQL into **quality-managed products**. Tests plus explicit **lineage** are cheap insurance at scale.
