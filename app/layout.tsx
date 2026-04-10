@@ -38,21 +38,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-zinc-50 font-sans text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-screen font-sans text-zinc-900 antialiased dark:text-zinc-100`}
       >
         <SiteNav />
         <main className="mx-auto max-w-3xl px-4 py-10">{children}</main>
-        <footer className="mx-auto max-w-3xl border-t border-zinc-200 px-4 py-8 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-500">
+        <footer className="mx-auto max-w-3xl border-t border-sky-200/60 px-4 py-8 text-center text-sm text-zinc-600 dark:border-sky-500/20 dark:text-zinc-400">
           <a
             href="https://github.com/charlieviettq"
-            className="hover:text-sky-600 dark:hover:text-sky-400"
+            className="font-medium text-sky-700 hover:text-indigo-600 dark:text-sky-400 dark:hover:text-indigo-300"
           >
             GitHub
           </a>
           {" · "}
           <a
             href="https://www.linkedin.com/in/aivietqt/"
-            className="hover:text-sky-600 dark:hover:text-sky-400"
+            className="font-medium text-sky-700 hover:text-indigo-600 dark:text-sky-400 dark:hover:text-indigo-300"
           >
             LinkedIn
           </a>
