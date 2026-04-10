@@ -8,20 +8,24 @@ export default function Home() {
       <GradientCard className="space-y-6">
         <div className="space-y-4">
           <p className="text-sm font-medium uppercase tracking-wide text-sky-600 dark:text-sky-400">
-            Xin chào / Hello
+            Xin chào / Hello · TP. HCM
           </p>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Data &middot; ML &middot; GenAI engineer
+            Analytics · Data platform · Credit-risk ML · GenAI
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
-            <strong className="text-zinc-800 dark:text-zinc-200">VI:</strong> Trang
-            cá nhân để chia sẻ giới thiệu, liên kết và blog ngắn về data platform,
-            risk/ML, và agentic AI.
+            <strong className="text-zinc-800 dark:text-zinc-200">VI:</strong> Mình là{" "}
+            <strong>Trần Quốc Việt</strong> — làm nền dữ liệu (Airflow, dbt, BigQuery,
+            GCP), mô hình rủi ro tín dụng bán lẻ (OOT, drift, scorecard / boosting), và
+            GenAI có thể vận hành (RAG, agent, observability). Trang này tổng hợp giới
+            thiệu và blog ghi chép kỹ thuật theo bốn chuyên mục.
           </p>
           <p className="max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
-            <strong className="text-zinc-800 dark:text-zinc-200">EN:</strong> A small
-            personal site for bio, links, and notes on data platforms, credit-risk ML,
-            and GenAI agents.
+            <strong className="text-zinc-800 dark:text-zinc-200">EN:</strong> I&apos;m{" "}
+            <strong>Tran Quoc Viet (Charlie)</strong> — I work on data platforms (Airflow,
+            dbt, BigQuery, GCP), retail credit-risk ML (OOT, drift, scorecards /
+            boosting), and production-minded GenAI (RAG, agents, observability). This site
+            is my bio plus technical notes organized in four topics.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
