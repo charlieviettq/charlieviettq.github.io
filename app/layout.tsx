@@ -41,8 +41,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen font-sans text-zinc-900 antialiased dark:text-zinc-100`}
       >
         <SiteNav />
-        <main className="mx-auto max-w-3xl px-4 py-10">{children}</main>
-        <footer className="mx-auto max-w-3xl border-t border-sky-200/60 px-4 py-8 text-center text-sm text-zinc-600 dark:border-sky-500/20 dark:text-zinc-400">
+        <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+        <footer className="mx-auto max-w-6xl border-t border-sky-200/60 px-4 py-8 text-center text-sm text-zinc-600 dark:border-sky-500/20 dark:text-zinc-400">
           <a
             href="https://github.com/charlieviettq"
             className="font-medium text-sky-700 hover:text-indigo-600 dark:text-sky-400 dark:hover:text-indigo-300"

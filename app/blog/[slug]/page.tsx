@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { BlogPostBody } from "@/components/BlogPostBody";
+import { splitBilingualMarkdown } from "@/lib/bilingual-post";
 import {
   getCategoryLabel,
   getCategoryPillClasses,
@@ -27,29 +27,21 @@ export default async function BlogPostPage(props: Props) {
   const post = getPostBySlug(slug);
   if (!post) notFound();
 
+  const parts = splitBilingualMarkdown(post.content);
+  const bilingual = parts !== null;
+  const viMarkdown = parts?.vi ?? post.content;
+  const enMarkdown = parts?.en ?? post.content;
+
   return (
-    <article className="space-y-8">
-      <header>
-        <div className="flex flex-wrap items-center gap-2">
-          <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-            {post.date}
-          </p>
-          <span
-            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${getCategoryPillClasses(post.category)}`}
-          >
-            {getCategoryLabel(post.category)}
-          </span>
-        </div>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight">{post.title}</h1>
-        {post.excerpt ? (
-          <p className="mt-3 text-lg text-zinc-600 dark:text-zinc-400">
-            {post.excerpt}
-          </p>
-        ) : null}
-      </header>
-      <div className="prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-24 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.content}</ReactMarkdown>
-      </div>
-    </article>
+    <BlogPostBody
+      title={post.title}
+      date={post.date}
+      excerpt={post.excerpt}
+      categoryLabel={getCategoryLabel(post.category)}
+      categoryPillClass={getCategoryPillClasses(post.category)}
+      viMarkdown={viMarkdown}
+      enMarkdown={enMarkdown}
+      bilingual={bilingual}
+    />
   );
 }
