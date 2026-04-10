@@ -7,7 +7,7 @@ category: banking
 
 ## VI
 
-### TL;DR
+### Tóm lược
 
 - **Score** hiếm khi là toàn bộ quyết định — **policy**, **ngưỡng**, rule và override định hình kết quả.
 - Thay cutoff nên **phiên bản hóa** như thay model.
@@ -56,7 +56,7 @@ Vận hành score an toàn = **model + policy + giám sát** cùng phiên bản;
 
 ## EN
 
-### TL;DR
+### At a glance
 
 - **Scores** are rarely the whole decision — **policies**, **thresholds**, rules, and overrides matter.
 - Treat **threshold changes** like model releases: versioned and approved.

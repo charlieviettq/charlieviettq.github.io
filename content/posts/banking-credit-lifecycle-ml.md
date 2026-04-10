@@ -7,7 +7,7 @@ category: banking
 
 ## VI
 
-### TL;DR
+### Tóm lược
 
 - Mỗi pha vòng đời có **mục tiêu dữ liệu** và **độ trễ feature** khác nhau.
 - **Lineage + as-of** là nền để audit “tính tới ngày nào”.
@@ -58,7 +58,7 @@ Hiểu vòng đời theo **latency + lineage** giúp giảm lỗi học máy “
 
 ## EN
 
-### TL;DR
+### At a glance
 
 - Each lifecycle stage carries different **data goals** and **feature latency** needs.
 - **Lineage and as-of semantics** underpin audit questions (“as of when?”).

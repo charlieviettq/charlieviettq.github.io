@@ -5,7 +5,7 @@ import { GradientCard } from "@/components/GradientCard";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Trần Quốc Việt (Charlie) — analytics, data platform, ML, GenAI; HCMC.",
+    "Trần Quốc Việt — ML Engineer, agentic AI & data platforms; Cake by VPBank, ex-Hahalolo; HCMC.",
 };
 
 export default function AboutPage() {

@@ -7,7 +7,7 @@ category: gen-ai
 
 ## VI
 
-### TL;DR
+### Tóm lược
 
 - **Router** chọn đường (RAG / tool / chuyên gia) thay vì một agent “làm hết”.
 - **Tool** có schema, quyền, timeout, log tương quan.
@@ -54,7 +54,7 @@ Multi-agent ổn định khi **router + tool + handoff** được thiết kế n
 
 ## EN
 
-### TL;DR
+### At a glance
 
 - A **router** chooses paths (RAG / tools / specialists) instead of one mega-agent.
 - **Tools** carry schemas, scopes, timeouts, and correlation logs.

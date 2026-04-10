@@ -7,7 +7,7 @@ category: data-science
 
 ## VI
 
-### TL;DR
+### Tóm lược
 
 - **WOE** hỗ trợ **binning** và kiểm tra **đơn điệu** sau khi gom nhóm.
 - **IV** là **heuristic** sàng lọc — không thay OOT/holdout; IV quá cao là đèn đỏ leakage.
@@ -58,7 +58,7 @@ WOE/IV là “kính lúp” cho feature trong credit scoring — không phải c
 
 ## EN
 
-### TL;DR
+### At a glance
 
 - **WOE** structures **bins** and surfaces **monotonicity** issues.
 - **IV** is a **screening heuristic** — not a replacement for OOT/holdout; extreme IV demands a **leakage** review.

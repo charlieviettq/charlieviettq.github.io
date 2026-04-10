@@ -7,7 +7,7 @@ category: data-engineering
 
 ## VI
 
-### TL;DR
+### Tóm lược
 
 - Thiết kế **idempotent** và tách giai đoạn để **rerun** an toàn.
 - **SLA** đặt ở cam kết dữ liệu downstream thực sự cần.
@@ -56,7 +56,7 @@ DAG tốt là DAG **dự đoán retry và trễ**. Đầu tư idempotency + SLA 
 
 ## EN
 
-### TL;DR
+### At a glance
 
 - Build **idempotent** stages and clean phase boundaries for safe **reruns**.
 - Attach **SLAs** to the commitments downstream actually depends on.

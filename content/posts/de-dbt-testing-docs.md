@@ -7,7 +7,7 @@ category: data-engineering
 
 ## VI
 
-### TL;DR
+### Tóm lược
 
 - dbt **tests** là hợp đồng có thể fail pipeline — không chỉ comment.
 - **Docs + lineage + exposures** giảm downtime khi đổi schema; map tới dashboard thật.
@@ -57,7 +57,7 @@ dbt biến SQL thành **sản phẩm có kiểm soát chất lượng**. Đầu 
 
 ## EN
 
-### TL;DR
+### At a glance
 
 - dbt **tests** enforce contracts — not decorative YAML.
 - **Docs, lineage, and exposures** shrink incident time; ground exposures in real BI assets.
