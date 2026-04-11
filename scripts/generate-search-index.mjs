@@ -59,6 +59,9 @@ for (const f of files) {
   const slug = f.replace(/\.md$/, "");
   const raw = fs.readFileSync(path.join(postsDir, f), "utf8");
   const { data, content } = matter(raw);
+  if (String(data.visibility ?? "").trim().toLowerCase() === "private") {
+    continue;
+  }
   const { textVi, textEn } = splitViEn(content);
   index.push({
     slug,

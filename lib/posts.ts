@@ -15,12 +15,15 @@ export type BlogCategory = (typeof BLOG_CATEGORY_ORDER)[number];
 
 const CATEGORY_SET = new Set<string>(BLOG_CATEGORY_ORDER);
 
+export type PostVisibility = "public" | "private";
+
 export type PostMeta = {
   slug: string;
   title: string;
   date: string;
   excerpt?: string;
   category: BlogCategory;
+  visibility: PostVisibility;
 };
 
 export type Post = PostMeta & { content: string };
@@ -71,6 +74,20 @@ function parseCategory(raw: unknown, slug: string): BlogCategory {
   return s as BlogCategory;
 }
 
+function parseVisibility(raw: unknown, slug: string): PostVisibility {
+  const s = String(raw ?? "").trim().toLowerCase();
+  if (s === "" || s === "public") return "public";
+  if (s === "private") return "private";
+  throw new Error(
+    `Invalid visibility "${raw}" for post "${slug}.md". Expected "public" or "private".`,
+  );
+}
+
+/** Listed on /blog/ and in search index. */
+export function isListedPost(p: PostMeta): boolean {
+  return p.visibility === "public";
+}
+
 export function getPostSlugs(): string[] {
   if (!fs.existsSync(postsDirectory)) return [];
   return fs
@@ -85,12 +102,14 @@ export function getPostBySlug(slug: string): Post | null {
   const raw = fs.readFileSync(fullPath, "utf8");
   const { data, content } = matter(raw);
   const category = parseCategory(data.category, slug);
+  const visibility = parseVisibility(data.visibility, slug);
   return {
     slug,
     title: String(data.title ?? slug),
     date: String(data.date ?? ""),
     excerpt: data.excerpt != null ? String(data.excerpt) : undefined,
     category,
+    visibility,
     content,
   };
 }
@@ -103,5 +122,7 @@ export function getAllPosts(): Post[] {
 }
 
 export function getPostsByCategory(category: BlogCategory): Post[] {
-  return getAllPosts().filter((p) => p.category === category);
+  return getAllPosts().filter(
+    (p) => p.category === category && isListedPost(p),
+  );
 }

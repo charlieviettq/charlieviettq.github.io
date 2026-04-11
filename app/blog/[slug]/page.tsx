@@ -19,7 +19,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const { slug } = await props.params;
   const post = getPostBySlug(slug);
   if (!post) return { title: "Not found" };
-  return { title: post.title, description: post.excerpt };
+  const base: Metadata = { title: post.title, description: post.excerpt };
+  if (post.visibility === "private") {
+    return { ...base, robots: { index: false, follow: false } };
+  }
+  return base;
 }
 
 export default async function BlogPostPage(props: Props) {
