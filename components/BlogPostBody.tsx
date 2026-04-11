@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import {
+  Children,
+  isValidElement,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import ReactMarkdown from "react-markdown";
+import { MermaidBlock } from "@/components/MermaidBlock";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
 import { extractToc, type TocItem } from "@/lib/bilingual-post";
@@ -77,6 +85,32 @@ export function BlogPostBody({
 
   const toc = useMemo(() => extractToc(activeMarkdown), [activeMarkdown]);
 
+  const markdownComponents = useMemo(
+    () => ({
+      pre({ children }: { children?: ReactNode }) {
+        const child = Children.only(children);
+        if (isValidElement(child)) {
+          const p = child.props as {
+            className?: string;
+            children?: ReactNode;
+          };
+          if (
+            typeof p.className === "string" &&
+            p.className.includes("language-mermaid")
+          ) {
+            const raw = p.children;
+            const chart = Array.isArray(raw)
+              ? raw.join("")
+              : String(raw ?? "");
+            return <MermaidBlock chart={chart} />;
+          }
+        }
+        return <pre>{children}</pre>;
+      },
+    }),
+    [],
+  );
+
   const setLanguage = (next: Lang) => {
     setLang(next);
     try {
@@ -150,6 +184,7 @@ export function BlogPostBody({
               key={lang + (bilingual ? "" : "single")}
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeSlug]}
+              components={markdownComponents}
             >
               {activeMarkdown}
             </ReactMarkdown>
