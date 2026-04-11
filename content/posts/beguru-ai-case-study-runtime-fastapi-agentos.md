@@ -20,6 +20,10 @@ category: gen-ai
 
 Mô tả **kiến trúc đang chạy** của service `beguru-ai` ở mức triển khai; chi tiết request/response nằm trong `docs/API_SPEC.md`.
 
+:::tip[Triển khai]
+Port systemd và biến `.env` trên VPS có thể khác máy dev — xem `ARCHITECTURE_RUNTIME.md` § deploy và script `deploy_to_server.sh`.
+:::
+
 ### Sơ đồ tổng quan
 
 ```mermaid
@@ -152,6 +156,10 @@ sequenceDiagram
 ### Purpose
 
 Describe the **running architecture** of `beguru-ai`; request/response details live in `docs/API_SPEC.md`.
+
+:::tip[Deployment]
+Ports, systemd unit name, and remote `.env` may differ from your laptop — see `ARCHITECTURE_RUNTIME.md` (deployment) and `scripts/deploy_to_server.sh`.
+:::
 
 ### Overview and sequence diagrams
 

@@ -7,13 +7,20 @@ import {
   useEffect,
   useMemo,
   useState,
+  type ComponentProps,
   type ReactNode,
 } from "react";
 import ReactMarkdown from "react-markdown";
-import { MermaidBlock } from "@/components/MermaidBlock";
-import rehypeSlug from "rehype-slug";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
+import { MarkdownDocAside } from "@/components/doc/MarkdownDocAside";
+import { MermaidBlock } from "@/components/MermaidBlock";
 import { extractToc, type TocItem } from "@/lib/bilingual-post";
+import remarkDocDirectives from "@/lib/remark-doc-directives";
+import { blogSanitizeSchema } from "@/lib/rehype-blog-sanitize";
 
 const LANG_KEY = "blog-post-lang";
 
@@ -107,6 +114,29 @@ export function BlogPostBody({
         }
         return <pre>{children}</pre>;
       },
+      aside(props: ComponentProps<"aside">) {
+        const { className, children, ...rest } = props;
+        if (
+          typeof className === "string" &&
+          className.includes("doc-callout")
+        ) {
+          return (
+            <MarkdownDocAside className={className} {...rest}>
+              {children}
+            </MarkdownDocAside>
+          );
+        }
+        return (
+          <aside className={className} {...rest}>
+            {children}
+          </aside>
+        );
+      },
+      hr() {
+        return (
+          <hr className="my-10 border-0 border-t border-dashed border-zinc-300 dark:border-zinc-600" />
+        );
+      },
     }),
     [],
   );
@@ -182,8 +212,12 @@ export function BlogPostBody({
           <div className="prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
             <ReactMarkdown
               key={lang + (bilingual ? "" : "single")}
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeSlug]}
+              remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
+              rehypePlugins={[
+                rehypeRaw,
+                [rehypeSanitize, blogSanitizeSchema],
+                rehypeSlug,
+              ]}
               components={markdownComponents}
             >
               {activeMarkdown}

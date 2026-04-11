@@ -20,6 +20,10 @@ category: gen-ai
 
 Bài này **không** thay thế OpenAPI hay tài liệu nội bộ đầy đủ; nó cố định **bối cảnh kiến trúc** và **chỗ các bộ phận gắn với nhau** để đọc tiếp các bài chuyên sâu.
 
+:::warning[Phạm vi]
+Luôn đối chiếu repo `beguru-ai` (`docs/API_SPEC.md`, …) với version bạn đang chạy — blog có thể tóm tắt lệch thời điểm.
+:::
+
 ### Sơ đồ tổng quan (runtime)
 
 ```mermaid
@@ -144,6 +148,10 @@ Luồng Go backend (sau FE, có gate `backend-spec`) được mô tả trong `AR
 ### Purpose and scope
 
 This post is **not** a substitute for the full OpenAPI or internal docs; it anchors **system context** and **how major pieces connect** before you read the deep dives.
+
+:::warning[Scope]
+Always verify against the `beguru-ai` repo (`docs/API_SPEC.md`, …) for the version you run — this blog may lag behind.
+:::
 
 ### High-level runtime diagram
 

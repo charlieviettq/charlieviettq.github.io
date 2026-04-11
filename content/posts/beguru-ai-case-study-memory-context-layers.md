@@ -18,9 +18,18 @@ category: gen-ai
 - **DB**: SQLite / SQLAlchemy (`AgentMemory`, `AgentSession`, `WorkflowExecution`); tùy chọn persist bản tóm tắt nén khi bật `FREETEXT_PERSIST_COMPRESSOR_SUMMARY` (hành vi chi tiết trong `MEMORY_AND_CONTEXT_LAYERS.md`).
 - **Hướng mở rộng:** `ADR-0002-memory-oss.md` (Mem0 / pgvector / LangGraph) — **hiện không triển khai** tới khi có chứng cứ sản phẩm.
 
+:::expand[ADR-0002 — chi tiết]
+File `ADR-0002-memory-oss.md` trong repo mô tả hướng Mem0 / pgvector / LangGraph; **chưa** có trong runtime cho tới khi có chứng cứ sản phẩm (xem `MEMORY_AND_CONTEXT_LAYERS.md` mục cuối).
+:::
+
 ### Mục đích
 
 Giải thích **contract nội bộ** các tầng memory/context trong runtime `beguru-ai`, không thay thế toàn bộ `MEMORY_AND_CONTEXT_LAYERS.md`.
+
+:::todo[Đối chiếu khi đọc]
+- [ ] Xác định version `beguru-ai` bạn đang chạy
+- [ ] Mở `MEMORY_AND_CONTEXT_LAYERS.md` trên cùng commit khi cần số chính xác cho env `FREETEXT_*`
+:::
 
 ### Pipeline tổng quát
 
@@ -79,9 +88,18 @@ flowchart TD
 - **DB:** SQLite / SQLAlchemy; optional persistence of compressor summaries when `FREETEXT_PERSIST_COMPRESSOR_SUMMARY` is enabled — see `MEMORY_AND_CONTEXT_LAYERS.md` for exact behavior.
 - **Future work:** `ADR-0002-memory-oss.md` (Mem0 / pgvector / LangGraph) is **not implemented** until product evidence warrants it.
 
+:::expand[ADR-0002 details]
+Repo file `ADR-0002-memory-oss.md` discusses Mem0 / pgvector / LangGraph; **not** in the current runtime until product evidence exists (see end of `MEMORY_AND_CONTEXT_LAYERS.md`).
+:::
+
 ### Purpose
 
 Explain the **internal contract** for memory/context layers in `beguru-ai`; this post does not replace `MEMORY_AND_CONTEXT_LAYERS.md`.
+
+:::todo[While reading]
+- [ ] Confirm which `beguru-ai` version you run
+- [ ] Open `MEMORY_AND_CONTEXT_LAYERS.md` at the same commit when you need exact `FREETEXT_*` values
+:::
 
 ### Pipeline diagram
 

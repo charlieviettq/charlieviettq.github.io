@@ -13,6 +13,8 @@ function stripMarkdownLite(s) {
   return s
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/`[^`]+`/g, " ")
+    .replace(/^:::+\s*\w*[^\n]*\n?/gm, " ")
+    .replace(/^:::+\s*$/gm, " ")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/^#{1,6}\s+/gm, "")
     .replace(/[*_]{1,2}([^*_]+)[*_]{1,2}/g, "$1")

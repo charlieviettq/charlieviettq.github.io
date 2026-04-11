@@ -20,6 +20,10 @@ category: gen-ai
 
 Bài mô tả **artifact trên đĩa** mà Engineer đọc/ghi và cách chúng liên kết với handoff PM, không mô tả toàn bộ API (xem `API_SPEC.md`).
 
+:::info[Quy ước đường dẫn]
+`output_path` với segment `frontend_*` / `backend_*` là điều kiện để pipeline FE/BE và CROSS_STACK hoạt động đúng — không tự đổi format thư mục nếu chưa đọc `API_SPEC.md`.
+:::
+
 ### Vị trí file trong cây project
 
 | File / thư mục | Vai trò |
@@ -98,6 +102,10 @@ Template Next.js ship kèm **`.guru/rules/`**; server load thứ tự cố đị
 ### Purpose and scope
 
 This post describes **on-disk artifacts** the Engineer reads/writes and how they relate to PM handoff; it does not replace `API_SPEC.md`.
+
+:::info[Path conventions]
+Keep `frontend_*` / `backend_*` leading segments as documented in `API_SPEC.md` so FE/BE pipelines and CROSS_STACK stay consistent.
+:::
 
 ### File layout
 
