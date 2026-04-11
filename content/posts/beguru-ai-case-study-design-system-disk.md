@@ -1,129 +1,89 @@
 ---
-title: "BeGuru AI — Case study: Bản thiết kế không bao giờ thất lạc (MASTER, BUILD_STATE, .guru/rules)"
+title: "BeGuru AI — Technical Docs: Design system & artifact trên đĩa"
 date: "2026-04-11"
-excerpt: "Chuỗi case study BeGuru — bài mở: Khám phá cách BeGuru neo giữ linh hồn của dự án qua các 'bản hợp đồng' trên đĩa, giúp AI và con người luôn hiểu ý nhau."
+excerpt: "design-system/ (MASTER, BUILD_STATE, PRODUCT_PLAN, beguru_chat_context.json), quy ước output_path frontend_/backend_, và .guru/rules cho Engineer Next.js."
 category: gen-ai
 ---
+
+> **Chuỗi BeGuru — Technical Docs**  
+> [0. Tổng quan kiến trúc](/blog/beguru-ai-architecture-overview) · [1. Design system & đĩa](/blog/beguru-ai-case-study-design-system-disk) · [2. Runtime (FastAPI, AgentOS)](/blog/beguru-ai-case-study-runtime-fastapi-agentos) · [3. Memory & context](/blog/beguru-ai-case-study-memory-context-layers)
 
 ## VI
 
 ### Tóm lược
 
-- **BeGuru AI** không chỉ "ném" code vào bạn; nó xây dựng một **nguồn chân lý** bền vững ngay trên đĩa qua thư mục `design-system/` và `.guru/rules/`.
-- Hãy tưởng tượng dự án như một con tàu, thì **`PRODUCT_PLAN.md`** là hải trình, **`MASTER.md`** là bảng màu của con tàu, và **`BUILD_STATE.md`** là nhật ký hành trình.
-- Mọi thứ được AI đọc và viết theo một **thứ tự nghiêm ngặt**, đảm bảo không có chi tiết nào bị "tam sao thất bản" qua những lần generate.
+- Dưới mỗi project FE sinh ra, thư mục **`design-system/`** là nơi **ghi SSOT** cho token/thiết kế (**`MASTER.md`**), tiến độ (**`BUILD_STATE.md`**), phạm vi sản phẩm (**`PRODUCT_PLAN.md`**) và snapshot context (**`beguru_chat_context.json`**).
+- **`## BEGURU_FE_SPEC`** trong chat được Engineer dùng để đồng bộ với các file trên; thứ tự rails ghim cho PM (sau nén) gồm FE spec → BUILD_STATE → MASTER → … — chi tiết trong `beguru-ai/docs/MEMORY_AND_CONTEXT_LAYERS.md`.
+- Quy ước **`output_path`**: segment đầu **`frontend_<slug>`** (React/Next) và **`backend_<slug>`** (Go) dưới `projects_root_dir`; không tự do đặt tên lệch quy ước nếu dùng pipeline chuẩn — xem `API_SPEC.md`.
 
-### Giới thiệu
+### Mục đích và phạm vi
 
-Bạn đã bao giờ rơi vào tình huống yêu cầu AI viết code, nó làm rất tốt lượt đầu, nhưng đến lượt thứ hai thì nó... quên mất tông màu chủ đạo bạn muốn, hoặc làm sai logic mà hai bên đã thống nhất trước đó? 
+Bài mô tả **artifact trên đĩa** mà Engineer đọc/ghi và cách chúng liên kết với handoff PM, không mô tả toàn bộ API (xem `API_SPEC.md`).
 
-Đó là vì AI thường chỉ sống trong "khoảnh khắc" của đoạn chat. Để giải quyết vấn đề này, **BeGuru AI** đã chọn một hướng đi khác: **Neo giữ linh hồn dự án trên đĩa**. Thay vì chỉ dựa vào prompt, mình đã thiết kế để hệ thống ghi lại mọi "thỏa thuận" vào các file Markdown ngay trong repo. 
+### Vị trí file trong cây project
 
-Trong bài này, mình sẽ cùng bạn khám phá lớp "mặt phẳng thiết kế" — nơi những bản hợp đồng giữa người và máy được ký kết.
+| File / thư mục | Vai trò |
+|----------------|---------|
+| `design-system/MASTER.md` | Token màu, typography, policy merge (`merge` / `if_missing` / `always`) — nguồn thiết kế rút gọn cho prompt Engineer |
+| `design-system/BUILD_STATE.md` | Đã ship, checklist, focus/blockers; excerpt inject vào generate-code khi file tồn tại |
+| `design-system/PRODUCT_PLAN.md` | Scope, user story, sơ đồ Mermaid do Engineer tạo/cập nhật |
+| `design-system/beguru_chat_context.json` | `user_info`, `kyb_data`, `project_context`, `software_type`, … — merge từ `init-project` / chat |
+| `.guru/rules/*.md` | Rule Next.js (template repo): auth mock, App Router, v.v. — load qua bundle engineer |
 
-### Sợi dây liên kết giữa ý tưởng và mã nguồn
-
-Hãy nhìn vào sơ đồ bên dưới để thấy cách thông tin "chảy" từ những dòng chat của bạn vào đến từng dòng code thực tế:
+### Luồng từ spec trong chat xuống đĩa
 
 ```mermaid
 flowchart LR
-  subgraph spec_layer [Ý tưởng từ Chat]
-    FE["## BEGURU_FE_SPEC\n(Bản đặc tả thô)"]
+  subgraph handoff [Handoff]
+    FESpec["## BEGURU_FE_SPEC"]
   end
 
-  subgraph disk [Điểm neo trên đĩa]
-    PP[PRODUCT_PLAN.md\n'Cái gì']
-    BS[BUILD_STATE.md\n'Đến đâu']
-    M[MASTER.md\n'Trông thế nào']
-    DS[(design-system/*)]
+  subgraph ds [design-system]
+    PP[PRODUCT_PLAN.md]
+    BS[BUILD_STATE.md]
+    M[MASTER.md]
   end
 
-  subgraph code [Sản phẩm cuối]
+  subgraph gen [Generated tree]
     APP[app/ components/ ...]
   end
 
-  FE -->|AI đúc kết| PP
-  FE -->|AI chốt màu sắc| M
-  FE -->|AI ghi nhật ký| BS
-  PP --> DS
-  M --> DS
-  BS --> BS
-  DS --> APP
+  FESpec --> PP
+  FESpec --> M
+  FESpec --> BS
+  PP --> APP
+  M --> APP
+  BS --> APP
 ```
 
-Ở đây, **SPEC trong chat** là khởi đầu đầy cảm hứng, nhưng **ba file master** mới là những "hợp đồng" giúp AI ghi nhớ và thực thi chính xác trong những lượt generate sau này.
+`beguru_chat_context.json` được cập nhật qua `init-project` / merge từ chat; không vẽ vào sơ đồ trên để tránh nhầm với luồng generate-code.
 
-### `MASTER.md` — Khi AI học cách làm Stylist
+### `MASTER.md`
 
-Bạn không muốn mỗi trang web có một màu xanh khác nhau đúng không? `MASTER.md` chính là nơi mình quy định "luật chơi" về thẩm mỹ. Khi bạn đưa ra một brand guideline trong chat, AI sẽ không chỉ áp dụng một lần rồi thôi, nó sẽ "khắc" những thông số đó vào file này.
+Chứa guideline thiết kế (ví dụ bảng token OKLCH). Engineer áp dụng theo policy đã định nghĩa trong pipeline (merge khi cập nhật, tránh drift giữa các lượt generate).
 
-```markdown
-# Design system master (Guru)
+### `BUILD_STATE.md`
 
-## Suggested default palette (oklch, hue ~252°)
+- Ghi nhận mức độ hoàn thành theo user story / checklist.
+- Khi file đã có, `POST /api/freetext/generate-code` inject excerpt **CURRENT BUILD_STATE**; Engineer trả block cập nhật full-file theo thứ tự quy định trong tài liệu API (code → PRODUCT_PLAN nếu có → BUILD_STATE cuối).
 
-| Token | Light (example) |
-|-------|------------------|
-| `--primary` | `oklch(0.32 0.12 252)` |
-| `--accent` | `oklch(0.94 0.04 252)` |
-```
+### `PRODUCT_PLAN.md`
 
-Nhờ có file này, mình có thể kiểm soát được **độ dài ngữ cảnh** (context tokens) mà AI cần đọc, giúp tiết kiệm chi phí mà vẫn đảm bảo tính nhất quán.
+Tóm tắt phạm vi đã chốt và có thể kèm **Mermaid** mô tả luồng nghiệp vụ; là nguồn excerpt trong context pack (không thay thế toàn bộ spec trong chat).
 
-### `BUILD_STATE.md` — Nhật ký của một kỹ sư mẫn cán
+### `beguru_chat_context.json`
 
-Làm sao để AI biết nó đã làm xong trang Login chưa, hay trang Dashboard vẫn còn đang lỗi? `BUILD_STATE.md` đóng vai trò như một người quản lý dự án tí hon, luôn cập nhật trạng thái thực tế của repo.
+Cấu trúc tóm tắt (theo contract API): merge shallow với body chat; dùng cho PM pins (`[PINNED_USER_INFO]`, `[PINNED_KYB]`, `[PINNED_PROJECT_CONTEXT]`, …). Có thể có `backend_output_path` trong `project_context` để excerpt **CROSS_STACK** khi khóa BackendSpec.
 
-```markdown
-# Build state (Guru)
+### `.guru/rules` và bundle Engineer
 
-## Current focus (checklist)
-- [x] Shell + routing (US:001) - Đã xong
-- [ ] Trang Dashboard (US:002) - Đang chờ
-```
+Template Next.js ship kèm **`.guru/rules/`**; server load thứ tự cố định cùng `bundles/engineer_nextjs/core.md` (xem README trong template và `ARCHITECTURE_RUNTIME.md` mục Engineer Next.js).
 
-Mỗi lần AI chuẩn bị viết code mới, nó sẽ liếc nhìn vào đây để biết mình đang đứng ở đâu trong lộ trình tổng thể.
+### Phụ thuộc đọc thêm
 
-### `PRODUCT_PLAN.md` — Để chúng ta luôn cùng nhìn về một hướng
-
-AI viết cho AI đọc thì dễ, nhưng con người cũng cần hiểu chuyện gì đang xảy ra. `PRODUCT_PLAN.md` là bản tóm tắt dành cho bạn. Nó chứa những sơ đồ Mermaid mô tả luồng nghiệp vụ, giúp bạn nhanh chóng nắm bắt "linh hồn" của sản phẩm mà không cần lội lại hàng trăm dòng chat.
-
-```mermaid
-flowchart TD
-  User[Người dùng] --> Shell[Khung ứng dụng]
-  Shell --> Main[Luồng chính]
-```
-
-### `.guru/rules` — Bộ luật của "vương quốc" BeGuru
-
-Cuối cùng, để AI không viết code "tùy tiện", mình đã thiết lập một bộ luật nghiêm ngặt trong thư mục `.guru/rules/`. Nó giống như bảng nội quy công ty, bắt buộc AI phải tuân thủ từ cách đặt tên file đến cách xử lý dữ liệu.
-
-```mermaid
-flowchart TB
-  CORE["bundles/engineer_nextjs/core.md\n(Danh tính AI)"]
-  R1[critical-constraints.md\n(Giới hạn tối thượng)]
-  R2[mock-auth-and-handoff.md\n(Luật đăng nhập)]
-  RN[... closing.md]
-  OUT["Lời nhắc hệ thống hoàn chỉnh"]
-
-  CORE --> R1 --> R2 --> RN --> OUT
-```
-
-Hệ thống sẽ xếp chồng các quy tắc này lại để tạo ra một "lời nhắc" (prompt) cực kỳ sắc bén cho Engineer Agent.
-
-### Ảnh minh họa — Thử tài Gemini nhé!
-
-Để bài viết thêm sinh động, bạn hãy dùng các prompt này đưa cho Gemini tạo ảnh, rồi gửi lại mình chèn vào nhé:
-
-1. **Prompt ảnh A — “Ba khối trên đĩa”**  
-   *“Một minh họa 3D isometric về ba tấm thẻ tài liệu bay phía trên một đĩa cứng máy tính: tiêu đề ‘PRODUCT_PLAN’, ‘MASTER’, ‘BUILD_STATE’, có các mũi tên tinh tế nối giữa chúng, nền gradient xanh dương và tím dịu mắt, phong cách kỹ thuật tối giản.”*
-
-2. **Prompt ảnh B — “Chồng quy tắc”**  
-   *“Minh họa phong cách sơ đồ sạch sẽ: một chồng dọc gồm mười hai tấm phẳng mỏng đại diện cho các quy tắc, chảy vào một ống trụ phát sáng duy nhất, thẩm mỹ dành cho lập trình viên, màu sắc thân thiện với chế độ tối.”*
-
-### Hẹn gặp bạn ở phần sau!
-
-Chúng ta đã xong phần "phần xác" của dự án trên đĩa. Ở bài tiếp theo, mình sẽ dẫn bạn đi xem "bộ não" của BeGuru vận hành thế nào với **FastAPI, AgentOS** và cách nó nén những ký ức dài dằng dặc để không bao giờ bị quá tải.
+- [Tổng quan kiến trúc](/blog/beguru-ai-architecture-overview) — map hệ thống.
+- [Runtime](/blog/beguru-ai-case-study-runtime-fastapi-agentos) — route `generate-code`, `init-project`.
+- [Memory & context](/blog/beguru-ai-case-study-memory-context-layers) — thứ tự ghim và context pack.
 
 ---
 
@@ -131,42 +91,50 @@ Chúng ta đã xong phần "phần xác" của dự án trên đĩa. Ở bài ti
 
 ### At a glance
 
-- **BeGuru AI** doesn't just "toss" code at you; it builds a lasting **source of truth** right on your disk via the `design-system/` and `.guru/rules/` directories.
-- Think of the project as a ship: **`PRODUCT_PLAN.md`** is the chart, **`MASTER.md`** is the ship's livery, and **`BUILD_STATE.md`** is the captain's log.
-- Everything is read and written in a **strict order**, ensuring no details are lost in translation between generation turns.
+- For each generated FE project, **`design-system/`** holds **SSOT** files: **`MASTER.md`** (tokens/design), **`BUILD_STATE.md`** (progress), **`PRODUCT_PLAN.md`** (scope), and **`beguru_chat_context.json`** (context snapshot).
+- **`## BEGURU_FE_SPEC`** in chat is consumed by the Engineer to align with on-disk files; PM pin rail order after compression (FE spec → BUILD_STATE → MASTER → …) is documented in `beguru-ai/docs/MEMORY_AND_CONTEXT_LAYERS.md`.
+- **`output_path`** segments **`frontend_<slug>`** (React/Next) and **`backend_<slug>`** (Go) under `projects_root_dir` are required for the standard pipeline — see `API_SPEC.md`.
 
-### Introduction
+### Purpose and scope
 
-Have you ever asked an AI to write code, and it did great the first time, but by the second turn, it... forgot your primary colors or messed up the logic you both agreed on?
+This post describes **on-disk artifacts** the Engineer reads/writes and how they relate to PM handoff; it does not replace `API_SPEC.md`.
 
-That's because AI often lives only in the "moment" of the chat. To solve this, **BeGuru AI** took a different path: **Anchoring the project's soul on disk**. Instead of relying solely on prompts, I designed the system to record every "agreement" into Markdown files right in the repo.
+### File layout
 
-In this post, we'll explore the "design plane" — where the contracts between human and machine are signed.
+| Path | Role |
+|------|------|
+| `design-system/MASTER.md` | Color/typography tokens; merge policy (`merge` / `if_missing` / `always`) |
+| `design-system/BUILD_STATE.md` | Shipped items, checklist, focus/blockers; excerpt injected into generate-code when the file exists |
+| `design-system/PRODUCT_PLAN.md` | Scope, stories, Mermaid diagrams maintained by the Engineer |
+| `design-system/beguru_chat_context.json` | `user_info`, `kyb_data`, `project_context`, `software_type`, … — merged from `init-project` / chat |
+| `.guru/rules/*.md` | Next.js rules shipped with the template (mock auth, App Router, …) |
 
-### The Link Between Ideas and Source Code
+### Flow from chat spec to disk
 
-Take a look at the diagram below to see how information "flows" from your chat messages into the actual lines of code:
+Use the same Mermaid diagram as in the Vietnamese section.
 
-(Mermaid diagram same as above)
+### `MASTER.md`
 
-Here, the **Chat SPEC** is the inspired beginning, but the **three master files** are the "contracts" that help the AI remember and execute accurately in future turns.
+Holds design guidelines (e.g. OKLCH token tables). The Engineer applies merge policy defined in the pipeline to limit drift across generations.
 
-### `MASTER.md` — When AI Learns to be a Stylist
+### `BUILD_STATE.md`
 
-You don't want every page of your website to have a different shade of blue, do you? `MASTER.md` is where we define the "rules of play" for aesthetics.
+Tracks completion by story/checklist. When the file already exists, `POST /api/freetext/generate-code` injects a **CURRENT BUILD_STATE** excerpt; the Engineer returns full-file updates in the order specified in the API docs.
 
-### `BUILD_STATE.md` — The Log of a Diligent Engineer
+### `PRODUCT_PLAN.md`
 
-How does the AI know if it's finished the Login page or if the Dashboard is still buggy? `BUILD_STATE.md` acts as a tiny project manager, always updating the actual state of the repo.
+Summarizes agreed scope and may include **Mermaid** business-flow diagrams; excerpts feed the context pack (it does not replace the full chat spec).
 
-### `PRODUCT_PLAN.md` — So We Always Look in the Same Direction
+### `beguru_chat_context.json`
 
-`PRODUCT_PLAN.md` is the summary for you. It contains Mermaid diagrams describing the business flow, helping you quickly grasp the "soul" of the product without wading through hundreds of chat lines.
+Structured snapshot (per API contract): shallow merge with chat body; feeds PM pins (`[PINNED_USER_INFO]`, `[PINNED_KYB]`, `[PINNED_PROJECT_CONTEXT]`, …). May include `backend_output_path` in `project_context` for **CROSS_STACK** excerpts when BackendSpec is locked.
 
-### `.guru/rules` — The Laws of the BeGuru Kingdom
+### `.guru/rules` and Engineer bundle
 
-Finally, to prevent the AI from writing "random" code, I've established a strict set of laws in the `.guru/rules/` directory. It's like a company handbook, forcing the AI to comply with everything from file naming to data handling.
+The Next.js template ships **`.guru/rules/`**; the server loads a fixed order together with `bundles/engineer_nextjs/core.md` (see template README and `ARCHITECTURE_RUNTIME.md`).
 
-### Next in the Series
+### See also
 
-We've covered the "body" of the project on disk. In the next post, I'll show you how BeGuru's "brain" operates with **FastAPI, AgentOS**, and how it compresses long memories to never get overwhelmed.
+- [Architecture overview](/blog/beguru-ai-architecture-overview)
+- [Runtime](/blog/beguru-ai-case-study-runtime-fastapi-agentos)
+- [Memory & context](/blog/beguru-ai-case-study-memory-context-layers)

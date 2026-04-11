@@ -24,6 +24,21 @@ export default function BlogIndexPage() {
           Notes / Ghi chép ngắn — song ngữ trong bài khi phù hợp. Bốn chuyên mục:
           Data Science, Data Engineering, Gen AI, Banking Domain.
         </p>
+        <p className="mt-3 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
+          <strong className="font-medium text-zinc-700 dark:text-zinc-300">
+            BeGuru / Gen AI:
+          </strong>{" "}
+          <Link
+            href="/blog/beguru-ai-architecture-overview"
+            className="text-sky-700 underline decoration-sky-500/40 underline-offset-2 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
+          >
+            Technical Docs (kiến trúc tổng quan)
+          </Link>
+          {" — "}
+          <span className="text-zinc-500 dark:text-zinc-400">
+            architecture overview (runtime, disk artifacts, memory).
+          </span>
+        </p>
         <p className="mt-3 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
           <strong className="font-medium text-zinc-600 dark:text-zinc-300">Tìm bài:</strong> dùng nút{" "}
           <span className="whitespace-nowrap rounded border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 font-mono text-xs dark:border-zinc-600 dark:bg-zinc-800">
