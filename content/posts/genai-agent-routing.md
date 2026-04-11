@@ -1,7 +1,7 @@
 ---
-title: "Routing multi-agent và ranh giới công cụ"
+title: "Routing multi-agent: Người điều phối thông minh trong tòa nhà văn phòng"
 date: "2026-03-30"
-excerpt: "Router có schema, tool có scope/timeout, handoff state — bài đầy đủ từ intro tới pitfall multi-agent."
+excerpt: "Đừng để một Agent đơn độc làm hết mọi việc. Hãy học cách xây dựng một 'người điều phối' thông minh để dẫn dắt yêu cầu đến đúng chuyên gia và công cụ cần thiết."
 category: gen-ai
 ---
 
@@ -9,92 +9,82 @@ category: gen-ai
 
 ### Tóm lược
 
-- **Router** chọn đường (RAG / tool / chuyên gia) thay vì một agent “làm hết”.
-- **Tool** có schema, quyền, timeout, log tương quan.
-- **max_steps** + phát hiện lặp để tránh vòng lặp vô hạn.
+- Thay vì dùng một "siêu Agent" ôm đồm mọi việc, hãy dùng **Router** để phân luồng yêu cầu đến đúng chuyên gia (RAG, Tool, hoặc Agent khác).
+- Mỗi công cụ (Tool) cần có một "phạm vi làm việc" rõ ràng: có chìa khóa riêng (quyền truy cập), thời gian làm việc (timeout) và nhật ký công việc (log).
+- Luôn đặt ra giới hạn số bước đi (max_steps) để tránh việc các Agent dắt nhau đi vòng quanh mãi không có hồi kết.
 
 ### Giới thiệu
 
-Kiến trúc **multi-agent** dễ phình chi phí và rủi ro nếu không có ranh giới. Bài viết dành cho kỹ sư LLM đang thiết kế hệ có router + nhiều tool — cần khả năng **debug**, **kiểm soát chi phí**, và **an toàn dữ liệu**.
+Hãy tưởng tượng bạn bước vào một tòa nhà văn phòng khổng lồ để giải quyết công việc. Bạn chắc chắn không muốn gặp một người duy nhất vừa làm bảo vệ, vừa làm kế toán, lại vừa là giám đốc kỹ thuật đúng không? Kết quả chắc chắn sẽ là một sự hỗn loạn.
 
-### Khái niệm cốt lõi
+Trong thế giới AI cũng vậy. Một Agent "vạn năng" thường sẽ rất đắt đỏ, chậm chạp và dễ nhầm lẫn. Bài viết này mình dành cho những bạn đang thiết kế hệ thống **Multi-Agent**, giúp bạn tạo ra một "người điều phối" (Router) thông minh để mọi thứ vận hành trơn tru và an toàn.
 
-- **Router:** output có cấu trúc (`route`, lý do ngắn) + fallback an toàn.
-- **Tool boundary:** JSON schema, quyền read-only mặc định cho DB, rate limit.
-- **Handoff:** state object gọn giữa agent thay vì forward chat dài.
+### Khái niệm cốt lõi: Bộ máy điều phối
 
-### Chi tiết và thực hành
+1. **Người lễ tân (Router):** Khi nhận yêu cầu, Router không tự làm mà sẽ quyết định xem ai là người giỏi nhất để xử lý. Kết quả trả về phải rõ ràng: "Đi hướng A, vì lý do B".
 
-Với intent ổn định và latency chặt, có thể **classifier** + rule thay LLM-router cho tầng đầu. LLM-router phù hợp long-tail. Mọi tool call log `correlation_id`, đối số, latency, lỗi. Đặt `max_steps`; nếu lặp cùng tool+args, dừng và báo.
+2. **Cánh cửa văn phòng (Tool Boundary):** Mỗi công cụ giống như một phòng ban. Bạn phải quy định rõ: Ai được vào? (Quyền đọc/ghi), Được làm trong bao lâu? (Timeout) và Tuyệt đối không được làm gì? (Rate limit).
 
-**Bảng gợi ý phân quyền tool (minh hoạ):**
+3. **Chiếc cặp tài liệu (Handoff):** Khi chuyển việc từ Agent này sang Agent khác, đừng đưa nguyên một xấp lịch sử chat dày cộp. Hãy chỉ đưa một "bản tóm tắt trạng thái" gọn nhẹ để Agent tiếp theo bắt tay vào việc ngay.
 
-| Tool | Mặc định | Ghi chú |
+### Chi tiết và thực hành: Nghệ thuật điều tiết
+
+Với những yêu cầu đơn giản và lặp đi lặp lại, đừng lãng phí tiền cho LLM. Hãy dùng những bộ lọc (Classifier) truyền thống kết hợp với luật (Rule). Chỉ dùng "bộ não" LLM cho những trường hợp phức tạp, khó đoán.
+
+**Bảng quy tắc phân quyền (Ví dụ thực tế):**
+
+| Phòng ban (Tool) | Chìa khóa (Quyền) | Lưu ý từ "quản lý" |
 | ---- | --------- | ------- |
-| Đọc DB | Cho phép scoped | Predicate bắt buộc |
-| Ghi DB | Cần luồng approve | Không mở trong POC |
-| Gửi email | Chỉ sandbox | Tránh leak PII |
+| Đọc dữ liệu | Chỉ được đọc trong kho | Bắt buộc phải có điều kiện lọc |
+| Ghi dữ liệu | Cần sếp duyệt | Tuyệt đối không mở khi đang thử nghiệm |
+| Gửi Email | Chỉ gửi trong nội bộ | Tránh để lộ thông tin khách hàng |
 
-### Checklist vận hành
+### Checklist cho "người quản lý"
 
-- [ ] Spec router output (schema) + test unit với ví dụ.
-- [ ] Observability: trace span theo session.
-- [ ] Confusion matrix intent khi đổi prompt router.
-- [ ] Giới hạn token/step trên môi trường prod.
+- [ ] Bạn đã có bản mô tả rõ ràng cho Router chưa?
+- [ ] Bạn có đang theo dõi được yêu cầu đang ở "văn phòng" nào không? (Tracing)
+- [ ] Bạn đã cài đặt chế độ tự ngắt nếu Agent đi lạc quá lâu chưa? (Max steps)
 
-### Rủi ro và lỗi thường gặp
+### Những bài học đau thương (Rủi ro)
 
-- Tool quyền quá rộng → sự cố dữ liệu.
-- Không trace → debug bằng đoán.
-- Agent vạn năng làm chi phí nổ.
+- **Giao chìa khóa vạn năng:** Để Agent có quyền quá rộng vào Database là cách nhanh nhất để dẫn đến thảm họa dữ liệu.
+- **Không ghi nhật ký:** Khi hệ thống lỗi mà không có nhật ký (trace), bạn sẽ chỉ có thể ngồi đoán xem Agent nào đã làm sai.
+- **Agent ôm đồm:** Càng nhồi nhét nhiều tính năng vào một Agent, hóa đơn tiền điện (token) của bạn càng tăng vọt.
 
 ### Kết luận
 
-Multi-agent ổn định khi **router + tool + handoff** được thiết kế như service có SLA và log — không chỉ prompt xếp chồng.
+Hệ thống Multi-Agent chỉ thực sự mạnh mẽ khi bạn xem **Router, Tool và Handoff** như những dịch vụ chuyên nghiệp, có kỷ luật và báo cáo rõ ràng. Đừng chỉ xếp chồng các đoạn prompt lên nhau và cầu nguyện nhé!
+
+---
 
 ## EN
 
 ### At a glance
 
-- A **router** chooses paths (RAG / tools / specialists) instead of one mega-agent.
-- **Tools** carry schemas, scopes, timeouts, and correlation logs.
-- Enforce **max_steps** and loop detection.
+- Instead of a "mega-agent" doing everything, use a **Router** to direct requests to the right specialist (RAG, Tools, or other agents).
+- Every **Tool** needs a clear scope: its own keys (permissions), working hours (timeouts), and a job log.
+- Always set a **max_steps** limit to prevent agents from wandering in circles forever.
 
 ### Introduction
 
-**Multi-agent** stacks balloon in cost and risk without boundaries. This note targets engineers designing routers + tool ecosystems who need **debuggability**, **cost control**, and **data safety**.
+Imagine walking into a massive office building. You wouldn't want to meet a single person who acts as the security guard, the accountant, and the CTO all at once, would you? Chaos would ensue.
 
-### Core concepts
+The AI world is no different. An "omnipotent" agent is usually expensive, slow, and prone to hallucinations. This post is for those designing **Multi-Agent** systems, helping you create a smart "receptionist" (Router) to keep everything smooth and safe.
 
-- **Router:** structured output (`route`, short rationale) with a safe fallback.
-- **Tool boundaries:** JSON schema; default read-only DB paths; rate limits.
-- **Handoffs:** compact **state objects** between agents rather than unbounded transcripts.
+### Core Concepts: The Coordination Engine
 
-### Details and practice
+1. **The Receptionist (Router):** When a request arrives, the Router decides who is best to handle it. The output must be structured: "Go to Route A, because of Reason B."
 
-For stable intents with tight latency, classical **classifiers + rules** may front the router; reserve LLM routing for long-tail cases. Log every tool invocation with correlation IDs. Cap steps; halt on repeated tool arguments. 
+2. **Office Doors (Tool Boundaries):** Each tool is like a department. Define clearly: Who can enter? (Read/Write), How long can they stay? (Timeout), and what is strictly forbidden? (Rate limits).
 
-**Illustrative tool policy:**
+3. **The Briefcase (Handoff):** When passing work between agents, don't hand over an infinite chat transcript. Just provide a compact "state object" so the next agent can get straight to work.
 
-| Tool | Default | Note |
-| ---- | ------- | ---- |
-| DB read | Scoped predicates | Required filtering |
-| DB write | Approval flow | Keep off POCs |
-| Email | Sandbox only | Guard PII |
+### Pitfalls: Lessons from the Office
 
-### Operational checklist
-
-- [ ] Router schema + fixtures tested in CI.
-- [ ] Observability spans per session.
-- [ ] Intent confusion checks after prompt changes.
-- [ ] Token/step budgets in production configs.
-
-### Pitfalls and failure modes
-
-- Overpowered tools causing data incidents.
-- Missing traces — debugging by vibes.
-- Omnibus agents exploding token costs.
+- **Handing out Master Keys:** Giving an agent broad access to your DB is the fastest way to a data disaster.
+- **No Paper Trail:** When things fail without Tracing, you're just guessing which agent made the mistake.
+- **The Omnibus Agent:** The more you stuff into one agent, the more your "utility bill" (token cost) explodes.
 
 ### Takeaways
 
-Stable multi-agent systems treat **routers, tools, and handoffs** like services with logs and budgets — not prompt spaghetti.
+Multi-agent systems only shine when you treat **routers, tools, and handoffs** like professional services with strict SLAs and budgets — not just prompt spaghetti.

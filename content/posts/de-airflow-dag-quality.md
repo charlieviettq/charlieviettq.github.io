@@ -1,7 +1,7 @@
 ---
-title: "Chất lượng DAG Airflow — retry, SLA, alerting"
+title: "Chất lượng DAG Airflow: Đừng để Pipeline thành 'mớ bòng bong'"
 date: "2026-03-28"
-excerpt: "DAG production: idempotency, SLA đúng chỗ, pool, alert có ngữ cảnh — từ giới thiệu tới checklist và pitfall."
+excerpt: "Vận hành Airflow trong production không chỉ là nối các mắt xích lại với nhau. Hãy học cách xây dựng những Pipeline bền bỉ với Idempotency, SLA và hệ thống cảnh báo thông minh."
 category: data-engineering
 ---
 
@@ -9,96 +9,61 @@ category: data-engineering
 
 ### Tóm lược
 
-- Thiết kế **idempotent** và tách giai đoạn để **rerun** an toàn.
-- **SLA** đặt ở cam kết dữ liệu downstream thực sự cần.
-- **Alert** phải có ngữ cảnh và owner — tránh spam rồi tắt cảnh báo.
+- Một DAG tốt phải có tính **Idempotent**: Chạy lại 10 lần cùng một ngày dữ liệu thì kết quả vẫn phải y hệt nhau, không được nhân đôi hay sai lệch.
+- Đừng đặt **SLA** (cam kết thời gian) bừa bãi. Hãy chỉ đặt ở những "điểm chạm" quan trọng mà phía sau thực sự cần dữ liệu.
+- Cảnh báo (**Alert**) phải đi kèm với "địa chỉ" cụ thể và người chịu trách nhiệm. Đừng để hệ thống spam tin nhắn khiến team phải tắt thông báo đi ngủ.
 
 ### Giới thiệu
 
-Phù hợp team vận hành pipeline batch trên **Airflow** (hoặc tương đương) phục vụ warehouse / báo cáo. DAG demo thường thiếu **retry có kiểm soát**, **SLA đúng task**, và **pool** — bài này cố định khung suy nghĩ khi DAG vào production.
+Hãy tưởng tượng bạn đang quản lý một bếp ăn công nghiệp phục vụ hàng ngàn suất ăn mỗi ngày. Nếu một món ăn bị hỏng, bạn cần một quy trình để nấu lại món đó ngay lập tức mà không làm ảnh hưởng đến các món khác, và tuyệt đối không được giao nhầm hai suất cho cùng một người.
 
-### Khái niệm cốt lõi
+Trong thế giới Data Engineering, Airflow chính là vị "bếp trưởng" điều phối các dòng chảy dữ liệu. Bài viết này mình dành cho các team đang vận hành Airflow, giúp bạn xây dựng những "công thức" (DAG) chuẩn chỉnh, đủ sức chịu nhiệt khi đưa vào môi trường Production thực thụ.
 
-- **Idempotency:** cùng logical date, chạy lại không nhân đôi dữ liệu sai.
-- **Retry & backoff:** cho lỗi thoáng qua; fail nhanh với lỗi schema.
-- **SLA miss:** báo hiệu trễ so với cam kết **consumer**.
-- **Pools / concurrency:** bảo vệ warehouse khỏi một DAG chiếm slot.
+### Khái niệm cốt lõi: Những cột trụ của sự ổn định
 
-### Chi tiết và thực hành
+1. **Tính nhất quán (Idempotency):** Đây là luật chơi số 1. Dù hệ thống có sập, dù bạn có bấm nút "Rerun" bao nhiêu lần, dữ liệu cuối cùng trong kho vẫn phải đúng. Hãy ưu tiên dùng các pattern như `Overwrite Partition` thay vì `Append` mù quáng.
 
-Pattern staging → swap partition / merge theo khóa thường an toàn hơn append mù. Sensor timeout phải rõ; không để DAG đợi vô hạn. Runbook SLA nên nói **ai** escalation và **có chạy downstream partial** với cờ stale không (theo policy nội bộ).
+2. **Cơ chế tự phục hồi (Retry & Backoff):** Lỗi mạng, lỗi kết nối là chuyện thường ngày. Hãy dạy cho DAG cách kiên nhẫn thử lại, nhưng cũng phải biết "fail nhanh" nếu đó là lỗi cấu trúc dữ liệu không thể cứu vãn.
 
-**Checklist thiết kế (rút gọn):**
+3. **Cam kết chất lượng (SLA):** Đừng để đến lúc sếp hỏi "Sao báo cáo hôm nay chưa có?" bạn mới đi kiểm tra. SLA giúp bạn phát hiện sớm những Pipeline đang "lê bước" chậm chạp để kịp thời xử lý.
 
-| Câu hỏi | Mong đợi |
+### Chi tiết từ "hiện trường"
+
+Mình thường khuyên các bạn hãy chia Pipeline thành các giai đoạn rõ ràng: Staging → Transform → Publish. Mỗi giai đoạn là một chốt chặn. Nếu bước Transform lỗi, dữ liệu sai sẽ không bao giờ được "Publish" ra cho người dùng cuối thấy.
+
+**Bảng câu hỏi tự kiểm tra:**
+
+| Câu hỏi sống còn | Trạng thái lý tưởng |
 | ------- | -------- |
-| Rerun cùng ngày an toàn? | Có chiến lược idempotent |
-| SLA gắn task nào? | Đúng “cửa” dữ liệu sẵn sàng |
-| Có gate DQ trước publish? | dbt test / GE tùy stack |
+| Chạy lại cùng một ngày có an toàn không? | Tuyệt đối an toàn (Idempotent) |
+| Ai sẽ nhận tin nhắn khi bước này lỗi? | Có Owner rõ ràng và Link dẫn thẳng tới Log |
+| Có bước kiểm tra chất lượng trước khi lưu không? | Có (dùng dbt test hoặc GE) |
 
-### Checklist vận hành
+### Những sai lầm "nhức nhối"
 
-- [ ] Template alert: DAG, task, try, URL log, git revision.
-- [ ] Dedupe / maintenance window để giảm noise.
-- [ ] Kịch bản **backfill** sau bug được viết và thử.
-- [ ] Pools mapping theo tier workload.
-
-### Rủi ro và lỗi thường gặp
-
-- Alert fatigue → pager tắt.
-- SLA trên task sai → báo động giả.
-- Import nặng ở top-level làm parse DAG chậm.
-- Thiếu phân biệt lỗi ingest vs transform.
+- **Cảnh báo tràn lan:** Spam tin nhắn lỗi vào Group chung khiến mọi người bị "lờn thuốc". Đến lúc có lỗi thật thì chẳng ai để ý.
+- **DAG đợi vô hạn:** Quên đặt `timeout` cho các cảm biến (Sensor), khiến một Pipeline đứng đợi dữ liệu từ năm này qua năm khác, chiếm dụng hết tài nguyên của hệ thống.
 
 ### Kết luận
 
-DAG tốt là DAG **dự đoán retry và trễ**. Đầu tư idempotency + SLA đúng chỗ + alert sạch giảm đêm trắng không cần thiết.
+Một DAG tốt không chỉ là một sơ đồ chạy mượt khi trời quang mây tạnh. Nó là một thiết kế biết dự đoán trước những rủi ro, biết tự đứng dậy sau khi ngã và biết "kêu cứu" đúng lúc, đúng chỗ. Hãy đầu tư vào chất lượng DAG để có những đêm ngon giấc nhé!
+
+---
 
 ## EN
 
 ### At a glance
 
-- Build **idempotent** stages and clean phase boundaries for safe **reruns**.
-- Attach **SLAs** to the commitments downstream actually depends on.
-- Make **alerts actionable** with context and ownership — avoid noisy pages.
+- A great DAG must be **Idempotent**: rerunning it 10 times for the same date must yield the exact same result—no duplicates, no corruption.
+- Don't set **SLAs** everywhere. Only attach them to critical data milestones that downstream consumers actually depend on.
+- **Alerts** must have context and a clear owner. Avoid spamming the team until they mute all notifications.
 
 ### Introduction
 
-For teams operating **Airflow** batch pipelines feeding warehouses and reporting, demo DAGs often miss production realities. This note frames **retries**, **SLAs**, **pools**, and **alert hygiene**.
+Imagine managing a commercial kitchen. If a dish fails, you need a protocol to remake it without disrupting the entire service, and you certainly can't serve the same plate twice.
 
-### Core concepts
-
-- **Idempotency:** reruns for the same logical date must not corrupt facts.
-- **Retries:** for transients; fast-fail on schema mismatches.
-- **SLA misses:** signal late data versus **consumer promises**.
-- **Pools / concurrency:** protect shared warehouses.
-
-### Details and practice
-
-Prefer staging swaps, keyed merges, or partition overwrites over blind appends. Set explicit **sensor timeouts**. SLA runbooks should name **owners** and whether partial downstream runs are acceptable under a **stale** flag per policy.
-
-**Design questions:**
-
-| Question | Expectation |
-| -------- | ----------- |
-| Safe rerun? | Documented idempotency pattern |
-| SLA mapping | Tied to true data-ready milestones |
-| Pre-publish DQ | dbt tests or equivalent gates |
-
-### Operational checklist
-
-- [ ] Alert templates include DAG, task, try, log URL, revision.
-- [ ] Deduping and planned maintenance windows.
-- [ ] Documented **backfill** rehearsal after fixes.
-- [ ] Pools aligned to workload tiers.
-
-### Pitfalls and failure modes
-
-- Alert fatigue disabling monitoring.
-- SLAs on irrelevant tasks.
-- Heavy top-level imports slowing parsing.
-- Confusing ingest failures with transform bugs.
+In Data Engineering, Airflow is your "Head Chef" coordinating data flows. This post is for teams operating Airflow, helping you build "recipes" (DAGs) that are robust enough for the heat of Production.
 
 ### Takeaways
 
-Great DAGs anticipate **retries and latency**. Idempotency, correct SLAs, and clean alerts reduce needless fire drills.
+Great DAGs anticipate retries and latency. Investing in Idempotency, correct SLAs, and clean alerts reduces the number of mid-night fire drills. Build pipelines that you can trust!

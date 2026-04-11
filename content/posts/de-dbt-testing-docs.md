@@ -1,7 +1,7 @@
 ---
-title: "dbt tests và docs như contract trên warehouse"
+title: "dbt Testing & Docs: Bản hợp đồng của dữ liệu sạch"
 date: "2026-03-22"
-excerpt: "Tests, docs, lineage, exposures: contract dữ liệu từ ý tưởng tới checklist CI và anti-pattern BI trùng logic."
+excerpt: "dbt biến SQL thành những sản phẩm có kiểm soát chất lượng. Hãy học cách dùng Test và Docs như một bản hợp đồng cam kết sự chính xác giữa kỹ sư dữ liệu và doanh nghiệp."
 category: data-engineering
 ---
 
@@ -9,96 +9,61 @@ category: data-engineering
 
 ### Tóm lược
 
-- dbt **tests** là hợp đồng có thể fail pipeline — không chỉ comment.
-- **Docs + lineage + exposures** giảm downtime khi đổi schema; map tới dashboard thật.
-- Anti-pattern: metric sống trong BI tool thay vì repo SQL.
+- Coi **dbt Test** là những điều khoản hợp đồng: Nếu dữ liệu không thỏa mãn (ví dụ bị trùng khóa, bị trống), Pipeline sẽ lập tức "đình công" thay vì âm thầm lưu dữ liệu sai.
+- **Lineage (Sơ đồ phả hệ)** giúp bạn biết được một thay đổi nhỏ ở nguồn sẽ làm vỡ những báo cáo nào ở hạ nguồn, từ đó chủ động phòng tránh rủi ro.
+- Đừng để các định nghĩa (logic) quan trọng nằm rải rác trong các công cụ báo cáo (BI). Hãy đưa chúng về một mối duy nhất tại dbt.
 
 ### Giới thiệu
 
-Bài viết cho data engineer / analytics engineer dùng **dbt** trên warehouse dùng chung cho báo cáo và đôi khi **feature** cho ML. Khi càng nhiều mart dùng chung, giá trị của **test**, **tài liệu**, và **phụ thuộc có hướng** càng lớn — đặc biệt khi mỗi PR có thể làm vỡ báo cáo điều hành hoặc score input.
+Bạn đã bao giờ rơi vào cảnh dở khóc dở cười khi hai phòng ban đưa ra hai con số doanh thu khác nhau cho cùng một ngày chưa? Đó thường là kết quả của việc mỗi người tự viết một kiểu logic SQL trên công cụ báo cáo của riêng mình.
 
-### Khái niệm cốt lõi
+dbt sinh ra để giải quyết nỗi đau đó. Nó biến SQL thuần túy thành một sản phẩm kỹ thuật có quy trình kiểm soát chất lượng nghiêm ngặt. Bài viết này mình chia sẻ cách dùng dbt để tạo ra một "bản hợp đồng" về độ sạch của dữ liệu, giúp team Data và team Kinh doanh luôn tin tưởng lẫn nhau.
 
-- **Tests built-in/generic:** `unique`, `not_null`, `relationships`, custom generic theo domain.
-- **Singular tests:** SQL assert nghiệp vụ (đối soát, conservation of mass).
-- **Docs & lineage:** cột có nghĩa, graph phụ thuộc; **exposures** nối tới BI tool.
+### Khái niệm cốt lõi: Những điều khoản cam kết
 
-### Chi tiết và thực hành
+1. **Kiểm tra tự động (Generic Tests):** Những thứ cơ bản nhất nhưng lại dễ sai nhất: khóa chính có duy nhất không? có cột nào bị NULL vô lý không? Hãy để dbt tự động canh gác những cửa ngõ này.
 
-Ưu tiên test trên **money path** và **khóa grain** của mart được nhiều team dùng. Freshness trên **sources** nếu SLA ingest là cổng vào. Trong CI: `dbt build --select state:modified+` hoặc chiến lược tương đương để vừa nhanh vừa an toàn.
+2. **Kiểm tra nghiệp vụ (Singular Tests):** Dữ liệu có thể đúng định dạng nhưng vẫn sai ý nghĩa. Ví dụ: "Tổng tiền thu vào phải bằng tổng tiền khách hàng trả". Đây là nơi bạn viết các đoạn SQL để đối soát logic thực tế.
 
-Khi test fail, log cần có **environment + git sha** để trace. Với warehouse lớn, cân nhắc predicate partition trong test custom để tránh scan full table vô ích.
+3. **Sơ đồ và Tài liệu (Lineage & Docs):** Một tấm bản đồ chi tiết cho thấy dữ liệu đi từ đâu đến đâu. Khi bạn sửa một cột, bạn sẽ biết ngay dashboard của Giám đốc tài chính có bị ảnh hưởng hay không.
 
-**Ma trận ưu tiên (minh hoạ):**
+### Chi tiết từ "hiện trường"
 
-| Ưu tiên | Loại test | Lý do |
+Hãy ưu tiên viết Test cho những dòng chảy "hái ra tiền" (Money path). Một lỗi ở bảng doanh thu quan trọng hơn nhiều so với một lỗi ở bảng log hành vi phụ. Trong quy trình CI (tự động hóa), hãy thiết lập để không ai có thể trộn (merge) code mới nếu các bài kiểm tra quan trọng chưa vượt qua.
+
+**Bảng thứ tự ưu tiên:**
+
+| Mức độ | Loại kiểm tra | Tại sao quan trọng? |
 | ------- | --------- | ----- |
-| P0 | Grain + PK mart tiền | Lan nhanh nếu hỏng |
-| P1 | FK logic facts → dims | Orphan rows gây sai dashboard |
-| P2 | Freshness critical path | Phát hiện pipeline đến trễ |
-| P3 | Singular đối soát theo ngày | Sai số tiền / balance |
+| Cấp bách (P0) | Khóa chính, tính duy nhất | Lỗi này sẽ làm sai lệch mọi con số tổng hợp phía sau |
+| Quan trọng (P1) | Liên kết giữa các bảng | Đảm bảo không có dữ liệu "mồ côi" làm sai báo cáo |
+| Cần thiết (P2) | Độ tươi của dữ liệu | Phát hiện ngay nếu dữ liệu hôm nay chưa đổ về kho |
 
-### Checklist vận hành
+### Những sai lầm thường gặp
 
-- [ ] Tests chạy trên PR; merge block khi fail ở P0/P1.
-- [ ] Generate docs theo release tag; lưu artifact.
-- [ ] `meta` owner trên model quan trọng.
-- [ ] Exposures trùng dashboard đang dùng (Metabase/Looker/PBI…).
-
-### Rủi ro và lỗi thường gặp
-
-- `warn` thay vì `error` mãi cho invariant tiền/bạc.
-- Docs không cập nhật nhưng cột đổi nghĩa — tin cậy wiki nội bộ sai.
-- Logic lặp giữa dbt và BI → drift ngữ nghĩa.
+- **Chỉ cảnh báo mà không chặn đứng:** Để chế độ `warn` quá nhiều cho những lỗi nghiêm trọng khiến hệ thống vẫn tiếp tục chạy với dữ liệu rác.
+- **Tài liệu "đóng bụi":** Viết Docs một lần rồi bỏ mặc, trong khi code đã thay đổi hàng chục phiên bản.
 
 ### Kết luận
 
-dbt biến SQL thành **sản phẩm có kiểm soát chất lượng**. Đầu tư tests + lineage là bảo hiểm rẻ cho warehouse dùng chung.
+dbt không chỉ là một công cụ chạy SQL, nó là một tư duy làm việc chuyên nghiệp. Đầu tư vào Tests và Lineage là cách rẻ nhất để mua "bảo hiểm" cho lòng tin của doanh nghiệp vào dữ liệu. Hãy để dữ liệu của bạn luôn "có cam kết" rõ ràng nhé!
+
+---
 
 ## EN
 
 ### At a glance
 
-- dbt **tests** enforce contracts — not decorative YAML.
-- **Docs, lineage, and exposures** shrink incident time; ground exposures in real BI assets.
-- Anti-pattern: metrics defined only in a BI layer.
+- Treat **dbt Tests** as contract clauses: If the data fails a condition (e.g., duplicate keys, unexpected NULLs), the pipeline "strikes" immediately instead of silently leaking garbage data.
+- **Lineage maps** shrink incident times by showing exactly which downstream dashboards will break if a source schema changes.
+- Anti-pattern: defining core business metrics inside BI tools. Keep the logic in dbt as the single source of truth.
 
 ### Introduction
 
-For engineers running **dbt** on shared warehouses feeding exec reporting and sometimes **ML features**, quality gates and discoverability scale better than heroics. This note frames how tests and documentation behave as **operating infrastructure**.
+Have you ever faced the awkward situation where two departments report different revenue numbers for the same day? This usually happens when logic is scattered across different BI tools.
 
-### Core concepts
-
-- **Built-in / generic tests:** keys, nullability, relationships, domain generics.
-- **Singular tests:** business assertions and reconciliations.
-- **Docs & lineage:** meaning and DAG; **exposures** map to dashboards.
-
-### Details and practice
-
-Prioritize tests on **money paths** and **conformed grains**. Track **source freshness** when SLAs matter. In CI, balance speed (`state:modified+` patterns) with breadth on main. On failure, logs should carry **git SHA** and environment. Add partition predicates to heavy checks when needed.
-
-**Priority illustration:**
-
-| Tier | Tests | Why |
-| ---- | ----- | --- |
-| P0 | Grain + money mart PKs | Fast, wide blast radius |
-| P1 | Logical FK checks | Orphan rows break trust |
-| P2 | Critical-path freshness | Late data detection |
-| P3 | Daily reconciliation SQL | Catches monetary drift |
-
-### Operational checklist
-
-- [ ] CI on PRs; block merges on P0/P1 failures.
-- [ ] Publish docs per release; archive artifacts.
-- [ ] Model **owners** in `meta`.
-- [ ] Exposures aligned with live dashboards.
-
-### Pitfalls and failure modes
-
-- Permanent `warn` on money invariants.
-- Stale docs while semantics drift.
-- Duplicated semantics across dbt and BI tools.
+dbt turns warehouse SQL into a **quality-managed product**. This post is about using tests and documentation as an **operating contract**, ensuring that Data and Business teams stay in sync and maintain trust.
 
 ### Takeaways
 
-dbt turns warehouse SQL into **quality-managed products**. Tests plus explicit **lineage** are cheap insurance at scale.
+dbt turns SQL into a disciplined engineering process. Investing in tests and explicit lineage is the cheapest insurance for a shared data warehouse. Make sure your data signs a clean contract before it hits the dashboard!

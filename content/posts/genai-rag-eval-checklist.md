@@ -1,7 +1,7 @@
 ---
-title: "Checklist đánh giá RAG — grounding và regression"
+title: "Đừng để AI nói dối: Câu chuyện về một 'Biên tập viên' RAG khó tính"
 date: "2026-04-05"
-excerpt: "Golden set, abstain, version corpus/prompt/reranker — khung đầy đủ từ giới thiệu tới pitfall eval RAG."
+excerpt: "Hallucination (ảo giác) là kẻ thù số một của RAG. Hãy học cách xây dựng một hệ thống đánh giá khắt khe để đảm bảo AI luôn nói có sách, mách có chứng."
 category: gen-ai
 ---
 
@@ -9,92 +9,80 @@ category: gen-ai
 
 ### Tóm lược
 
-- **Grounding** cần bộ câu có tiêu chí pass/fail — không chỉ demo.
-- Mỗi lần đổi chunk/embed/rerank/prompt: chạy lại **cùng golden set**.
-- **Abstain** là tính năng: giảm bịa khi không có bằng chứng.
+- Đừng đánh giá AI bằng "cảm giác". Bạn cần những tiêu chí Pass/Fail rõ ràng như một bài thi thực thụ (**Grounding**).
+- Mỗi khi thay đổi bất cứ thứ gì (từ cách cắt nhỏ văn bản đến lời nhắc prompt), hãy cho AI thi lại đúng bộ đề cũ (**Golden Set**).
+- Biết nói "Tôi không biết" là một đức tính tốt của AI. Đừng ép nó phải trả lời khi không có bằng chứng (**Abstain**).
 
 ### Giới thiệu
 
-Dành cho kỹ sư triển khai **RAG** nội bộ: khi tài liệu, embedding, hoặc prompt đổi, chất lượng có thể **trượt ngầm**. Bài này cố định khung **đánh giá** và **regression** để team không phụ thuộc “cảm giác” sau khi ship.
+Bạn đã bao giờ thấy một con Chatbot hùng hồn khẳng định một điều hoàn toàn không có trong tài liệu của bạn chưa? Đó chính là ảo giác — "cơn ác mộng" của mọi kỹ sư làm RAG. 
 
-### Khái niệm cốt lõi
+Xây dựng một hệ thống RAG không khó, cái khó là giữ cho nó luôn nói thật sau mỗi lần mình nâng cấp. Bài viết này mình dành cho những ai đang triển khai RAG nội bộ, giúp bạn đóng vai một "biên tập viên" khó tính để kiểm soát chất lượng đầu ra của AI.
 
-- **Grounding:** câu trả lời bám trích dẫn / bảng nguồn; từ chối khi không đủ bằng chứng.
-- **Golden set:** tập Q cố định + rubric (hoặc nhãn) để tái chạy.
-- **Versioning:** snapshot corpus, model embedding, reranker, prompt hash, top-k.
+### Khái niệm cốt lõi: Bộ khung kiểm soát
 
-### Chi tiết và thực hành
+1. **Nói có sách, mách có chứng (Grounding):** Mọi câu trả lời của AI phải bám sát trích dẫn. Nếu tài liệu không nói, AI không được phép tự ý thêm thắt. 
 
-Xây ma trận loại câu: fact trong doc, aggregate số, out-of-corpus, ambiguous. Với mỗi loại định nghĩa **pass**. Kết hợp judge tự động có rubric và spot-check con người định kỳ. Log **p95 latency**, token usage; cache embedding truy vấn lặp; cap context để cân recall vs nhiễu.
+2. **Bộ đề thi vĩnh cửu (Golden Set):** Đây là tập hợp những câu hỏi quan trọng nhất kèm theo đáp án mẫu. Bạn phải "đóng băng" bộ đề này để so sánh xem sau khi cập nhật, AI giỏi lên hay kém đi.
 
-**Ví dụ rubric ngắn (minh hoạ):**
+3. **Ghi nhật ký phiên bản (Versioning):** RAG là một chuỗi các thành phần: từ cách chunking, model embedding đến prompt. Hãy đánh số phiên bản cho tất cả để biết chính xác "thủ phạm" gây lỗi là ai.
 
-| Loại | Pass khi |
+### Chi tiết và thực hành: Nghệ thuật chấm điểm
+
+Đừng chỉ nhìn vào một vài kết quả demo đẹp mắt. Hãy xây dựng một ma trận các loại câu hỏi: câu hỏi về sự thật, câu hỏi tính toán số liệu, và cả những câu hỏi "bẫy" không có trong tài liệu.
+
+**Bảng tiêu chí chấm điểm (Rubric mẫu):**
+
+| Loại câu hỏi | Thế nào là Pass? |
 | ---- | -------- |
-| Fact | Trích đúng passage; không thêm fact không có |
-| Aggregate | Khớp nguồn hoặc abstain rõ |
-| OOC | Không bịa nguồn |
+| Sự thật hiển nhiên | Trích đúng đoạn văn; không bịa thêm chi tiết |
+| Tính toán / Tổng hợp | Khớp con số hoặc từ chối nếu không tính được |
+| Ngoài phạm vi | AI phải lịch sự nói "Tôi không biết" |
 
-### Checklist vận hành
+### Checklist cho "Biên tập viên"
 
-- [ ] Golden set được “đóng băng” trong git hoặc DVC.
-- [ ] Pipeline eval chạy trên PR đổi retrieval/prompt (nếu phạm vi cho phép).
-- [ ] Monitor online: rate abstain, feedback âm map ticket.
-- [ ] Quy trình PII trong index theo policy.
+- [ ] Bạn đã lưu bộ Golden Set vào kho lưu trữ chưa?
+- [ ] Hệ thống có tự động chấm điểm mỗi khi bạn đổi Prompt không?
+- [ ] Bạn có đang theo dõi tỷ lệ AI nói "Tôi không biết" không? (Tỷ lệ này quá thấp thường là dấu hiệu AI đang "bịa").
 
-### Rủi ro và lỗi thường gặp
+### Những lỗi sơ đẳng (Rủi ro)
 
-- Bộ benchmark quá dễ hoặc lệch ngôn ngữ so production.
-- LLM judge không có rubric → điểm không tin cậy.
-- Đổi chunk nhưng không re-embed đồng bộ.
+- **Bộ đề quá dễ:** Nếu bài thi chỉ toàn câu hỏi hiển nhiên, bạn sẽ không bao giờ phát hiện được điểm yếu của AI.
+- **Giám khảo lỏng tay:** Dùng một Model AI khác để chấm điểm (LLM Judge) mà không có tiêu chí (rubric) rõ ràng sẽ dẫn đến kết quả nhảy múa lung tung.
+- **Quên cập nhật Index:** Đổi cách cắt văn bản nhưng quên không chạy lại Embedding cho toàn bộ kho dữ liệu.
 
 ### Kết luận
 
-RAG bền vững nhờ **eval có khung** và **version hóa** mọi thành phần retrieval — không chỉ nhìn vào một demo đẹp.
+Một hệ thống RAG bền vững không đến từ may mắn. Nó đến từ việc **đánh giá có kỷ luật** và **quản lý phiên bản chặt chẽ**. Đừng chỉ hài lòng với một demo đẹp, hãy biến AI của bạn thành một nhân viên trung thực và đáng tin cậy.
+
+---
 
 ## EN
 
 ### At a glance
 
-- **Grounding** needs explicit pass/fail criteria — not vibes.
-- Re-run the same **golden set** after any retrieval or prompt change.
-- **Abstention** is a first-class behavior to curb hallucinations.
+- Don't evaluate AI based on "vibes." You need explicit Pass/Fail criteria just like a real exam (**Grounding**).
+- Every time you change something (from chunking to prompts), re-test the AI with the same fixed set of questions (**Golden Set**).
+- Knowing how to say "I don't know" is a virtue. Don't force the AI to answer when evidence is missing (**Abstention**).
 
 ### Introduction
 
-For teams shipping **internal RAG**, quality can silently regress as docs, embeddings, or prompts shift. This note frames **evaluation** and **regression** habits beyond one-off demos.
+Have you ever seen a chatbot confidently claim something that is absolutely not in your documents? That's a hallucination — the number one enemy of RAG.
 
-### Core concepts
+Building a RAG system is easy; keeping it honest after every update is the hard part. This post is for those shipping internal RAG, helping you play the "strict editor" to ensure high-quality outputs.
 
-- **Grounding:** answers tied to citations / source tables; abstain when evidence is missing.
-- **Golden set:** frozen questions with rubrics or labels for replay.
-- **Versioning:** corpus snapshot IDs, embedding models, rerankers, prompt hashes, top-k.
+### Core Concepts: The Control Framework
 
-### Details and practice
+1. **Grounding:** Every answer must be tied to citations. If it's not in the text, the AI isn't allowed to make it up.
+2. **Golden Set:** A frozen collection of your most important questions and reference answers. Use this to measure if your AI is getting smarter or dumber after an update.
+3. **Versioning:** Snapshot everything: your corpus, embedding models, and prompt hashes. Know exactly which change caused a regression.
 
-Design query classes: in-doc facts, numeric aggregates, out-of-corpus, ambiguous prompts. Define **pass** per class. Pair automated judges with rubrics and periodic human audits. Track **p95 latency** and tokens; cache embeddings for repeats; cap context to balance recall vs noise.
+### Pitfalls and Failure Modes
 
-**Illustrative rubric:**
-
-| Class | Pass when |
-| ----- | --------- |
-| Fact | Correct passage grounding; no fabricated facts |
-| Aggregate | Matches source or clear abstention |
-| OOC | No fake citations |
-
-### Operational checklist
-
-- [ ] Golden set frozen in git/DVC.
-- [ ] Eval runs on PRs touching retrieval/prompts when feasible.
-- [ ] Production monitors tie poor feedback to tickets.
-- [ ] PII hygiene in the index per policy.
-
-### Pitfalls and failure modes
-
-- Trivial or language-mismatched benchmarks.
-- Uncalibrated LLM judges.
-- Chunking changes without consistent re-embedding.
+- **Easy Benchmarks:** If your test is too simple, you'll never find the AI's weaknesses.
+- **Vague Judges:** Using an LLM to grade another LLM without clear rubrics leads to unreliable scores.
+- **Inconsistent Indexing:** Changing your chunking logic without re-embedding the entire corpus.
 
 ### Takeaways
 
-Durable RAG needs **disciplined eval** and **component versioning** — not demo-driven luck.
+Durable RAG requires **disciplined evaluation** and **strict versioning** — not just demo-driven luck.

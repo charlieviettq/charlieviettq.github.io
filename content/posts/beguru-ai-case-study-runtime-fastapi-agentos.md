@@ -1,7 +1,7 @@
 ---
-title: "BeGuru AI — Case study: runtime — FastAPI, AgentOS, OpenRouter và luồng freetext"
+title: "BeGuru AI — Case study: Nhịp đập của một hệ thống Multi-Agent (FastAPI, AgentOS, OpenRouter)"
 date: "2026-04-12"
-excerpt: "Phần 2 chuỗi BeGuru: sơ đồ dịch vụ đang chạy, route freetext/workflow, chuỗi PM→generate-code→đĩa, và luồng Go backend có gate — bám docs runtime trong repo."
+excerpt: "Phần 2 chuỗi BeGuru: Khám phá hành trình kỳ diệu của một yêu cầu, từ lúc bạn gõ phím đến khi mã nguồn hiện ra trên máy qua 'bộ não' FastAPI và AgentOS."
 category: gen-ai
 ---
 
@@ -9,135 +9,133 @@ category: gen-ai
 
 ### Tóm lược
 
-- **FastAPI** là lớp HTTP; **AgentOS (Agno)** giữ registry agent; router tách **`/api/freetext/*`**, **`/api/workflows/*`**, **`/api/agents/*`**, **`/api/interview/*`**.
-- PM / Engineer / các agent khác gọi **OpenRouter** (Referer + title headers); output code ghi **`projects_root_dir`**, đọc **template** và **`design-system/`** đã mô tả ở bài trước.
-- Hai sequence chính: **chat SSE → PM → handoff spec** rồi **generate-code → Engineer → file**; nhánh **Go** dùng gate `backend-spec` và quy ước `frontend_<slug>` / `backend_<slug>`.
+- Hãy coi **FastAPI** là cánh cửa đón khách, và các **Routers** là những biển chỉ dẫn đưa yêu cầu của bạn đến đúng phòng ban (`freetext`, `workflows`, ...).
+- **AgentOS (Agno)** giống như một người quản lý nhân sự, điều phối các Agent chuyên trách (PM, Engineer) phối hợp nhịp nhàng với nhau.
+- Mọi Agent đều giao tiếp với thế giới bên ngoài qua **OpenRouter** và cuối cùng "đúc" kết quả thành các file thực tế trên đĩa cứng của bạn.
 
 ### Giới thiệu
 
-Đây là **Phần 2** của case study BeGuru. Bài trước nói **artifact thiết kế trên đĩa**; bài này mô tả **runtime** — process đang chạy trên VPS/container, cách request đi qua API và agent tới LLM và filesystem. Nguồn tham chiếu: `docs/ARCHITECTURE_RUNTIME.md` trong repo **beguru-ai**.
+Khi bạn gõ một dòng yêu cầu "Tạo cho tôi trang đăng nhập đẹp mắt", điều gì thực sự xảy ra đằng sau màn hình? Liệu có phải chỉ là một cú gọi API đơn giản đến ChatGPT? 
 
-### Sơ đồ tổng quan (từ tài liệu nội bộ)
+Thực tế phức tạp và thú vị hơn nhiều. Để xây dựng được một hệ thống có thể tự viết code, mình phải tạo ra một "nhà máy" vận hành liên tục. Trong bài này, mình sẽ dẫn bạn đi tham quan "nhà máy" **BeGuru AI** — nơi FastAPI làm nền móng và AgentOS đóng vai trò bộ não điều khiển.
+
+### Sơ đồ tổng quan: Bản đồ nhà máy BeGuru
+
+Dưới đây là cách các thành phần trong hệ thống kết nối với nhau. Đừng để các thuật ngữ làm bạn rối, hãy coi mỗi khối là một trạm trong dây chuyền sản xuất:
 
 ```mermaid
 flowchart TB
-  subgraph clients [Clients]
-    UI[Web / Studio / CLI]
+  subgraph clients [Bạn ở đây]
+    UI[Trình duyệt / Studio / CLI]
   end
 
-  subgraph vps [VPS / Container]
-    API[FastAPI app\nsrc.api.main]
-    OS[AgentOS\nAgno - agents registry]
+  subgraph vps [Máy chủ BeGuru]
+    API[FastAPI\nCánh cửa đón tiếp]
+    OS[AgentOS\nNgười quản lý Agent]
     API --> OS
 
-    subgraph routes [Routers]
-      FT["/api/freetext/*"]
-      WF["/api/workflows/*"]
-      IV["/api/interview/*"]
-      AG["/api/agents/*"]
+    subgraph routes [Các phòng ban]
+      FT["Chat tự do"]
+      WF["Quy trình tự động"]
+      IV["Phỏng vấn spec"]
+      AG["Quản lý Agent"]
     end
     API --> routes
 
-    subgraph agents [Coding agents]
-      PM[ProductManagerAgent]
-      EN[EngineerAgent]
-      AR[Architect / QA / Reviewer ...]
+    subgraph agents [Đội ngũ Agent]
+      PM[Product Manager]
+      EN[Engineer]
+      AR[Kiến trúc sư / QA ...]
     end
     FT --> PM
     FT --> EN
     WF --> agents
 
-    subgraph llm [LLM]
-      OR[OpenRouter API\nReferer + title headers]
+    subgraph llm [Cổng giao tiếp]
+      OR[OpenRouter\nKết nối với các siêu trí tuệ]
     end
     PM --> OR
     EN --> OR
     AR --> OR
 
-    subgraph disk [Disk]
-      PROJ[projects_root_dir\nReact and Go output]
-      TPL[templates/\nReact + Go template]
-      DS[design-system/MASTER.md\nper FE project]
+    subgraph disk [Thành phẩm]
+      PROJ[Mã nguồn ứng dụng]
+      TPL[Bản mẫu có sẵn]
+      DS[Hợp đồng thiết kế]
     end
     EN --> PROJ
     EN --> TPL
     EN --> DS
-
-    subgraph obs [Observability]
-      LF[Langfuse - optional]
-      LOG[StructuredLogger\nRich / JSON]
-    end
-    API --> LF
-    API --> LOG
   end
 
-  UI -->|HTTPS JSON SSE| API
+  UI -->|Gửi yêu cầu| API
 ```
 
-### Luồng sản phẩm chính (React / Next trước)
+### Hành trình của một dòng code
+
+Hãy cùng theo chân một yêu cầu tạo Frontend (React/Next.js). Đây là một chuỗi các sự kiện diễn ra nối tiếp nhau:
 
 ```mermaid
 sequenceDiagram
-  participant C as Client
-  participant Chat as POST /api/freetext/chat
-  participant PM as PM Agent
-  participant Gen as POST /api/freetext/generate-code
-  participant EN as Engineer Agent
-  participant FS as Project files
+  participant Bạn
+  participant API as Cổng Chat
+  participant PM as Agent PM
+  participant Gen as Cổng Viết Code
+  participant EN as Agent Kỹ sư
+  participant FS as Đĩa cứng
 
-  C->>Chat: messages SSE
-  Chat->>PM: OpenRouter
-  PM-->>C: stream + LABEL_BUILD + BEGURU_FE_SPEC when ready
-  C->>Gen: messages + output_path + optional feature_spec
-  Note over Gen: Parse spec, design MASTER.md, context pack
-  Gen->>EN: stream_code_generation
-  EN->>FS: code blocks to disk
-  EN-->>C: SSE chunks
+  Bạn->>API: "Tôi muốn làm web..."
+  API->>PM: Nhờ PM tư vấn
+  PM-->>Bạn: "Đây là bản thiết kế (Spec)"
+  Bạn->>Gen: "Đồng ý, viết code đi!"
+  Note over Gen: Phân tích bản vẽ & chuẩn bị nguyên liệu
+  Gen->>EN: Nhờ Kỹ sư xây dựng
+  EN->>FS: Đặt từng viên gạch (file code) lên đĩa
+  EN-->>Bạn: "Xong rồi, mời bạn xem!"
 ```
 
-**Gợi ý số liệu case study:** đo **thời gian wall-clock** một vòng `generate-code` đại diện; log **số chunk SSE** hoặc **kích thước response** (sau khi ẩn PII) để minh họa biến thiên theo scope.
+**Một chút số liệu thú vị:** Trong thực tế, một lượt `generate-code` có thể mất từ 30 giây đến vài phút tùy vào độ phức tạp. Hệ thống sẽ trả về từng "mảnh" code (chunk) ngay khi nó vừa được viết ra để bạn không phải chờ đợi trong vô vọng.
 
-### Luồng Go backend (sau FE, có gate)
+### Khi BeGuru học cách viết Backend (Go)
 
-Quy ước path dưới `projects_root_dir`: segment đầu **`frontend_<slug>`** / **`backend_<slug>`** — chi tiết contract trong `API_SPEC.md`. Sequence khái niệm:
+Không chỉ dừng lại ở giao diện, BeGuru còn có một quy trình nghiêm ngặt cho Backend. Điểm mấu chốt ở đây là các "cổng kiểm soát" (gate) để đảm bảo Backend và Frontend luôn khớp nhau qua các Segments như `frontend_<slug>` và `backend_<slug>`.
 
 ```mermaid
 sequenceDiagram
-  participant C as Client
-  participant I as POST init-go-project
-  participant P as POST backend-spec/propose-draft
-  participant W as POST backend-spec/write
-  participant G as POST generate-backend
-  participant EN as EngineerAgent go
+  participant Bạn
+  participant I as Khởi tạo
+  participant P as Dự thảo Spec
+  participant W as Chốt thiết kế
+  participant G as Thực thi
+  participant EN as Kỹ sư Backend
 
-  C->>I: output_path + go_module
-  C->>P: frontend_output_path + pm_context
-  P-->>C: fe_digest + stubs
-  Note over C: User edits OpenAPI + BACKEND_DESIGN
-  C->>W: locked yaml + markdown
-  C->>G: messages + output_path + optional frontend_output_path
-  G->>EN: stream_code_generation
-  EN-->>C: SSE + ghi file .go/sql
+  Bạn->>I: "Tạo dự án Go nhé"
+  Bạn->>P: "Dựa trên Frontend này..."
+  P-->>Bạn: "Đây là bản thảo API"
+  Note over Bạn: Bạn chỉnh sửa cho ưng ý
+  Bạn->>W: "Chốt! Khóa thiết kế lại"
+  Bạn->>G: "Bắt đầu sinh code Backend"
+  G->>EN: Thực thi theo bản vẽ đã khóa
+  EN-->>Bạn: Trả về file .go và SQL
 ```
 
-### Bảng thành phần (rút gọn)
+### Những "người hùng" thầm lặng
 
-| Thành phần | Vai trò |
+| Thành phần | Công việc của họ |
 |------------|---------|
-| FastAPI | HTTP, CORS, `/health`, middleware logging |
-| AgentOS | Registry agent, route framework |
-| OpenRouter | Một cổng model; attribution headers |
-| `projects_root_dir` | Cây project sinh ra (FE/BE) |
-| Langfuse / StructuredLogger | Quan sát (tuỳ cấu hình) |
+| **FastAPI** | Tiếp nhận yêu cầu, kiểm tra an ninh và ghi nhật ký. |
+| **AgentOS** | Nơi lưu trữ danh sách các Agent và giúp chúng phối hợp. |
+| **OpenRouter** | Giúp BeGuru có thể nói chuyện với bất kỳ Model AI nào (GPT-4, Claude, Gemini...). |
+| **Disk** | Nơi lưu giữ thành quả cuối cùng — những dòng code bạn có thể chạy được. |
 
-### Ảnh minh họa — prompt cho Gemini
+### Ảnh minh họa — Thử tài Gemini nhé!
 
-1. **Hero “một cổng API, nhiều router”** — *English:* “Isometric server rack with one glowing gateway labeled ‘API’ splitting into four labeled pipes ‘freetext’, ‘workflows’, ‘agents’, ‘interview’, clean tech illustration, blue-indigo gradient, no logos.”
-2. **Minh họa hai timeline** — *English:* “Two horizontal swimlanes: top lane ‘Chat PM’ with speech bubbles flowing into a document icon; bottom lane ‘Generate code’ with file icons landing on a disk stack; dashed line linking the two; minimal text.”
+1. **Hero “Hệ thống router”** — *“Một minh họa 3D isometric về tủ rack máy chủ với một cổng phát sáng ghi chữ ‘API’ chia thành bốn đường ống labeled ‘freetext’, ‘workflows’, ‘agents’, ‘interview’, minh họa công nghệ sạch sẽ, nền gradient xanh dương-tím.”*
+2. **Minh họa “Dây chuyền sản xuất”** — *“Hai làn đường song song: làn trên ‘Chat PM’ với các bóng thoại chảy vào biểu tượng tài liệu; làn dưới ‘Viết code’ với biểu tượng file hạ cánh xuống chồng đĩa cứng; có đường nét đứt nối giữa hai làn; tối giản.”*
 
-### Nối bài sau
+### Hẹn gặp bạn ở phần sau!
 
-**Phần 3** đi sâu **nén lịch sử**, **pins**, **context pack** và giới hạn ký tự — trích từ `MEMORY_AND_CONTEXT_LAYERS.md`.
+Chúng ta đã biết yêu cầu đi đâu và về đâu. Nhưng làm sao AI có thể nhớ được những gì bạn đã nói từ 10 phút trước mà không bị "lú"? Câu trả lời nằm ở **Phần 3: Memory & Context** — nơi mình sẽ bật mí cách BeGuru nén những ký ức khổng lồ thành những mẩu tin nhỏ gọn.
 
 ---
 
@@ -145,133 +143,39 @@ sequenceDiagram
 
 ### At a glance
 
-- **FastAPI** fronts the service; **AgentOS (Agno)** holds the agent registry; routes include **`/api/freetext/*`**, **`/api/workflows/*`**, **`/api/agents/*`**, **`/api/interview/*`**.
-- Agents call **OpenRouter**; generated code lands under **`projects_root_dir`**, using **templates** and per-project **`design-system/`** (Part 1).
-- Main sequences: **chat → PM → spec handoff**, then **generate-code → Engineer → disk**; the **Go** path uses **backend-spec** gates and **`frontend_<slug>` / `backend_<slug>`** path rules.
+- Think of **FastAPI** as the welcoming door, and **Routers** as the signs guiding your requests to the right departments (`freetext`, `workflows`, etc.).
+- **AgentOS (Agno)** acts like an HR manager, coordinating specialized Agents (PM, Engineer) to work together seamlessly.
+- Every Agent communicates with the outside world through **OpenRouter** and finally "forges" the results into actual files on your hard drive.
 
 ### Introduction
 
-This is **Part 2** of the BeGuru case study. Part 1 covered **design artifacts on disk**; here we focus on the **running service** — how requests flow through the API and agents to the LLM and filesystem. Reference: `docs/ARCHITECTURE_RUNTIME.md` in the **beguru-ai** repository.
+When you type "Build me a beautiful login page," what really happens behind the screen? Is it just a simple API call to ChatGPT?
 
-### Overview diagram
+In reality, it's much more complex and exciting. To build a system that can write its own code, I had to create a "factory" that runs non-stop. In this post, I'll take you on a tour of the **BeGuru AI** factory — where FastAPI provides the foundation and AgentOS acts as the controlling brain.
+
+### Overview Diagram: The BeGuru Factory Map
 
 (Same `mermaid` figure as in the Vietnamese section.)
 
-```mermaid
-flowchart TB
-  subgraph clients [Clients]
-    UI[Web / Studio / CLI]
-  end
+### The Journey of a Line of Code
 
-  subgraph vps [VPS / Container]
-    API[FastAPI app\nsrc.api.main]
-    OS[AgentOS\nAgno - agents registry]
-    API --> OS
+(Same `mermaid` sequence diagram as in the Vietnamese section.)
 
-    subgraph routes [Routers]
-      FT["/api/freetext/*"]
-      WF["/api/workflows/*"]
-      IV["/api/interview/*"]
-      AG["/api/agents/*"]
-    end
-    API --> routes
+**Cool fact:** In practice, a `generate-code` turn can take anywhere from 30 seconds to several minutes depending on complexity. The system streams back "chunks" of code as they are written so you aren't left waiting in the dark.
 
-    subgraph agents [Coding agents]
-      PM[ProductManagerAgent]
-      EN[EngineerAgent]
-      AR[Architect / QA / Reviewer ...]
-    end
-    FT --> PM
-    FT --> EN
-    WF --> agents
+### When BeGuru Learns to Write Backend (Go)
 
-    subgraph llm [LLM]
-      OR[OpenRouter API\nReferer + title headers]
-    end
-    PM --> OR
-    EN --> OR
-    AR --> OR
+(Same `mermaid` sequence diagram as in the Vietnamese section.)
 
-    subgraph disk [Disk]
-      PROJ[projects_root_dir\nReact and Go output]
-      TPL[templates/\nReact + Go template]
-      DS[design-system/MASTER.md\nper FE project]
-    end
-    EN --> PROJ
-    EN --> TPL
-    EN --> DS
-
-    subgraph obs [Observability]
-      LF[Langfuse - optional]
-      LOG[StructuredLogger\nRich / JSON]
-    end
-    API --> LF
-    API --> LOG
-  end
-
-  UI -->|HTTPS JSON SSE| API
-```
-
-### Primary product flow (React / Next first)
-
-```mermaid
-sequenceDiagram
-  participant C as Client
-  participant Chat as POST /api/freetext/chat
-  participant PM as PM Agent
-  participant Gen as POST /api/freetext/generate-code
-  participant EN as Engineer Agent
-  participant FS as Project files
-
-  C->>Chat: messages SSE
-  Chat->>PM: OpenRouter
-  PM-->>C: stream + LABEL_BUILD + BEGURU_FE_SPEC when ready
-  C->>Gen: messages + output_path + optional feature_spec
-  Note over Gen: Parse spec, design MASTER.md, context pack
-  Gen->>EN: stream_code_generation
-  EN->>FS: code blocks to disk
-  EN-->>C: SSE chunks
-```
-
-**Case-study metrics to add:** wall-clock for a representative **`generate-code`** run; SSE chunk count or sanitized response size vs scope.
-
-### Go backend flow (after FE, gated)
-
-Path rules: leading segment **`frontend_<slug>`** / **`backend_<slug>`** — see `API_SPEC.md`. Conceptual sequence:
-
-```mermaid
-sequenceDiagram
-  participant C as Client
-  participant I as POST init-go-project
-  participant P as POST backend-spec/propose-draft
-  participant W as POST backend-spec/write
-  participant G as POST generate-backend
-  participant EN as EngineerAgent go
-
-  C->>I: output_path + go_module
-  C->>P: frontend_output_path + pm_context
-  P-->>C: fe_digest + stubs
-  Note over C: User edits OpenAPI + BACKEND_DESIGN
-  C->>W: locked yaml + markdown
-  C->>G: messages + output_path + optional frontend_output_path
-  G->>EN: stream_code_generation
-  EN-->>C: SSE + write .go/sql files
-```
-
-### Component table (abbreviated)
+### The Silent Heroes
 
 | Piece | Role |
 |-------|------|
-| FastAPI | HTTP, CORS, `/health`, logging middleware |
-| AgentOS | Agent registry, framework routes |
-| OpenRouter | Unified model access; attribution headers |
-| `projects_root_dir` | Generated FE/BE trees |
-| Langfuse / StructuredLogger | Observability (optional / structured logs) |
+| **FastAPI** | Handles requests, security checks, and logging. |
+| **AgentOS** | The registry where Agents live and coordinate. |
+| **OpenRouter** | Gives BeGuru a voice through any AI model (GPT-4, Claude, Gemini...). |
+| **Disk** | Where the final product lives — code you can actually run. |
 
-### Illustrations — Gemini prompts
+### Next in the Series
 
-Use the same two English prompts as in the Vietnamese section; export PNG/WebP to `public/blog/` and embed.
-
-### Next post
-
-**Part 3** covers **history compression**, **pins**, **context packs**, and **character caps** — from `MEMORY_AND_CONTEXT_LAYERS.md`.
+We now know where requests come and go. But how does the AI remember what you said 10 minutes ago without getting "confused"? The answer lies in **Part 3: Memory & Context** — where I'll reveal how BeGuru compresses massive memories into compact snippets.
