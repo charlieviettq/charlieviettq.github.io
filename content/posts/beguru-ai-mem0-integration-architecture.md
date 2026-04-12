@@ -6,7 +6,7 @@ category: gen-ai
 ---
 
 > **Chuỗi BeGuru — Technical Docs**  
-> [0. Tổng quan kiến trúc](/blog/beguru-ai-architecture-overview) · [1. Design & đĩa](/blog/beguru-ai-case-study-design-system-disk) · [2. Runtime](/blog/beguru-ai-case-study-runtime-fastapi-agentos) · [3. Memory & context](/blog/beguru-ai-case-study-memory-context-layers) · **4. Mem0 & cross-session (bài này)**
+> [0. Tổng quan kiến trúc](/blog/beguru-ai-architecture-overview) · [1. Design & đĩa](/blog/beguru-ai-case-study-design-system-disk) · [2. Runtime](/blog/beguru-ai-case-study-runtime-fastapi-agentos) · [3. Memory & context](/blog/beguru-ai-case-study-memory-context-layers) · **4. Mem0 & cross-session (bài này)** · [5. Technical Narrative](/blog/beguru-ai-technical-narrative)
 
 ## VI
 
