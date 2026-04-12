@@ -46,6 +46,8 @@ export default async function BlogPostPage(props: Props) {
       viMarkdown={viMarkdown}
       enMarkdown={enMarkdown}
       bilingual={bilingual}
+      layout={post.layout}
+      kpis={post.kpis}
     />
   );
 }

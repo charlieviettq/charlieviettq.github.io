@@ -21,6 +21,7 @@ import { MermaidBlock } from "@/components/MermaidBlock";
 import { extractToc, type TocItem } from "@/lib/bilingual-post";
 import remarkDocDirectives from "@/lib/remark-doc-directives";
 import { blogSanitizeSchema } from "@/lib/rehype-blog-sanitize";
+import type { PostKpi, PostLayout } from "@/lib/posts";
 
 const LANG_KEY = "blog-post-lang";
 
@@ -35,6 +36,8 @@ type Props = {
   viMarkdown: string;
   enMarkdown: string;
   bilingual: boolean;
+  layout: PostLayout;
+  kpis: PostKpi[];
 };
 
 function TocNav({ items }: { items: TocItem[] }) {
@@ -63,6 +66,33 @@ function TocNav({ items }: { items: TocItem[] }) {
   );
 }
 
+function CaseStudyKpiGrid({
+  kpis,
+  lang,
+}: {
+  kpis: PostKpi[];
+  lang: Lang;
+}) {
+  if (kpis.length === 0) return null;
+  return (
+    <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
+      {kpis.map((kpi, i) => (
+        <div
+          key={`${kpi.value}-${i}`}
+          className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 backdrop-blur-sm md:px-4 md:py-4"
+        >
+          <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-zinc-400">
+            {lang === "vi" ? kpi.labelVi : kpi.labelEn}
+          </p>
+          <p className="mt-1 text-sm font-semibold leading-snug text-white md:text-base">
+            {kpi.value}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function BlogPostBody({
   title,
   date,
@@ -72,6 +102,8 @@ export function BlogPostBody({
   viMarkdown,
   enMarkdown,
   bilingual,
+  layout,
+  kpis,
 }: Props) {
   const [lang, setLang] = useState<Lang>("vi");
 
@@ -89,6 +121,8 @@ export function BlogPostBody({
       ? viMarkdown
       : enMarkdown
     : viMarkdown;
+
+  const caseStudy = layout === "case-study";
 
   const toc = useMemo(() => extractToc(activeMarkdown), [activeMarkdown]);
 
@@ -154,41 +188,101 @@ export function BlogPostBody({
     <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
       <div className="order-1 min-w-0 flex-1 lg:order-2">
         <article className="space-y-8">
-          <header>
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+          <header
+            className={
+              caseStudy
+                ? "overflow-hidden rounded-2xl border border-zinc-200/80 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-6 text-zinc-100 shadow-xl ring-1 ring-white/10 dark:border-zinc-700/80"
+                : undefined
+            }
+          >
+            <div
+              className={
+                caseStudy
+                  ? "flex flex-wrap items-center gap-2"
+                  : "flex flex-wrap items-center gap-2"
+              }
+            >
+              <p
+                className={
+                  caseStudy
+                    ? "text-xs font-medium uppercase tracking-wide text-zinc-400"
+                    : "text-xs font-medium uppercase tracking-wide text-zinc-500"
+                }
+              >
                 {date}
               </p>
               <span
-                className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryPillClass}`}
+                className={
+                  caseStudy
+                    ? "inline-flex rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-100 ring-1 ring-white/15"
+                    : `inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryPillClass}`
+                }
               >
                 {categoryLabel}
               </span>
             </div>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight">{title}</h1>
+            <h1
+              className={
+                caseStudy
+                  ? "mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl"
+                  : "mt-2 text-3xl font-bold tracking-tight"
+              }
+            >
+              {title}
+            </h1>
             {excerpt ? (
-              <p className="mt-3 text-lg text-zinc-600 dark:text-zinc-400">
+              <p
+                className={
+                  caseStudy
+                    ? "mt-3 max-w-3xl text-base leading-relaxed text-zinc-300 md:text-lg"
+                    : "mt-3 text-lg text-zinc-600 dark:text-zinc-400"
+                }
+              >
                 {excerpt}
               </p>
             ) : null}
 
+            {caseStudy && kpis.length > 0 ? (
+              <CaseStudyKpiGrid kpis={kpis} lang={lang} />
+            ) : null}
+
             {bilingual ? (
               <div
-                className="mt-6 flex flex-wrap items-center gap-2"
+                className={
+                  caseStudy
+                    ? "mt-8 flex flex-wrap items-center gap-2 border-t border-white/10 pt-6"
+                    : "mt-6 flex flex-wrap items-center gap-2"
+                }
                 role="group"
                 aria-label="Chọn ngôn ngữ / Language"
               >
-                <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                <span
+                  className={
+                    caseStudy
+                      ? "text-xs font-medium uppercase tracking-wide text-zinc-400"
+                      : "text-xs font-medium uppercase tracking-wide text-zinc-500"
+                  }
+                >
                   Language / Ngôn ngữ:
                 </span>
-                <div className="inline-flex rounded-lg border border-zinc-200 bg-white p-0.5 shadow-sm dark:border-zinc-600 dark:bg-zinc-900">
+                <div
+                  className={
+                    caseStudy
+                      ? "inline-flex rounded-lg border border-white/15 bg-black/20 p-0.5"
+                      : "inline-flex rounded-lg border border-zinc-200 bg-white p-0.5 shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
+                  }
+                >
                   <button
                     type="button"
                     onClick={() => setLanguage("vi")}
                     className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
                       lang === "vi"
-                        ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm"
-                        : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                        ? caseStudy
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm"
+                        : caseStudy
+                          ? "text-zinc-300 hover:text-white"
+                          : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
                     }`}
                   >
                     Tiếng Việt
@@ -198,8 +292,12 @@ export function BlogPostBody({
                     onClick={() => setLanguage("en")}
                     className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
                       lang === "en"
-                        ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm"
-                        : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                        ? caseStudy
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm"
+                        : caseStudy
+                          ? "text-zinc-300 hover:text-white"
+                          : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
                     }`}
                   >
                     English
@@ -209,20 +307,39 @@ export function BlogPostBody({
             ) : null}
           </header>
 
-          <div className="prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
-            <ReactMarkdown
-              key={lang + (bilingual ? "" : "single")}
-              remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
-              rehypePlugins={[
-                rehypeRaw,
-                [rehypeSanitize, blogSanitizeSchema],
-                rehypeSlug,
-              ]}
-              components={markdownComponents}
-            >
-              {activeMarkdown}
-            </ReactMarkdown>
-          </div>
+          {caseStudy ? (
+            <div className="rounded-2xl border border-zinc-200/90 bg-white/90 p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 md:p-8">
+              <div className="prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
+                <ReactMarkdown
+                  key={lang + (bilingual ? "" : "single")}
+                  remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
+                  rehypePlugins={[
+                    rehypeRaw,
+                    [rehypeSanitize, blogSanitizeSchema],
+                    rehypeSlug,
+                  ]}
+                  components={markdownComponents}
+                >
+                  {activeMarkdown}
+                </ReactMarkdown>
+              </div>
+            </div>
+          ) : (
+            <div className="prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
+              <ReactMarkdown
+                key={lang + (bilingual ? "" : "single")}
+                remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
+                rehypePlugins={[
+                  rehypeRaw,
+                  [rehypeSanitize, blogSanitizeSchema],
+                  rehypeSlug,
+                ]}
+                components={markdownComponents}
+              >
+                {activeMarkdown}
+              </ReactMarkdown>
+            </div>
+          )}
         </article>
 
         <p className="mt-10 text-sm">

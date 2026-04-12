@@ -1,8 +1,22 @@
 ---
 title: "BeGuru AI — Technical Docs: Tổng quan kiến trúc (runtime, agent, đĩa)"
-date: "2026-04-10"
-excerpt: "Bản đồ hệ thống beguru-ai: FastAPI, AgentOS, agents (PM/Engineer), OpenRouter, artifact trên đĩa và thứ tự đọc các bài deep-dive."
+date: "2026-04-11"
+excerpt: "Bản đồ beguru-ai: FastAPI, Agno, OpenRouter, artifact .guru; hiện trạng vs lộ trình autonomous (orchestrator, sandbox, memory). Tham chiếu case study multi-agent LangGraph."
 category: gen-ai
+layout: case-study
+kpis:
+  - label_vi: "Stack runtime"
+    label_en: "Runtime stack"
+    value: "FastAPI · Agno · OpenRouter"
+  - label_vi: "Output sản phẩm"
+    label_en: "Product output"
+    value: "Next.js · Go · .guru"
+  - label_vi: "Docs SSOT"
+    label_en: "Docs SSOT"
+    value: "ARCHITECTURE_RUNTIME.md"
+  - label_vi: "Lộ trình"
+    label_en: "Roadmap"
+    value: "Memory · graph · sandbox"
 ---
 
 > **Chuỗi BeGuru — Technical Docs**  
@@ -15,6 +29,14 @@ category: gen-ai
 - **BeGuru AI** (service `beguru-ai`) là backend **FastAPI** gắn **AgentOS (Agno)**; các route `/api/freetext/*`, `/api/workflows/*`, … điều phối **PM** và **Engineer** gọi LLM qua **OpenRouter**, ghi kết quả xuống **`projects_root_dir`** (Next.js / Go) cùng cây **`design-system/`** trong mỗi project FE.
 - **Tài liệu gốc (SSOT)** trong repo: `docs/ARCHITECTURE_RUNTIME.md`, `docs/MEMORY_AND_CONTEXT_LAYERS.md`, `docs/API_SPEC.md`.
 - **Thứ tự đọc đề xuất:** bài này (map) → [Design & đĩa](/blog/beguru-ai-case-study-design-system-disk) → [Runtime](/blog/beguru-ai-case-study-runtime-fastapi-agentos) → [Memory](/blog/beguru-ai-case-study-memory-context-layers) → [Mem0 & cross-session](/blog/beguru-ai-mem0-integration-architecture).
+
+### Hiện trạng vs hướng đi (North Star)
+
+**Hiện tại** hệ chạy theo **request–response / SSE**: client gửi `messages`, server nén context (`ContextCompressor`), ghim pins, Engineer ghi file + (tuỳ flow) kiểm tra tĩnh — **chưa** có graph điều phối đa bước bắt buộc hay sandbox chạy lệnh thống nhất giữa mọi route.
+
+**Hướng sản phẩm** (đối chiếu các assistant dạng **Claude Code**): **autonomous coding** cần vòng lặp **Plan → sửa/ghi đĩa → chạy lệnh trong môi trường cách ly → quan sát stdout/exit → checkpoint**, có thể **đa agent** (PM, Engineer FE, Engineer BE) với handoff có contract (spec, BUILD_STATE, API). Kiến trúc tham chiếu trong ecosystem thường dùng **LangGraph** (hoặc tương đương) cho **state + routing có điều kiện + checkpoint**; ví dụ case study production với **8 agent**, orchestrator–worker, sandbox modal, middleware và caching — xem [FRE|Nxt × InterviewLM — LangGraph multi-agent](https://www.frenxt.com/case-studies/langgraph-multi-agent) *(bài ngoài, không phải BeGuru)*.
+
+BeGuru **không** cam kết đã triển khai đủ các lớp đó; bài [Mem0 & cross-session](/blog/beguru-ai-mem0-integration-architecture) mô tả **một** mảnh lộ trình (memory ngữ nghĩa + Qdrant). Khi spike, nên đo **latency**, **chi phí**, **an toàn sandbox** trước khi gắn vào API công khai.
 
 ### Mục đích và phạm vi
 
@@ -94,6 +116,7 @@ flowchart TB
 | **Artifact đĩa** | `MASTER.md`, `BUILD_STATE.md`, `PRODUCT_PLAN.md`, `beguru_chat_context.json` | Dưới `design-system/` mỗi project | [Design & đĩa](/blog/beguru-ai-case-study-design-system-disk) |
 | **Context pipeline** | Nén history, ghim pins, context pack cho Engineer | `ContextCompressor`, v.v. | [Memory](/blog/beguru-ai-case-study-memory-context-layers) |
 | **SQLite (Agno)** | Session / workflow / optional persist summary | `data/agno.db` (cấu hình tuỳ môi trường) | [Memory](/blog/beguru-ai-case-study-memory-context-layers) |
+| **Memory xuyên phiên (lộ trình)** | Facts theo `user_id`, semantic search | mem0 + Qdrant, inject ở route — xem bài Mem0 | [Mem0 & cross-session](/blog/beguru-ai-mem0-integration-architecture) |
 
 ### Tech stack (tóm tắt)
 
@@ -105,6 +128,7 @@ flowchart TB
 | Output FE | Template Next.js (`templates/guru-nextjs-template`), rule `.guru/rules/` |
 | Output BE | Template Go (`templates/beguru-go-template-be`), pipeline `init-go-project` → `backend-spec/*` → `generate-backend` |
 | Quan sát | StructuredLogger; Langfuse tuỳ chọn |
+| Lộ trình (không cố định trong mọi deploy) | Orchestrator dạng graph (vd. LangGraph), vector store, sandbox chạy test/build |
 
 ### Luồng sản phẩm chính (FE trước)
 
@@ -144,6 +168,14 @@ Luồng Go backend (sau FE, có gate `backend-spec`) được mô tả trong `AR
 - **BeGuru AI** (`beguru-ai`) is a **FastAPI** service backed by **AgentOS (Agno)**. Routes under `/api/freetext/*`, `/api/workflows/*`, … orchestrate **PM** and **Engineer** agents calling LLMs via **OpenRouter**, persisting output under **`projects_root_dir`** (Next.js / Go) and per-project **`design-system/`** trees.
 - **Source of truth** in the repo: `docs/ARCHITECTURE_RUNTIME.md`, `docs/MEMORY_AND_CONTEXT_LAYERS.md`, `docs/API_SPEC.md`.
 - **Suggested reading order:** this post (map) → [Design & disk](/blog/beguru-ai-case-study-design-system-disk) → [Runtime](/blog/beguru-ai-case-study-runtime-fastapi-agentos) → [Memory](/blog/beguru-ai-case-study-memory-context-layers) → [Mem0 & cross-session](/blog/beguru-ai-mem0-integration-architecture).
+
+### Current state vs North Star
+
+**Today** the system is primarily **request/SSE**: clients send `messages`, the server compresses context (`ContextCompressor`), applies pins, and the Engineer writes files and may run static checks — there is **no** mandatory multi-step orchestration graph or unified command sandbox across all routes yet.
+
+**Product direction** (benchmarks like **Claude Code**): **autonomous coding** needs a loop **Plan → edit/write disk → run commands in isolation → observe stdout/exit → checkpoint**, optionally **multi-agent** (PM, FE engineer, BE engineer) with structured handoffs (spec, BUILD_STATE, API). The wider ecosystem often uses **LangGraph** (or similar) for **state, conditional routing, and checkpoints**. An external production write-up with **8 specialized agents**, orchestrator–worker layout, modal sandbox, and middleware/caching is [FRE|Nxt × InterviewLM — LangGraph multi-agent case study](https://www.frenxt.com/case-studies/langgraph-multi-agent) *(third-party; not BeGuru)*.
+
+BeGuru does **not** claim full implementation of those layers yet; [Mem0 & cross-session](/blog/beguru-ai-mem0-integration-architecture) describes **one** roadmap slice (semantic memory + Qdrant). Spike with **latency**, **cost**, and **sandbox safety** before binding to public API contracts.
 
 ### Purpose and scope
 
@@ -223,6 +255,7 @@ flowchart TB
 | **Disk artifacts** | `MASTER.md`, `BUILD_STATE.md`, `PRODUCT_PLAN.md`, `beguru_chat_context.json` | Under each project `design-system/` | [Design & disk](/blog/beguru-ai-case-study-design-system-disk) |
 | **Context pipeline** | Compress history, pins, Engineer context pack | `ContextCompressor`, etc. | [Memory](/blog/beguru-ai-case-study-memory-context-layers) |
 | **SQLite (Agno)** | Sessions / workflows / optional summary persist | `data/agno.db` (env-dependent) | [Memory](/blog/beguru-ai-case-study-memory-context-layers) |
+| **Cross-session memory (roadmap)** | Facts keyed by `user_id`, semantic retrieval | mem0 + Qdrant at route — see Mem0 post | [Mem0 & cross-session](/blog/beguru-ai-mem0-integration-architecture) |
 
 ### Tech stack (summary)
 
@@ -234,6 +267,7 @@ flowchart TB
 | FE output | Next.js template (`guru-nextjs-template`), `.guru/rules/` |
 | BE output | Go template (`beguru-go-template-be`), `init-go-project` → `backend-spec/*` → `generate-backend` |
 | Observability | StructuredLogger; optional Langfuse |
+| Roadmap (not in every deploy) | Graph orchestrator (e.g. LangGraph), vector store, sandbox for tests/build |
 
 ### Primary product flow (frontend-first)
 

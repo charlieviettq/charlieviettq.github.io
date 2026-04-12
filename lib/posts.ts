@@ -17,6 +17,15 @@ const CATEGORY_SET = new Set<string>(BLOG_CATEGORY_ORDER);
 
 export type PostVisibility = "public" | "private";
 
+/** Optional: `case-study` enables hero + KPI strip in BlogPostBody. */
+export type PostLayout = "default" | "case-study";
+
+export type PostKpi = {
+  labelVi: string;
+  labelEn: string;
+  value: string;
+};
+
 export type PostMeta = {
   slug: string;
   title: string;
@@ -24,6 +33,8 @@ export type PostMeta = {
   excerpt?: string;
   category: BlogCategory;
   visibility: PostVisibility;
+  layout: PostLayout;
+  kpis: PostKpi[];
 };
 
 export type Post = PostMeta & { content: string };
@@ -83,6 +94,37 @@ function parseVisibility(raw: unknown, slug: string): PostVisibility {
   );
 }
 
+function parseLayout(raw: unknown, slug: string): PostLayout {
+  const s = String(raw ?? "").trim().toLowerCase();
+  if (s === "" || s === "default") return "default";
+  if (s === "case-study") return "case-study";
+  throw new Error(
+    `Invalid layout "${raw}" for post "${slug}.md". Expected "default" or "case-study".`,
+  );
+}
+
+function parseKpis(raw: unknown, slug: string): PostKpi[] {
+  if (raw == null) return [];
+  if (!Array.isArray(raw)) {
+    throw new Error(`Invalid kpis for post "${slug}.md": expected an array.`);
+  }
+  return raw.map((item, i) => {
+    if (item == null || typeof item !== "object") {
+      throw new Error(`Invalid kpis[${i}] for post "${slug}.md".`);
+    }
+    const o = item as Record<string, unknown>;
+    const labelVi = String(o.label_vi ?? o.labelVi ?? "").trim();
+    const labelEn = String(o.label_en ?? o.labelEn ?? "").trim();
+    const value = String(o.value ?? "").trim();
+    if (!labelVi || !labelEn || !value) {
+      throw new Error(
+        `kpis[${i}] for post "${slug}.md" needs label_vi, label_en, and value.`,
+      );
+    }
+    return { labelVi, labelEn, value };
+  });
+}
+
 /** Listed on /blog/ and in search index. */
 export function isListedPost(p: PostMeta): boolean {
   return p.visibility === "public";
@@ -110,6 +152,8 @@ export function getPostBySlug(slug: string): Post | null {
     excerpt: data.excerpt != null ? String(data.excerpt) : undefined,
     category,
     visibility,
+    layout: parseLayout(data.layout, slug),
+    kpis: parseKpis(data.kpis, slug),
     content,
   };
 }
