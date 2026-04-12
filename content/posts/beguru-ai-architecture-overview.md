@@ -38,70 +38,103 @@ kpis:
 
 BeGuru **không** cam kết đã triển khai đủ các lớp đó; bài [Mem0 & cross-session](/blog/beguru-ai-mem0-integration-architecture) mô tả **một** mảnh lộ trình (memory ngữ nghĩa + Qdrant). Khi spike, nên đo **latency**, **chi phí**, **an toàn sandbox** trước khi gắn vào API công khai.
 
-### Kiến trúc đề xuất (đồng bộ product plan)
+### Kiến trúc mục tiêu
 
-**Nguyên tắc:** **artifact-first** — file `.guru/` / `design-system` vẫn là chân lý build; nhớ ngữ nghĩa chỉ **bổ sung**. Một **MemoryPlane** (facade) phía server: route không gọi vector/mem rời rạc; chỉ `retrieve` / `commit` với phạm vi **`user_id` + `project_key`**. LLM **extract/index memory** tách khỏi LLM **codegen** (model rẻ vs model mạnh).
+Artifact-first: file `.guru/` / `design-system` vẫn là nguồn chân lý; nhớ ngữ nghĩa là lớp bổ sung. Về memory, BeGuru vận hành song song ba mặt: (1) short-term trong phiên (RawHistory → ContextCompressor → PinnedLayer), (2) artifact bền trên đĩa (templates, BUILD_STATE, MASTER), và (3) semantic long-term (MemoryPlane → mem0 → vector store). Hover vào ô để thấy luồng dữ liệu; dùng nút mở rộng để xem sơ đồ toàn màn.
 
-**Bốn tầng nhớ + semantic plane:**
-
-```mermaid
-flowchart TB
-  subgraph routes [HTTP routes]
-    FTChat["freetext chat"]
-    FTGen["freetext generate-code"]
-  end
-
-  subgraph working [Trong phiên]
-    Raw[RawHistory]
-    CC[ContextCompressor]
-    Pins[PinnedLayer]
-  end
-
-  subgraph artifact [Artifact đĩa]
-    Guru[".guru design-system"]
-  end
-
-  subgraph long [Semantic plane lộ trình]
-    MP[MemoryPlane facade]
-    VS[(Qdrant hoặc pgvector)]
-    Mem0[mem0 pipeline]
-  end
-
-  FTChat --> Raw --> CC --> Pins
-  FTGen --> Raw --> CC --> Pins
-  Pins --> Guru
-  FTChat --> MP
-  FTGen --> MP
-  MP --> VS
-  MP --> Mem0
-  MP -->|"top_k scoped"| Pins
+```beguru-flow
+{
+  "title": "BeGuru — Tầng nhớ & Artifact",
+  "hintVi": "Di chuột lên ô để xem luồng; nút mở rộng để đọc toàn màn.",
+  "hintEn": "Hover a node to highlight flows; expand to fullscreen to inspect.",
+  "layers": [
+    ["ft_chat","ft_gen"],
+    ["stm_raw","stm_cc"],
+    ["stm_pins"],
+    ["art_guru","tpl_fe","tpl_be"],
+    ["ltm_mp","ltm_mem0","ltm_vs"]
+  ],
+  "nodes": {
+    "ft_chat": {"label":"freetext chat","kind":"router"},
+    "ft_gen": {"label":"freetext generate-code","kind":"router"},
+    "stm_raw": {"label":"RawHistory","kind":"memory"},
+    "stm_cc": {"label":"ContextCompressor","kind":"memory"},
+    "stm_pins": {"label":"PinnedLayer","kind":"memory"},
+    "art_guru": {"label":".guru / design-system","kind":"disk"},
+    "tpl_fe": {"label":"template: Next.js","kind":"template"},
+    "tpl_be": {"label":"template: Go","kind":"template"},
+    "ltm_mp": {"label":"MemoryPlane facade","kind":"memory"},
+    "ltm_mem0": {"label":"mem0 pipeline","kind":"memory"},
+    "ltm_vs": {"label":"Qdrant / vector store","kind":"memory"}
+  },
+  "edges": [
+    {"from":"ft_chat","to":"stm_raw"},
+    {"from":"ft_gen","to":"stm_raw"},
+    {"from":"stm_raw","to":"stm_cc"},
+    {"from":"stm_cc","to":"stm_pins"},
+    {"from":"stm_pins","to":"art_guru"},
+    {"from":"tpl_fe","to":"art_guru","label":"scaffold"},
+    {"from":"tpl_be","to":"art_guru","label":"scaffold"},
+    {"from":"ft_chat","to":"ltm_mp"},
+    {"from":"ft_gen","to":"ltm_mp"},
+    {"from":"ltm_mp","to":"ltm_mem0"},
+    {"from":"ltm_mp","to":"ltm_vs"},
+    {"from":"ltm_mp","to":"stm_pins","label":"top_k inject"}
+  ]
+}
 ```
 
-**Orchestrator + sandbox (North Star):** graph có **state/checkpoint**, handoff PM → Engineer FE → Engineer BE; **Sandbox Plane** chạy `npm` / `go test` / build trong môi trường cách ly, **stdout/stderr/exit** làm quan sát cho bước tiếp.
+See also: [Memory & context layers](/blog/beguru-ai-case-study-memory-context-layers) · [Mem0 & cross-session](/blog/beguru-ai-mem0-integration-architecture)
 
-```mermaid
-flowchart TB
-  subgraph orch [Orchestrator lộ trình]
-    ST[State và checkpoint]
-    RT[Router điều kiện]
-  end
+### React Agent loop — orchestrator, sandbox & observe
 
-  subgraph roleAgents [Agents theo vai]
-    PM2[PM]
-    FE[Engineer FE]
-    BE[Engineer BE]
-  end
+Autonomous coding cần vòng phản hồi: orchestrator giữ state/checkpoint, router chọn agent phù hợp (PM, FE, BE), agents gọi LLM để sinh nội dung rồi ghi artifact; artifact có thể chạy trong sandbox để quan sát stdout/exit — kết quả quan sát feed ngược về orchestrator để quyết định bước tiếp.
 
-  subgraph sand [Sandbox Plane]
-    WS[Workspace project]
-    RUN[Chạy lệnh test build]
-    OBS[Observation]
-  end
-
-  orch --> roleAgents
-  roleAgents --> sand
-  RUN --> OBS
-  OBS --> orch
+```beguru-flow
+{
+  "title": "React Agent Workflow — Orchestrator & Sandbox loop",
+  "hintVi": "LangGraph điều phối state → router → agent → ghi đĩa → sandbox → observe → feedback.",
+  "hintEn": "Orchestrator -> router -> agents -> disk -> sandbox -> observe -> feedback.",
+  "layers": [
+    ["lg_state"],
+    ["lg_router","lg_ckpt"],
+    ["ag_pm","ag_fe","ag_be"],
+    ["or"],
+    ["disk_code","disk_spec"],
+    ["sbx_exec","sbx_obs"],
+    ["lf_trace"]
+  ],
+  "nodes": {
+    "lg_state": {"label":"State & Checkpoint","kind":"default"},
+    "lg_router": {"label":"Conditional Router","kind":"default"},
+    "lg_ckpt": {"label":"Checkpoint store","kind":"default"},
+    "ag_pm": {"label":"PM Agent","kind":"agent"},
+    "ag_fe": {"label":"Engineer FE","kind":"agent"},
+    "ag_be": {"label":"Engineer BE","kind":"agent"},
+    "or": {"label":"OpenRouter (LLM)","kind":"llm"},
+    "disk_code": {"label":"Code output","kind":"disk"},
+    "disk_spec": {"label":"Spec / BUILD_STATE","kind":"disk"},
+    "sbx_exec": {"label":"SandboxExecutor","kind":"sandbox"},
+    "sbx_obs": {"label":"Observe stdout/exit","kind":"sandbox"},
+    "lf_trace": {"label":"Langfuse trace","kind":"obs"}
+  },
+  "edges": [
+    {"from":"lg_state","to":"lg_router"},
+    {"from":"lg_router","to":"ag_pm"},
+    {"from":"lg_router","to":"ag_fe"},
+    {"from":"lg_router","to":"ag_be"},
+    {"from":"ag_pm","to":"or"},
+    {"from":"ag_fe","to":"or"},
+    {"from":"ag_be","to":"or"},
+    {"from":"ag_fe","to":"disk_code"},
+    {"from":"ag_be","to":"disk_code"},
+    {"from":"ag_pm","to":"disk_spec"},
+    {"from":"disk_code","to":"sbx_exec"},
+    {"from":"sbx_exec","to":"sbx_obs"},
+    {"from":"sbx_obs","to":"lg_state","label":"observe loop"},
+    {"from":"lg_state","to":"lf_trace"}
+  ]
+}
 ```
 
 ### Tech stack đề xuất (mục tiêu lộ trình)
@@ -283,70 +316,101 @@ Luồng Go backend (sau FE, có gate `backend-spec`) được mô tả trong `AR
 
 BeGuru does **not** claim full implementation of those layers yet; [Mem0 & cross-session](/blog/beguru-ai-mem0-integration-architecture) describes **one** roadmap slice (semantic memory + Qdrant). Spike with **latency**, **cost**, and **sandbox safety** before binding to public API contracts.
 
-### Proposed architecture (product plan alignment)
+### Target architecture
 
-**Principles:** **artifact-first** — `.guru/` / `design-system` files remain the build source of truth; semantic memory is **additive**. A server-side **MemoryPlane** (facade): routes do not call vector/memory ad hoc; only `retrieve` / `commit` scoped by **`user_id` + `project_key`**. **Separate** cheap LLMs for memory extract/index from **strong** LLMs for codegen.
+Artifact-first: `.guru/` and project `design-system` form the durable artifact layer; semantic memory is additive. BeGuru's memory architecture spans short-term (in-session), durable artifacts on disk (templates, BUILD_STATE), and a roadmap semantic plane (MemoryPlane → mem0 → vector store). Use the diagram below to read flows; expand to fullscreen for detail.
 
-**Four memory layers + semantic plane:**
-
-```mermaid
-flowchart TB
-  subgraph routes [HTTP routes]
-    FTChat["freetext chat"]
-    FTGen["freetext generate-code"]
-  end
-
-  subgraph working [In-session]
-    Raw[RawHistory]
-    CC[ContextCompressor]
-    Pins[PinnedLayer]
-  end
-
-  subgraph artifact [Disk artifacts]
-    Guru[".guru design-system"]
-  end
-
-  subgraph long [Roadmap semantic plane]
-    MP[MemoryPlane facade]
-    VS[(Qdrant or pgvector)]
-    Mem0[mem0 pipeline]
-  end
-
-  FTChat --> Raw --> CC --> Pins
-  FTGen --> Raw --> CC --> Pins
-  Pins --> Guru
-  FTChat --> MP
-  FTGen --> MP
-  MP --> VS
-  MP --> Mem0
-  MP -->|"top_k scoped"| Pins
+```beguru-flow
+{
+  "title": "BeGuru — Memory & Artifacts (overview)",
+  "hintVi": "Hover nodes to reveal connected flows; expand for fullscreen.",
+  "hintEn": "Hover nodes to reveal connected flows; expand for fullscreen.",
+  "layers": [
+    ["ft_chat","ft_gen"],
+    ["stm_raw","stm_cc"],
+    ["stm_pins"],
+    ["art_guru","tpl_fe","tpl_be"],
+    ["ltm_mp","ltm_mem0","ltm_vs"]
+  ],
+  "nodes": {
+    "ft_chat": {"label":"freetext chat","kind":"router"},
+    "ft_gen": {"label":"freetext generate-code","kind":"router"},
+    "stm_raw": {"label":"RawHistory","kind":"memory"},
+    "stm_cc": {"label":"ContextCompressor","kind":"memory"},
+    "stm_pins": {"label":"PinnedLayer","kind":"memory"},
+    "art_guru": {"label":".guru / design-system","kind":"disk"},
+    "tpl_fe": {"label":"template: Next.js","kind":"template"},
+    "tpl_be": {"label":"template: Go","kind":"template"},
+    "ltm_mp": {"label":"MemoryPlane facade","kind":"memory"},
+    "ltm_mem0": {"label":"mem0 pipeline","kind":"memory"},
+    "ltm_vs": {"label":"Qdrant / vector store","kind":"memory"}
+  },
+  "edges": [
+    {"from":"ft_chat","to":"stm_raw"},
+    {"from":"ft_gen","to":"stm_raw"},
+    {"from":"stm_raw","to":"stm_cc"},
+    {"from":"stm_cc","to":"stm_pins"},
+    {"from":"stm_pins","to":"art_guru"},
+    {"from":"tpl_fe","to":"art_guru","label":"scaffold"},
+    {"from":"tpl_be","to":"art_guru","label":"scaffold"},
+    {"from":"ft_chat","to":"ltm_mp"},
+    {"from":"ft_gen","to":"ltm_mp"},
+    {"from":"ltm_mp","to":"ltm_mem0"},
+    {"from":"ltm_mp","to":"ltm_vs"},
+    {"from":"ltm_mp","to":"stm_pins","label":"top_k inject"}
+  ]
+}
 ```
 
-**Orchestrator + sandbox (North Star):** a graph with **state/checkpoints**, PM → Engineer FE → Engineer BE handoffs; a **Sandbox Plane** runs `npm` / `go test` / build in isolation; **stdout/stderr/exit** feed the next step.
+### React Agent loop — orchestrator, sandbox & observe
 
-```mermaid
-flowchart TB
-  subgraph orch [Roadmap orchestrator]
-    ST[State and checkpoints]
-    RT[Conditional router]
-  end
+Autonomous coding requires a closed feedback loop: an orchestrator manages state/checkpoints and routes tasks to role-specific agents (PM, FE, BE); agents call LLMs, write artifacts, and optionally run them in a sandbox. Sandbox observations (stdout/exit) feed back into the orchestrator to decide next steps.
 
-  subgraph roleAgents [Role agents]
-    PM2[PM]
-    FE[Engineer FE]
-    BE[Engineer BE]
-  end
-
-  subgraph sand [Sandbox Plane]
-    WS[Project workspace]
-    RUN[Commands test build]
-    OBS[Observation]
-  end
-
-  orch --> roleAgents
-  roleAgents --> sand
-  RUN --> OBS
-  OBS --> orch
+```beguru-flow
+{
+  "title": "React Agent Workflow — Orchestrator & Sandbox loop (EN)",
+  "hintVi": "LangGraph coordinates state → router → agents → disk → sandbox → observe → feedback.",
+  "hintEn": "Orchestrator -> router -> agents -> disk -> sandbox -> observe -> feedback.",
+  "layers": [
+    ["lg_state"],
+    ["lg_router","lg_ckpt"],
+    ["ag_pm","ag_fe","ag_be"],
+    ["or"],
+    ["disk_code","disk_spec"],
+    ["sbx_exec","sbx_obs"],
+    ["lf_trace"]
+  ],
+  "nodes": {
+    "lg_state": {"label":"State & Checkpoint","kind":"default"},
+    "lg_router": {"label":"Conditional Router","kind":"default"},
+    "lg_ckpt": {"label":"Checkpoint store","kind":"default"},
+    "ag_pm": {"label":"PM Agent","kind":"agent"},
+    "ag_fe": {"label":"Engineer FE","kind":"agent"},
+    "ag_be": {"label":"Engineer BE","kind":"agent"},
+    "or": {"label":"OpenRouter (LLM)","kind":"llm"},
+    "disk_code": {"label":"Code output","kind":"disk"},
+    "disk_spec": {"label":"Spec / BUILD_STATE","kind":"disk"},
+    "sbx_exec": {"label":"SandboxExecutor","kind":"sandbox"},
+    "sbx_obs": {"label":"Observe stdout/exit","kind":"sandbox"},
+    "lf_trace": {"label":"Langfuse trace","kind":"obs"}
+  },
+  "edges": [
+    {"from":"lg_state","to":"lg_router"},
+    {"from":"lg_router","to":"ag_pm"},
+    {"from":"lg_router","to":"ag_fe"},
+    {"from":"lg_router","to":"ag_be"},
+    {"from":"ag_pm","to":"or"},
+    {"from":"ag_fe","to":"or"},
+    {"from":"ag_be","to":"or"},
+    {"from":"ag_fe","to":"disk_code"},
+    {"from":"ag_be","to":"disk_code"},
+    {"from":"ag_pm","to":"disk_spec"},
+    {"from":"disk_code","to":"sbx_exec"},
+    {"from":"sbx_exec","to":"sbx_obs"},
+    {"from":"sbx_obs","to":"lg_state","label":"observe loop"},
+    {"from":"lg_state","to":"lf_trace"}
+  ]
+}
 ```
 
 ### Proposed tech stack (target roadmap)

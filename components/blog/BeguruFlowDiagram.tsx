@@ -47,6 +47,8 @@ export type BeguruFlowSpec = {
         | "disk"
         | "obs"
         | "sandbox"
+        | "memory"
+        | "template"
         | "default";
     }
   >;
@@ -102,6 +104,26 @@ const KIND_STYLE: Record<
     dark: {
       bg: "linear-gradient(145deg, #86198f 0%, #a21caf 45%, #e879f9 100%)",
       glow: "rgba(232, 121, 249, 0.32)",
+    },
+  },
+  memory: {
+    light: {
+      bg: "linear-gradient(145deg, #fff1f2 0%, #fecaca 40%, #fb7185 100%)",
+      glow: "rgba(251,113,133,0.38)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #4c0519 0%, #7f1d1d 45%, #fb7185 100%)",
+      glow: "rgba(251,113,133,0.28)",
+    },
+  },
+  template: {
+    light: {
+      bg: "linear-gradient(145deg, #fff7ed 0%, #fed7aa 40%, #fb923c 100%)",
+      glow: "rgba(251,146,60,0.38)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #7c2d12 0%, #b54707 45%, #fb923c 100%)",
+      glow: "rgba(251,146,60,0.28)",
     },
   },
   llm: {
@@ -165,6 +187,8 @@ const TEXT: Record<string, { light: string; dark: string }> = {
   disk: { light: "#064e3b", dark: "#ecfdf5" },
   obs: { light: "#27272a", dark: "#fafafa" },
   sandbox: { light: "#164e63", dark: "#ecfeff" },
+  memory: { light: "#6b021a", dark: "#fff1f2" },
+  template: { light: "#7c2d12", dark: "#fff7ed" },
   default: { light: "#18181b", dark: "#fafafa" },
 };
 
