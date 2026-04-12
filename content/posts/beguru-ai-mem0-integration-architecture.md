@@ -1,105 +1,127 @@
 ---
 title: "BeGuru AI — Technical Docs: Mem0, cross-session memory & lộ trình tích hợp"
-date: "2026-04-14"
-excerpt: "Why/What/How tích hợp mem0 (OSS) vào beguru-domain-assistant và beguru-ai: semantic memory, vector search, bốn mức triển khai và quyết định kiến trúc mở."
+date: "2026-04-15"
+excerpt: "Plan tích hợp mem0 vào beguru-ai: Qdrant + AsyncMemory, search/add quanh POST /api/freetext/chat, so sánh Agno Memory vs mem0; ContextCompressor giữ nguyên trong phiên."
 category: gen-ai
 ---
 
 > **Chuỗi BeGuru — Technical Docs**  
-> [0. Tổng quan kiến trúc](/blog/beguru-ai-architecture-overview) · [1. Design system & đĩa](/blog/beguru-ai-case-study-design-system-disk) · [2. Runtime (FastAPI, AgentOS)](/blog/beguru-ai-case-study-runtime-fastapi-agentos) · [3. Memory & context](/blog/beguru-ai-case-study-memory-context-layers) · **4. Mem0 & cross-session (bài này)**
+> [0. Tổng quan kiến trúc](/blog/beguru-ai-architecture-overview) · [1. Design & đĩa](/blog/beguru-ai-case-study-design-system-disk) · [2. Runtime](/blog/beguru-ai-case-study-runtime-fastapi-agentos) · [3. Memory & context](/blog/beguru-ai-case-study-memory-context-layers) · **4. Mem0 & cross-session (bài này)**
 
 ## VI
 
 ### Tóm lược
 
-- **beguru-domain-assistant** (Guru chat) và **beguru-ai** (PM/Engineer) hôm nay xử lý ngữ cảnh khác nhau; cả hai đều **thiếu lớp nhớ ngữ nghĩa xuyên phiên** ổn định (semantic + vector) so với JSON thủ công, extraction một shot, hoặc chỉ SQLite/key-value trong phiên.
-- **[Mem0](https://github.com/mem0ai/mem0)** (Apache-2.0) là **memory layer** cho agent: trích xuất fact, dedup/merge, **tìm memories theo query** — phù hợp self-hosted với **pgvector** đã có thể dùng trong stack.
-- Bài này là **thiết kế & lộ trình** (Why / What / How), **chưa** mô tả trạng thái đã merge code; triển khai theo từng **mức** (M1–M4) trong repo `guru`.
+- **`beguru-ai`** hiện **stateless** phía server cho freetext/chat: client gửi toàn bộ `messages`; **`ContextCompressor`** chỉ rút gọn **trong phiên** — không có lớp nhớ xuyên session ổn định.
+- **`user_id` đã có** trong `FreetextChatRequest` (dùng cho Langfuse quota) — có thể **tận dụng** cho mem0, không cần thiết kế field mới cho mục đích này.
+- Kế hoạch triển khai chi tiết: **Qdrant** làm vector store, wrapper **`AsyncMemory`**, inject **`user_memory_context`** vào `compose_pm_system_prompt()`, search trước / add sau stream trên route freetext — bài này phản ánh **plan repo**, không phải trạng thái đã merge.
 
 :::info[Bài đọc liên quan]
-Trong phiên làm việc một request, compressor và pins vẫn được mô tả trong [Memory & context — runtime](/blog/beguru-ai-case-study-memory-context-layers/). Mem0 bổ sung **cross-session**, không thay thế toàn bộ pipeline đó.
+Compressor, pins và artifact đĩa: [Memory & context — runtime](/blog/beguru-ai-case-study-memory-context-layers/). Mem0 bổ sung **cross-session** cho PM (và có thể mở rộng), **không** thay thế `ContextCompressor` trong một request.
 :::
 
-### Why — vấn đề memory hiện tại
+### Why — tình trạng & vấn đề
 
-**beguru-domain-assistant**
+- Mỗi request phụ thuộc client gửi lại history; server không “nhớ” giữa các phiên chat khác nhau.
+- **Agno** có built-in memory (`update_memory_on_run`), nhưng trong codebase hiện tại **chưa được wire** đúng chuỗi gọi: DB SQLite có thể được init nhưng không gắn vào agent / luồng gọi LLM thực tế đang **bypass** vòng `agent.run()` — memory Agno không kích hoạt như thiết kế mặc định.
 
-- `user_memory` trong request là JSON do client/ghi tay; inject vào `{user_memory_section}` — không có **tìm kiếm ngữ nghĩa** theo câu hỏi hiện tại.
-- `GURU_MEMORY_EXTRACTION_PROMPT`: một LLM call sau phiên để trích JSON — dễ vỡ, không dedup mạnh, không vector search.
-- Không có **cross-session** trừ khi client tự persist và gửi lại.
-
-**beguru-ai**
-
-- `CodebaseMemory` kiểu key-value (SQLite) — không semantic lookup toàn cục.
-- `ContextCompressor` = **rút gọn trong phiên**, không phải long-term memory có chủ đích.
-- Freetext: server nhận **toàn bộ `messages`** từ client; không có lớp “nhớ user” ổn định nếu không bổ sung.
-
-### What — Mem0 là gì
-
-[mem0ai/mem0](https://github.com/mem0ai/mem0) cung cấp:
-
-- **Semantic memory**: thêm fact từ hội thoại, cập nhật/merge.
-- **Vector search**: `memory.search(query, user_id=…)` thay vì nhét full history.
-- **Đa phạm vi**: `user_id`, `agent_id`, `session_id` — khớp multi-tenant / multi-project.
-- **OSS & self-hosted**: có thể gắn **OpenRouter** cho LLM/embedder và **Postgres pgvector** làm vector store.
-
-Tài liệu upstream: [docs.mem0.ai](https://docs.mem0.ai) (từ README repo).
-
-### How — kiến trúc đề xuất (hai dịch vụ)
+### ContextCompressor vs Agno Memory vs mem0
 
 ```mermaid
-flowchart TB
-  subgraph da [beguru_domain_assistant]
-    GC[Guru_Chat_route]
-    ME[Memory_extraction_legacy]
-    SP[System_prompt_user_memory_section]
-    M0DA[mem0_Memory_pgvector]
-  end
-
-  subgraph ai [beguru_ai]
-    FT[Freetext_chat]
+flowchart LR
+  subgraph s1 [Trong_mot_session]
     CC[ContextCompressor]
-    M0AI[mem0_Memory]
   end
 
-  GC -->|"search trước turn"| M0DA
-  GC -->|"add sau turn"| M0DA
-  M0DA -->|"chuỗi memories"| SP
-  ME -.->|"có thể thay bằng mem0.add"| M0DA
+  subgraph s2 [Cross_session]
+    AGN[Agno_Memory_SQLite]
+    M0[mem0_Qdrant]
+  end
 
-  FT -->|"search add khi có user_id"| M0AI
-  CC -.->|"vẫn giảm token trong phiên"| FT
+  CC -->|"tom tat messages cu"| LLM[LLM]
+  AGN -->|"inject memories user"| LLM
+  M0 -->|"semantic search chi relevant"| LLM
 ```
 
-### How — các mức triển khai (M1–M4)
+- **ContextCompressor**: giảm token **trong** session — **giữ nguyên** theo plan.
+- **Agno Memory** (nếu wire đúng): SQLite, thường inject theo cơ chế Agno — **effort refactor** lớn (agents, `chat_with_history`).
+- **mem0**: vector store độc lập (**Qdrant** trong plan), tích hợp **ở mức route** (`freetext.py`), **additive**, semantic search theo query.
 
-| Mức | Phạm vi | Ý chính |
-|-----|---------|---------|
-| **M1** | **beguru-domain-assistant** — Guru chat | Trước turn: `memory.search` theo tin nhắn + `user_id`; inject vào `{user_memory_section}`. Sau stream: `memory.add` (ví dụ cặp turn cuối). Cấu hình mem0: pgvector + OpenRouter cho LLM/embedder. |
-| **M2** | **beguru-domain-assistant** — training | Thay luồng extract một shot bằng `memory.add` transcript / turn — giảm LLM call tách biệt, nhờ mem0 extract/merge. |
-| **M3** | **beguru-ai** — `POST /api/freetext/chat` | Cross-session khi có **`user_id` ổn định** từ BFF/client; search trước, add sau; `ContextCompressor` giữ nguyên vai trò trong phiên. |
-| **M4** | **beguru-ai** — workflows (tuỳ chọn) | Thay/refactor `CodebaseMemory` sang mem0 với `agent_id` theo project — phức tạp nhất. |
+### So sánh nhanh Agno Memory vs mem0
 
-:::warning[M3 và định danh]
-M3 chỉ khả thi khi chuỗi sản phẩm có **`user_id`** (hoặc tương đương) tin cậy. Cần thống nhất BFF/Studio trước khi bật store cross-session trên beguru-ai.
+| | Agno Memory | mem0 (plan) |
+|---|-------------|-------------|
+| **Effort** | Cao — refactor agent / run loop | Thấp — route + service wrapper |
+| **Tìm kiếm** | SQLite text, dễ inject “tất cả” | Qdrant vector — chỉ memories **liên quan** |
+| **Infra** | `data/agno.db` đã có | Thêm **Qdrant** + dependency `mem0ai` |
+| **Risk** | Regression lõi agent | Ít đụng code agent cũ |
+
+**Khuyến nghị trong plan:** ưu tiên **mem0** cho cross-session semantic memory trên `beguru-ai`.
+
+### What — Mem0 trong kiến trúc này
+
+[mem0ai/mem0](https://github.com/mem0ai/mem0) (Apache-2.0): lưu fact, merge/dedup, **`search(query, user_id)`**; cấu hình LLM/embedder qua **OpenRouter** (OpenAI-compatible). Vector store trong plan: **Qdrant** (`docker-compose`), không dùng SQLite thuần cho mem0 trên beguru-ai.
+
+Tài liệu: [docs.mem0.ai](https://docs.mem0.ai).
+
+### How — luồng POST /api/freetext/chat (theo plan)
+
+```mermaid
+sequenceDiagram
+  participant C as Client
+  participant R as FreetextRoute
+  participant M as Mem0Service
+  participant P as PMAgent
+  participant L as LLM
+
+  C->>R: POST messages user_id
+  R->>M: search last_user_msg user_id
+  M-->>R: memories list
+  R->>P: compose_pm_system_prompt user_memory_context
+  P->>L: stream SSE
+  L-->>C: chunks
+  Note over R: Sau stream day du
+  R->>M: add user plus assistant background
+```
+
+- **Trước**: `search` theo tin nhắn user cuối + `user_id` → chuỗi inject (ví dụ section “User context từ session trước”).
+- **Sau**: `add` cặp user/assistant (background task) sau khi stream xong.
+
+### How — file & cấu hình chính (beguru-ai)
+
+| Hạng mục | Ghi chú |
+|----------|---------|
+| **Infra** | Thêm service **Qdrant** trong `docker-compose` (port 6333, volume persist). |
+| **Code** | `src/components/memory/mem0_service.py` — wrapper `AsyncMemory`, `build_mem0_config`, `search_user_memories`, `store_turn`. |
+| **Settings** | `MEM0_ENABLED`, `MEM0_QDRANT_URL`, `MEM0_LLM_MODEL`, … (mặc định tắt feature). |
+| **Prompt** | `compose_pm_system_prompt(..., user_memory_context=...)` trong `composer` / runtime. |
+| **Route** | `freetext.py`: gọi search trước `compose_pm_system_prompt`; sau stream `asyncio.create_task(store_turn(...))` khi bật mem0 và có `user_id`. |
+
+:::expand[Ví dụ khối config Python — tham khảo plan]
+Vector store `provider: qdrant`, `url` từ settings; LLM/embedder trỏ OpenRouter. Tên collection (vd. `beguru_ai_memories`) và model rẻ cho extraction nằm trong `settings` — không cố định trong blog.
 :::
 
-:::expand[Ví dụ cấu hình mem0 Python — tham khảo]
-Ý tưởng từ thiết kế nội bộ: vector store **pgvector** trùng Postgres; LLM/embedder qua **OpenRouter** (base URL OpenAI-compatible). Chi tiết key/model lấy từ `settings` của từng service — không hard-code trong blog.
+### Điểm kỹ thuật (từ plan)
+
+- **`AsyncMemory`**: dùng async để **không block** SSE.
+- **Một instance** mem0 gắn app (`lifespan` / `app.state`), không tạo mới mỗi request.
+- **Feature flag**: `MEM0_ENABLED=false` mặc định — bật dần.
+- **Model extraction**: ưu tiên model **rẻ** cho bước extract của mem0 (khác model PM chính nếu cần).
+- **Qdrant**: mount volume để không mất index khi restart container.
+
+:::warning[Dữ liệu & triển khai]
+Tự host Qdrant + mem0 OSS phù hợp dữ liệu nhạy cảm; kiểm tra policy trước khi dùng bất kỳ dịch vụ memory đám mây bên ngoài.
 :::
 
-### Quyết định kiến trúc cần chốt trước code
+### Phạm vi khác (domain-assistant)
 
-- **Vector DB**: dùng chung Postgres/pgvector với domain-assistant hay tách Qdrant cho beguru-ai — ảnh hưởng vận hành và backup.
-- **`user_id` trên freetext**: schema request hiện có / BFF có truyền chưa; nếu chưa, M3 phải chờ contract.
-- **Async**: FastAPI nên dùng **AsyncMemory** nếu SDK hỗ trợ — tránh chặn stream SSE.
-- **Self-hosted vs Mem0 Platform**: dữ liệu Guru/KH nhạy cảm → ưu tiên **OSS self-hosted**, không gửi lên cloud Mem0 nếu policy yêu cầu.
+Tích hợp mem0 vào **beguru-domain-assistant** (Guru chat, `user_memory` JSON, extraction một shot) có thể làm **theo lộ trình riêng**; **plan repo hiện tại** mà bài này bám theo **tập trung beguru-ai + Qdrant + freetext**.
 
 ### Tham chiếu
 
-- Mem0 OSS: [github.com/mem0ai/mem0](https://github.com/mem0ai/mem0)
-- Bài runtime memory (pins, compressor): [Memory & context](/blog/beguru-ai-case-study-memory-context-layers)
-- Tổng quan beguru-ai: [Tổng quan kiến trúc](/blog/beguru-ai-architecture-overview)
+- Mem0: [github.com/mem0ai/mem0](https://github.com/mem0ai/mem0)
+- Memory runtime beguru-ai: [Memory & context](/blog/beguru-ai-case-study-memory-context-layers)
+- Tổng quan: [Tổng quan kiến trúc](/blog/beguru-ai-architecture-overview)
 
 ---
 
@@ -107,91 +129,96 @@ M3 chỉ khả thi khi chuỗi sản phẩm có **`user_id`** (hoặc tương đ
 
 ### At a glance
 
-- **beguru-domain-assistant** (Guru chat) and **beguru-ai** (PM/Engineer) handle context differently today; both lack a **stable cross-session semantic memory** layer compared to hand-written JSON, one-shot extraction, or per-session SQLite/key-value only.
-- **[Mem0](https://github.com/mem0ai/mem0)** (Apache-2.0) is an **agent memory layer**: fact extraction, dedup/merge, **query-time retrieval** — fits self-hosted **pgvector** in our stack.
-- This post is a **design and roadmap** (Why / What / How), **not** a statement of shipped code; implementation proceeds in **levels** (M1–M4) in the `guru` workspace.
+- **`beguru-ai`** is **stateless** on the server for freetext/chat: the client sends full `messages`; **`ContextCompressor`** only trims **within** a session — no durable cross-session layer yet.
+- **`user_id` is already** on `FreetextChatRequest` (e.g. for Langfuse quotas) and can be **reused** for mem0 without a new field for that purpose.
+- The implementation plan calls for **Qdrant**, an **`AsyncMemory`** wrapper, injecting **`user_memory_context`** into `compose_pm_system_prompt()`, and search-before / add-after-stream on the freetext route — this post reflects that **repo plan**, not necessarily merged code.
 
 :::info[Related reading]
-Within a single request, compressors and pins are covered in [Memory & context (runtime)](/blog/beguru-ai-case-study-memory-context-layers/). Mem0 adds **cross-session** memory; it does not replace that entire pipeline.
+Compressors, pins, and on-disk artifacts: [Memory & context (runtime)](/blog/beguru-ai-case-study-memory-context-layers/). Mem0 adds **cross-session** support for the PM path (and can be extended); it does **not** replace `ContextCompressor` inside a single request.
 :::
 
-### Why — current pain points
+### Why — current situation
 
-**beguru-domain-assistant**
+- Each request depends on the client resending history; the server does not remember across separate chat sessions.
+- **Agno** has built-in memory, but in the current codebase it is **not wired** through the real call path: DB init may exist, but LLM streaming **bypasses** Agno’s normal `run()` loop — Agno memory does not activate as intended without a larger refactor.
 
-- `user_memory` in the request is client-managed JSON injected into `{user_memory_section}` — no **semantic retrieval** for the current user message.
-- `GURU_MEMORY_EXTRACTION_PROMPT`: a separate LLM pass to extract JSON — brittle, weak dedup, no vector search.
-- No **cross-session** memory unless the client persists and resends.
+### ContextCompressor vs Agno Memory vs mem0
 
-**beguru-ai**
+(Same Mermaid `flowchart LR` as in the Vietnamese section.)
 
-- `CodebaseMemory` is key-value style (SQLite) — not global semantic lookup.
-- `ContextCompressor` is **in-session** summarisation, not durable long-term memory.
-- Freetext: the server receives **full `messages`** from the client; no stable “user memory” layer without an add-on.
+- **ContextCompressor**: in-session token reduction — **unchanged** in the plan.
+- **Agno Memory** (if wired correctly): SQLite-backed; **high effort** to refactor agents / `chat_with_history`.
+- **mem0**: standalone **Qdrant** vector store, integrated at **route** level — **additive**, semantic retrieval by query.
 
-### What — Mem0
+### Agno Memory vs mem0 (summary)
 
-[mem0ai/mem0](https://github.com/mem0ai/mem0) provides:
+| | Agno Memory | mem0 (plan) |
+|---|-------------|-------------|
+| **Effort** | High — refactor agent / run loop | Low — route + service wrapper |
+| **Retrieval** | SQLite text; may inject “all” memories | Qdrant vector — **relevant** memories only |
+| **Infra** | Existing `data/agno.db` | Add **Qdrant** + `mem0ai` dependency |
+| **Risk** | Core agent regression | Mostly additive |
 
-- **Semantic memory**: add facts from conversations; update/merge.
-- **Vector search**: `memory.search(query, user_id=…)` instead of dumping full history.
-- **Scopes**: `user_id`, `agent_id`, `session_id` — fits multi-tenant / multi-project setups.
-- **OSS & self-hosted**: can wire **OpenRouter** for LLM/embedder and **Postgres pgvector** as the vector store.
+**Plan recommendation:** prefer **mem0** for cross-session semantic memory on `beguru-ai`.
 
-Upstream docs: [docs.mem0.ai](https://docs.mem0.ai).
+### What — Mem0 here
 
-### How — proposed architecture
+[mem0ai/mem0](https://github.com/mem0ai/mem0) (Apache-2.0): store facts, merge/dedup, **`search(query, user_id)`**; LLM/embedder via **OpenRouter**. Vector store in the plan: **Qdrant** (`docker-compose`), not plain SQLite for mem0 on beguru-ai.
+
+Docs: [docs.mem0.ai](https://docs.mem0.ai).
+
+### How — `POST /api/freetext/chat` flow
 
 ```mermaid
-flowchart TB
-  subgraph da [beguru_domain_assistant]
-    GC[Guru_chat_route]
-    ME[Memory_extraction_legacy]
-    SP[System_prompt_user_memory_section]
-    M0DA[mem0_Memory_pgvector]
-  end
+sequenceDiagram
+  participant C as Client
+  participant R as FreetextRoute
+  participant M as Mem0Service
+  participant P as PMAgent
+  participant L as LLM
 
-  subgraph ai [beguru_ai]
-    FT[Freetext_chat]
-    CC[ContextCompressor]
-    M0AI[mem0_Memory]
-  end
-
-  GC -->|"search before turn"| M0DA
-  GC -->|"add after turn"| M0DA
-  M0DA -->|"memory strings"| SP
-  ME -.->|"may replace with mem0.add"| M0DA
-
-  FT -->|"search add if user_id"| M0AI
-  CC -.->|"still shrinks in session tokens"| FT
+  C->>R: POST messages user_id
+  R->>M: search last_user_msg user_id
+  M-->>R: memories list
+  R->>P: compose_pm_system_prompt user_memory_context
+  P->>L: stream SSE
+  L-->>C: chunks
+  Note over R: After full stream
+  R->>M: add user plus assistant background
 ```
 
-### How — rollout levels (M1–M4)
+### How — main files & config (beguru-ai)
 
-| Level | Scope | Summary |
-|-------|-------|---------|
-| **M1** | **beguru-domain-assistant** — Guru chat | Before turn: `memory.search` on message + `user_id`; inject into `{user_memory_section}`. After stream: `memory.add` (e.g. last user/assistant turns). Config: pgvector + OpenRouter for LLM/embedder. |
-| **M2** | **beguru-domain-assistant** — training | Replace one-shot extract with `memory.add` on transcript/turns — fewer bespoke LLM calls; mem0 handles extraction/merge. |
-| **M3** | **beguru-ai** — `POST /api/freetext/chat` | Cross-session when a stable **`user_id`** exists from BFF/client; search before, add after; keep `ContextCompressor` for within-session limits. |
-| **M4** | **beguru-ai** — workflows (optional) | Refactor/replace `CodebaseMemory` with mem0 scoped by `agent_id` per project — highest effort. |
+| Item | Notes |
+|------|-------|
+| **Infra** | **Qdrant** service in `docker-compose` (port 6333, persisted volume). |
+| **Code** | `src/components/memory/mem0_service.py` — `AsyncMemory` wrapper, `build_mem0_config`, `search_user_memories`, `store_turn`. |
+| **Settings** | `MEM0_ENABLED`, `MEM0_QDRANT_URL`, `MEM0_LLM_MODEL`, … (feature off by default). |
+| **Prompt** | `compose_pm_system_prompt(..., user_memory_context=...)` in runtime composer. |
+| **Route** | `freetext.py`: search before `compose_pm_system_prompt`; after stream `asyncio.create_task(store_turn(...))` when mem0 is on and `user_id` is set. |
 
-:::warning[M3 and identity]
-M3 requires a trusted **`user_id`** (or equivalent) from the BFF/client. Align the product chain before enabling cross-session storage on beguru-ai.
+:::expand[Python config sketch]
+Vector store `provider: qdrant`, URL from settings; LLM/embedder point at OpenRouter. Collection name and cheap extraction model live in `settings` — not fixed in this post.
 :::
 
-:::expand[Sample mem0 config sketch]
-Same idea as internal design: **pgvector** on Postgres; LLM/embedder via **OpenRouter** (OpenAI-compatible base URL). Keys and model IDs belong in each service’s `settings`, not in this blog post.
+### Engineering notes (from the plan)
+
+- **`AsyncMemory`**: use async so **SSE is not blocked**.
+- **Single mem0 instance** on the app (`lifespan` / `app.state`), not per request.
+- **Feature flag**: `MEM0_ENABLED=false` by default — roll out gradually.
+- **Extraction model**: prefer a **cheap** model for mem0’s extraction step vs the main PM model if needed.
+- **Qdrant**: persist volumes so indexes survive container restarts.
+
+:::warning[Data and ops]
+Self-hosted Qdrant + OSS mem0 fits sensitive data; validate policy before any third-party hosted memory service.
 :::
 
-### Architecture decisions before coding
+### Other scope (domain-assistant)
 
-- **Vector store**: shared Postgres/pgvector with domain-assistant vs separate Qdrant for beguru-ai — ops and backup impact.
-- **`user_id` on freetext**: whether the BFF already sends it; if not, M3 waits on API contract.
-- **Async**: prefer **AsyncMemory** where available so SSE streams are not blocked.
-- **Self-hosted vs Mem0 Platform**: sensitive Guru/customer data → prefer **OSS self-hosted**, avoid Mem0 cloud if policy requires.
+mem0 integration for **beguru-domain-assistant** (Guru chat, manual `user_memory` JSON, one-shot extraction) can follow a **separate roadmap**; the **current repo plan** this post tracks focuses on **beguru-ai + Qdrant + freetext**.
 
 ### References
 
-- Mem0 OSS: [github.com/mem0ai/mem0](https://github.com/mem0ai/mem0)
-- Runtime memory (pins, compressor): [Memory & context](/blog/beguru-ai-case-study-memory-context-layers)
-- beguru-ai overview: [Architecture overview](/blog/beguru-ai-architecture-overview)
+- Mem0: [github.com/mem0ai/mem0](https://github.com/mem0ai/mem0)
+- beguru-ai runtime memory: [Memory & context](/blog/beguru-ai-case-study-memory-context-layers)
+- Overview: [Architecture overview](/blog/beguru-ai-architecture-overview)
