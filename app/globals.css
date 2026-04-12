@@ -41,6 +41,25 @@ body {
     linear-gradient(180deg, var(--background) 0%, var(--surface-mid) 100%);
 }
 
+/* Blog BeGuru: bảng component rõ hơn trong bài Technical Docs */
+.beguru-docs.prose table {
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+.beguru-docs.prose thead th {
+  background-color: color-mix(in srgb, var(--foreground) 6%, transparent);
+  font-weight: 600;
+}
+.dark .beguru-docs.prose thead th {
+  background-color: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+.beguru-docs.prose tbody tr:nth-child(even) {
+  background-color: color-mix(in srgb, var(--foreground) 3%, transparent);
+}
+.dark .beguru-docs.prose tbody tr:nth-child(even) {
+  background-color: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
 .dark body {
   background-image:
     radial-gradient(

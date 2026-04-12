@@ -58,28 +58,40 @@ Chi tiết giới hạn baseline: [Technical Narrative](/blog/beguru-ai-technica
 - **`SandboxExecutor`** — `src/components/sandbox/sandbox_executor.py`: bọc SDK, `run_shell`, `sync_project`, (tuỳ chọn) screenshot; trả stdout/stderr/exit chuẩn hoá; timeout / giới hạn output.
 - **Singleton** client — tránh tạo mới mỗi request.
 
-```mermaid
-flowchart TD
-  subgraph api [beguru-ai]
-    QA[QAAgent]
-    Val[project_validation]
-    Prev[preview]
-    MCP[MCPClient]
-  end
-  subgraph sb [AIO Sandbox]
-    SH[Shell]
-    FS[File]
-    BR[Browser]
-    Hub[MCP Hub]
-    PX[Port proxy]
-  end
-  QA --> SH
-  QA --> BR
-  Val --> SH
-  Prev --> PX
-  MCP --> Hub
-  SH --> Iso[Container cô lập]
+```beguru-flow
+{
+  "title": "beguru-ai ↔ AIO Sandbox (SVG tương tác)",
+  "hintVi": "Hover vào QAAgent, project_validation hoặc MCP để thấy nhánh sang sandbox.",
+  "hintEn": "Hover QA, validation, or MCP to see branches into the sandbox plane.",
+  "layers": [
+    ["qa", "val", "prev", "mcp"],
+    ["sh", "fs", "br", "hub", "px"],
+    ["iso"]
+  ],
+  "nodes": {
+    "qa": { "label": "QAAgent", "kind": "agent" },
+    "val": { "label": "project_validation", "kind": "router" },
+    "prev": { "label": "preview route", "kind": "api" },
+    "mcp": { "label": "MCPClient", "kind": "api" },
+    "sh": { "label": "Shell", "kind": "sandbox" },
+    "fs": { "label": "File API", "kind": "sandbox" },
+    "br": { "label": "Browser /\nscreenshot", "kind": "sandbox" },
+    "hub": { "label": "MCP Hub\n/mcp", "kind": "sandbox" },
+    "px": { "label": "Port proxy", "kind": "sandbox" },
+    "iso": { "label": "Container\ncô lập", "kind": "default" }
+  },
+  "edges": [
+    { "from": "qa", "to": "sh" },
+    { "from": "qa", "to": "br" },
+    { "from": "val", "to": "sh" },
+    { "from": "prev", "to": "px" },
+    { "from": "mcp", "to": "hub" },
+    { "from": "sh", "to": "iso" }
+  ]
+}
 ```
+
+**Chú thích:** `fs` (đồng bộ cây project trước khi chạy lệnh) nằm cùng mặt phẳng sandbox nhưng không có cạnh riêng trên sơ đồ tối giản — xem SSOT repo.
 
 ### Điểm tích hợp (theo plan)
 
@@ -138,28 +150,40 @@ See [Technical Narrative](/blog/beguru-ai-technical-narrative), Limitations.
 - **`SandboxExecutor`** — e.g. `src/components/sandbox/sandbox_executor.py`: wrap SDK, `run_shell`, `sync_project`, optional screenshot; normalized stdout/stderr/exit; timeouts.
 - **Singleton** client.
 
-```mermaid
-flowchart TD
-  subgraph api [beguru-ai]
-    QA[QAAgent]
-    Val[project_validation]
-    Prev[preview]
-    MCP[MCPClient]
-  end
-  subgraph sb [AIO Sandbox]
-    SH[Shell]
-    FS[File]
-    BR[Browser]
-    Hub[MCP Hub]
-    PX[Port proxy]
-  end
-  QA --> SH
-  QA --> BR
-  Val --> SH
-  Prev --> PX
-  MCP --> Hub
-  SH --> Iso[Isolated container]
+```beguru-flow
+{
+  "title": "beguru-ai ↔ AIO Sandbox (interactive SVG)",
+  "hintVi": "Hover vào QAAgent, project_validation hoặc MCP để thấy nhánh sang sandbox.",
+  "hintEn": "Hover QA, validation, or MCP to see branches into the sandbox plane.",
+  "layers": [
+    ["qa", "val", "prev", "mcp"],
+    ["sh", "fs", "br", "hub", "px"],
+    ["iso"]
+  ],
+  "nodes": {
+    "qa": { "label": "QAAgent", "kind": "agent" },
+    "val": { "label": "project_validation", "kind": "router" },
+    "prev": { "label": "preview route", "kind": "api" },
+    "mcp": { "label": "MCPClient", "kind": "api" },
+    "sh": { "label": "Shell", "kind": "sandbox" },
+    "fs": { "label": "File API", "kind": "sandbox" },
+    "br": { "label": "Browser /\nscreenshot", "kind": "sandbox" },
+    "hub": { "label": "MCP Hub\n/mcp", "kind": "sandbox" },
+    "px": { "label": "Port proxy", "kind": "sandbox" },
+    "iso": { "label": "Isolated\ncontainer", "kind": "default" }
+  },
+  "edges": [
+    { "from": "qa", "to": "sh" },
+    { "from": "qa", "to": "br" },
+    { "from": "val", "to": "sh" },
+    { "from": "prev", "to": "px" },
+    { "from": "mcp", "to": "hub" },
+    { "from": "sh", "to": "iso" }
+  ]
+}
 ```
+
+**Note:** `fs` (project tree sync before exec) sits on the sandbox plane but has no dedicated edge on this minimal diagram — see repo SSOT.
 
 ### Integration touchpoints (from plan)
 

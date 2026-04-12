@@ -17,6 +17,10 @@ import remarkDirective from "remark-directive";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
 import { MarkdownDocAside } from "@/components/doc/MarkdownDocAside";
+import {
+  BeguruFlowDiagram,
+  parseBeguruFlowSpec,
+} from "@/components/blog/BeguruFlowDiagram";
 import { MermaidBlock } from "@/components/MermaidBlock";
 import { extractToc, type TocItem } from "@/lib/bilingual-post";
 import remarkDocDirectives from "@/lib/remark-doc-directives";
@@ -135,15 +139,25 @@ export function BlogPostBody({
             className?: string;
             children?: ReactNode;
           };
-          if (
-            typeof p.className === "string" &&
-            p.className.includes("language-mermaid")
-          ) {
-            const raw = p.children;
-            const chart = Array.isArray(raw)
-              ? raw.join("")
-              : String(raw ?? "");
-            return <MermaidBlock chart={chart} />;
+          const cls = typeof p.className === "string" ? p.className : "";
+          const raw = p.children;
+          const text = Array.isArray(raw)
+            ? raw.join("")
+            : String(raw ?? "");
+          if (cls.includes("language-mermaid")) {
+            return <MermaidBlock chart={text} />;
+          }
+          if (cls.includes("language-beguru-flow")) {
+            const spec = parseBeguruFlowSpec(text);
+            if (spec) {
+              return <BeguruFlowDiagram spec={spec} lang={lang} />;
+            }
+            return (
+              <div className="my-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200">
+                <p className="font-semibold">beguru-flow: JSON không hợp lệ / Invalid JSON</p>
+                <pre className="mt-2 overflow-x-auto text-xs">{text}</pre>
+              </div>
+            );
           }
         }
         return <pre>{children}</pre>;
@@ -172,7 +186,7 @@ export function BlogPostBody({
         );
       },
     }),
-    [],
+    [lang],
   );
 
   const setLanguage = (next: Lang) => {
@@ -309,7 +323,7 @@ export function BlogPostBody({
 
           {caseStudy ? (
             <div className="rounded-2xl border border-zinc-200/90 bg-white/90 p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 md:p-8">
-              <div className="prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
+              <div className="beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
                 <ReactMarkdown
                   key={lang + (bilingual ? "" : "single")}
                   remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
@@ -325,7 +339,7 @@ export function BlogPostBody({
               </div>
             </div>
           ) : (
-            <div className="prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
+            <div className="beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
               <ReactMarkdown
                 key={lang + (bilingual ? "" : "single")}
                 remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}

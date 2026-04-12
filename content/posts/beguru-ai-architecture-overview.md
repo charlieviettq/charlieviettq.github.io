@@ -137,60 +137,77 @@ Luôn đối chiếu repo `beguru-ai` (`docs/API_SPEC.md`, …) với version b�
 
 ### Sơ đồ tổng quan (runtime)
 
-```mermaid
-flowchart TB
-  subgraph clients [Clients]
-    UI[Web / Studio / CLI]
-  end
+Sơ đồ **SVG tương tác** bên dưới: hover vào từng ô để **highlight nhánh** (cạnh và các ô liên quan). Các mã ngắn (`ui`, `api`, …) khớp với bảng đối chiếu ngay sau sơ đồ.
 
-  subgraph vps [VPS hoặc máy dev]
-    API[FastAPI app]
-    OS[AgentOS Agno]
-    API --> OS
-
-    subgraph routes [Routers]
-      FT["/api/freetext/*"]
-      WF["/api/workflows/*"]
-      IV["/api/interview/*"]
-      AG["/api/agents/*"]
-    end
-    API --> routes
-
-    subgraph agents [Agents]
-      PM[ProductManagerAgent]
-      EN[EngineerAgent]
-      AR[Architect / QA / Reviewer]
-    end
-    FT --> PM
-    FT --> EN
-    WF --> agents
-
-    subgraph llm [LLM]
-      OR[OpenRouter]
-    end
-    PM --> OR
-    EN --> OR
-    AR --> OR
-
-    subgraph disk [Disk]
-      PROJ[projects_root_dir]
-      TPL[templates]
-      DS[design-system per project]
-    end
-    EN --> PROJ
-    EN --> TPL
-    EN --> DS
-
-    subgraph obs [Observability]
-      LF[Langfuse optional]
-      LOG[StructuredLogger]
-    end
-    API --> LF
-    API --> LOG
-  end
-
-  UI -->|HTTPS JSON SSE| API
+```beguru-flow
+{
+  "title": "Runtime BeGuru (hover để xem luồng)",
+  "hintVi": "Di chuột lên từng khối để làm nổi cạnh nối trực tiếp và ô lân cận.",
+  "hintEn": "Hover a node to highlight its incident edges and neighbors.",
+  "layers": [
+    ["ui"],
+    ["api"],
+    ["os"],
+    ["ft", "wf", "iv", "ag"],
+    ["pm", "en", "ar"],
+    ["or"],
+    ["proj", "tpl", "ds"],
+    ["lf", "log"]
+  ],
+  "nodes": {
+    "ui": { "label": "Web / Studio / CLI", "kind": "client" },
+    "api": { "label": "FastAPI app", "kind": "api" },
+    "os": { "label": "AgentOS (Agno)", "kind": "default" },
+    "ft": { "label": "/api/freetext/*", "kind": "router" },
+    "wf": { "label": "/api/workflows/*", "kind": "router" },
+    "iv": { "label": "/api/interview/*", "kind": "router" },
+    "ag": { "label": "/api/agents/*", "kind": "router" },
+    "pm": { "label": "ProductManagerAgent", "kind": "agent" },
+    "en": { "label": "EngineerAgent", "kind": "agent" },
+    "ar": { "label": "Architect / QA / Reviewer", "kind": "agent" },
+    "or": { "label": "OpenRouter", "kind": "llm" },
+    "proj": { "label": "projects_root_dir", "kind": "disk" },
+    "tpl": { "label": "templates", "kind": "disk" },
+    "ds": { "label": "design-system / project", "kind": "disk" },
+    "lf": { "label": "Langfuse (optional)", "kind": "obs" },
+    "log": { "label": "StructuredLogger", "kind": "obs" }
+  },
+  "edges": [
+    { "from": "ui", "to": "api", "label": "HTTPS · JSON · SSE" },
+    { "from": "api", "to": "os" },
+    { "from": "api", "to": "ft" },
+    { "from": "api", "to": "wf" },
+    { "from": "api", "to": "iv" },
+    { "from": "api", "to": "ag" },
+    { "from": "ft", "to": "pm" },
+    { "from": "ft", "to": "en" },
+    { "from": "wf", "to": "pm" },
+    { "from": "wf", "to": "en" },
+    { "from": "wf", "to": "ar" },
+    { "from": "pm", "to": "or" },
+    { "from": "en", "to": "or" },
+    { "from": "ar", "to": "or" },
+    { "from": "en", "to": "proj" },
+    { "from": "en", "to": "tpl" },
+    { "from": "en", "to": "ds" },
+    { "from": "api", "to": "lf" },
+    { "from": "api", "to": "log" }
+  ]
+}
 ```
+
+**Đối chiếu nhanh (mã trên sơ đồ):**
+
+| Mã | Thành phần |
+|----|------------|
+| `ui` | Client (Web / Studio / CLI) |
+| `api` | FastAPI — HTTP, CORS, logging |
+| `os` | AgentOS Agno — cùng process với API |
+| `ft` … `ag` | Các router REST (`freetext`, `workflows`, `interview`, `agents`) |
+| `pm`, `en`, `ar` | Agent PM / Engineer / kiến trúc & QA |
+| `or` | OpenRouter (gateway model) |
+| `proj`, `tpl`, `ds` | Artifact trên đĩa (project, template, design-system) |
+| `lf`, `log` | Langfuse (tuỳ chọn) và StructuredLogger |
 
 ### Bảng thành phần
 
@@ -365,60 +382,77 @@ Always verify against the `beguru-ai` repo (`docs/API_SPEC.md`, …) for the ver
 
 ### High-level runtime diagram
 
-```mermaid
-flowchart TB
-  subgraph clients [Clients]
-    UI[Web / Studio / CLI]
-  end
+Interactive **SVG** below: **hover** a box to highlight its **incident edges** and **neighbors**. Short ids (`ui`, `api`, …) match the lookup table right after the diagram.
 
-  subgraph vps [VPS or dev machine]
-    API[FastAPI app]
-    OS[AgentOS Agno]
-    API --> OS
-
-    subgraph routes [Routers]
-      FT["/api/freetext/*"]
-      WF["/api/workflows/*"]
-      IV["/api/interview/*"]
-      AG["/api/agents/*"]
-    end
-    API --> routes
-
-    subgraph agents [Agents]
-      PM[ProductManagerAgent]
-      EN[EngineerAgent]
-      AR[Architect / QA / Reviewer]
-    end
-    FT --> PM
-    FT --> EN
-    WF --> agents
-
-    subgraph llm [LLM]
-      OR[OpenRouter]
-    end
-    PM --> OR
-    EN --> OR
-    AR --> OR
-
-    subgraph disk [Disk]
-      PROJ[projects_root_dir]
-      TPL[templates]
-      DS[design-system per project]
-    end
-    EN --> PROJ
-    EN --> TPL
-    EN --> DS
-
-    subgraph obs [Observability]
-      LF[Langfuse optional]
-      LOG[StructuredLogger]
-    end
-    API --> LF
-    API --> LOG
-  end
-
-  UI -->|HTTPS JSON SSE| API
+```beguru-flow
+{
+  "title": "BeGuru runtime (hover to trace flow)",
+  "hintVi": "Di chuột lên từng khối để làm nổi cạnh nối trực tiếp và ô lân cận.",
+  "hintEn": "Hover a node to highlight its incident edges and neighbors.",
+  "layers": [
+    ["ui"],
+    ["api"],
+    ["os"],
+    ["ft", "wf", "iv", "ag"],
+    ["pm", "en", "ar"],
+    ["or"],
+    ["proj", "tpl", "ds"],
+    ["lf", "log"]
+  ],
+  "nodes": {
+    "ui": { "label": "Web / Studio / CLI", "kind": "client" },
+    "api": { "label": "FastAPI app", "kind": "api" },
+    "os": { "label": "AgentOS (Agno)", "kind": "default" },
+    "ft": { "label": "/api/freetext/*", "kind": "router" },
+    "wf": { "label": "/api/workflows/*", "kind": "router" },
+    "iv": { "label": "/api/interview/*", "kind": "router" },
+    "ag": { "label": "/api/agents/*", "kind": "router" },
+    "pm": { "label": "ProductManagerAgent", "kind": "agent" },
+    "en": { "label": "EngineerAgent", "kind": "agent" },
+    "ar": { "label": "Architect / QA / Reviewer", "kind": "agent" },
+    "or": { "label": "OpenRouter", "kind": "llm" },
+    "proj": { "label": "projects_root_dir", "kind": "disk" },
+    "tpl": { "label": "templates", "kind": "disk" },
+    "ds": { "label": "design-system / project", "kind": "disk" },
+    "lf": { "label": "Langfuse (optional)", "kind": "obs" },
+    "log": { "label": "StructuredLogger", "kind": "obs" }
+  },
+  "edges": [
+    { "from": "ui", "to": "api", "label": "HTTPS · JSON · SSE" },
+    { "from": "api", "to": "os" },
+    { "from": "api", "to": "ft" },
+    { "from": "api", "to": "wf" },
+    { "from": "api", "to": "iv" },
+    { "from": "api", "to": "ag" },
+    { "from": "ft", "to": "pm" },
+    { "from": "ft", "to": "en" },
+    { "from": "wf", "to": "pm" },
+    { "from": "wf", "to": "en" },
+    { "from": "wf", "to": "ar" },
+    { "from": "pm", "to": "or" },
+    { "from": "en", "to": "or" },
+    { "from": "ar", "to": "or" },
+    { "from": "en", "to": "proj" },
+    { "from": "en", "to": "tpl" },
+    { "from": "en", "to": "ds" },
+    { "from": "api", "to": "lf" },
+    { "from": "api", "to": "log" }
+  ]
+}
 ```
+
+**Quick id lookup (diagram):**
+
+| Id | Piece |
+|----|--------|
+| `ui` | Client (Web / Studio / CLI) |
+| `api` | FastAPI — HTTP, CORS, logging |
+| `os` | AgentOS Agno — same process as API |
+| `ft` … `ag` | REST routers (`freetext`, `workflows`, `interview`, `agents`) |
+| `pm`, `en`, `ar` | PM / Engineer / architecture & QA agents |
+| `or` | OpenRouter (model gateway) |
+| `proj`, `tpl`, `ds` | On-disk artifacts (project tree, templates, design-system) |
+| `lf`, `log` | Optional Langfuse and StructuredLogger |
 
 ### Component map
 
