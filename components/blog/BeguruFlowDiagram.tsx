@@ -22,9 +22,11 @@ import {
   useEffect,
   useMemo,
   useState,
+  type CSSProperties,
   type MouseEvent,
 } from "react";
 import { useTheme } from "next-themes";
+import { ChartLightbox } from "@/components/blog/ChartLightbox";
 
 /** Declarative flow: columns left→right, hover highlights connected edges + nodes */
 export type BeguruFlowSpec = {
@@ -57,21 +59,113 @@ const NODE_W = 168;
 const NODE_H = 52;
 const PAD = 36;
 
-const KIND_BOX: Record<string, string> = {
-  client:
-    "border-sky-500/50 bg-sky-500/15 dark:border-sky-400/40 dark:bg-sky-400/10",
-  api: "border-violet-500/50 bg-violet-500/15 dark:border-violet-400/40 dark:bg-violet-400/10",
-  router:
-    "border-indigo-500/50 bg-indigo-500/15 dark:border-indigo-400/40 dark:bg-indigo-400/10",
-  agent:
-    "border-fuchsia-500/45 bg-fuchsia-500/15 dark:border-fuchsia-400/35 dark:bg-fuchsia-400/10",
-  llm: "border-amber-500/50 bg-amber-500/15 dark:border-amber-400/40 dark:bg-amber-400/10",
-  disk: "border-emerald-500/45 bg-emerald-500/15 dark:border-emerald-400/35 dark:bg-emerald-400/10",
-  obs: "border-zinc-400/45 bg-zinc-400/15 dark:border-zinc-500/35 dark:bg-zinc-500/10",
-  sandbox:
-    "border-cyan-500/45 bg-cyan-500/15 dark:border-cyan-400/35 dark:bg-cyan-400/10",
-  default:
-    "border-zinc-300 bg-zinc-200/80 dark:border-zinc-600 dark:bg-zinc-800/50",
+/** Mã hex gradient + màu chữ theo theme */
+const KIND_STYLE: Record<
+  string,
+  { light: { bg: string; glow: string }; dark: { bg: string; glow: string } }
+> = {
+  client: {
+    light: {
+      bg: "linear-gradient(145deg, #e0f2fe 0%, #7dd3fc 40%, #38bdf8 100%)",
+      glow: "rgba(14, 165, 233, 0.45)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #0c4a6e 0%, #0369a1 45%, #38bdf8 100%)",
+      glow: "rgba(56, 189, 248, 0.35)",
+    },
+  },
+  api: {
+    light: {
+      bg: "linear-gradient(145deg, #ede9fe 0%, #c4b5fd 42%, #8b5cf6 100%)",
+      glow: "rgba(139, 92, 246, 0.4)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #4c1d95 0%, #6d28d9 48%, #a78bfa 100%)",
+      glow: "rgba(167, 139, 250, 0.35)",
+    },
+  },
+  router: {
+    light: {
+      bg: "linear-gradient(145deg, #e0e7ff 0%, #a5b4fc 42%, #6366f1 100%)",
+      glow: "rgba(99, 102, 241, 0.4)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #312e81 0%, #4338ca 48%, #818cf8 100%)",
+      glow: "rgba(129, 140, 248, 0.35)",
+    },
+  },
+  agent: {
+    light: {
+      bg: "linear-gradient(145deg, #fce7f3 0%, #f0abfc 40%, #d946ef 100%)",
+      glow: "rgba(217, 70, 239, 0.38)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #86198f 0%, #a21caf 45%, #e879f9 100%)",
+      glow: "rgba(232, 121, 249, 0.32)",
+    },
+  },
+  llm: {
+    light: {
+      bg: "linear-gradient(145deg, #fef3c7 0%, #fcd34d 38%, #f59e0b 100%)",
+      glow: "rgba(245, 158, 11, 0.42)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #78350f 0%, #b45309 48%, #fbbf24 100%)",
+      glow: "rgba(251, 191, 36, 0.32)",
+    },
+  },
+  disk: {
+    light: {
+      bg: "linear-gradient(145deg, #d1fae5 0%, #6ee7b7 40%, #10b981 100%)",
+      glow: "rgba(16, 185, 129, 0.4)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #064e3b 0%, #047857 48%, #34d399 100%)",
+      glow: "rgba(52, 211, 153, 0.3)",
+    },
+  },
+  obs: {
+    light: {
+      bg: "linear-gradient(145deg, #f4f4f5 0%, #d4d4d8 45%, #71717a 100%)",
+      glow: "rgba(113, 113, 122, 0.35)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #27272a 0%, #3f3f46 50%, #a1a1aa 100%)",
+      glow: "rgba(161, 161, 170, 0.28)",
+    },
+  },
+  sandbox: {
+    light: {
+      bg: "linear-gradient(145deg, #cffafe 0%, #22d3ee 42%, #06b6d4 100%)",
+      glow: "rgba(6, 182, 212, 0.4)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #164e63 0%, #0e7490 48%, #22d3ee 100%)",
+      glow: "rgba(34, 211, 238, 0.32)",
+    },
+  },
+  default: {
+    light: {
+      bg: "linear-gradient(145deg, #f4f4f5 0%, #e4e4e7 50%, #d4d4d8 100%)",
+      glow: "rgba(82, 82, 91, 0.3)",
+    },
+    dark: {
+      bg: "linear-gradient(145deg, #18181b 0%, #27272a 55%, #3f3f46 100%)",
+      glow: "rgba(161, 161, 170, 0.25)",
+    },
+  },
+};
+
+const TEXT: Record<string, { light: string; dark: string }> = {
+  client: { light: "#0c4a6e", dark: "#f0f9ff" },
+  api: { light: "#4c1d95", dark: "#f5f3ff" },
+  router: { light: "#312e81", dark: "#eef2ff" },
+  agent: { light: "#86198f", dark: "#fdf4ff" },
+  llm: { light: "#78350f", dark: "#fffbeb" },
+  disk: { light: "#064e3b", dark: "#ecfdf5" },
+  obs: { light: "#27272a", dark: "#fafafa" },
+  sandbox: { light: "#164e63", dark: "#ecfeff" },
+  default: { light: "#18181b", dark: "#fafafa" },
 };
 
 function layoutNodes(spec: BeguruFlowSpec) {
@@ -116,8 +210,8 @@ function buildNodesAndEdges(
   };
 
   const strokeMuted = isDark ? "#52525b" : "#a1a1aa";
-  const strokeActive = isDark ? "#38bdf8" : "#0ea5e9";
-  const strokeBase = isDark ? "#71717a" : "#a1a1aa";
+  const strokeActive = isDark ? "#22d3ee" : "#0ea5e9";
+  const strokeBase = isDark ? "#71717a" : "#94a3b8";
   const labelFill = isDark ? "#a1a1aa" : "#52525b";
 
   const nodes: Node[] = [];
@@ -125,13 +219,18 @@ function buildNodesAndEdges(
     const p = pos[id];
     if (!p) continue;
     const k = n.kind ?? "default";
+    const ks = KIND_STYLE[k] ?? KIND_STYLE.default;
+    const mode = isDark ? "dark" : "light";
+    const tx = TEXT[k] ?? TEXT.default;
     nodes.push({
       id,
       type: "beguru",
       position: p,
       data: {
         label: n.label,
-        boxClass: KIND_BOX[k] ?? KIND_BOX.default,
+        gradientBg: ks[mode].bg,
+        glow: ks[mode].glow,
+        color: tx[mode],
         dimmed: !nodeHighlighted(id),
       },
       style: { width: NODE_W, height: NODE_H },
@@ -152,7 +251,7 @@ function buildNodesAndEdges(
       type: "smoothstep",
       style: {
         stroke: hl ? strokeActive : dim ? strokeMuted : strokeBase,
-        strokeWidth: hl ? 2.2 : 1.5,
+        strokeWidth: hl ? 2.4 : 1.5,
         opacity: dim ? 0.35 : 1,
       },
       markerEnd: {
@@ -178,18 +277,29 @@ function buildNodesAndEdges(
 
 type BeguruNodeData = {
   label: string;
-  boxClass: string;
+  gradientBg: string;
+  glow: string;
+  color: string;
   dimmed: boolean;
 };
 
 const BeguruFlowNode = memo(function BeguruFlowNode({ data }: NodeProps) {
   const d = data as BeguruNodeData;
+  const nodeStyle: CSSProperties = {
+    width: NODE_W,
+    height: NODE_H,
+    background: d.gradientBg,
+    color: d.color,
+    boxShadow: d.dimmed
+      ? "none"
+      : `0 0 16px ${d.glow}, 0 0 1px rgba(255,255,255,0.35) inset`,
+  };
   return (
     <div
-      className={`rounded-[10px] border border-solid transition-opacity duration-150 ${d.boxClass} ${
+      className={`rounded-[10px] border border-white/30 transition-opacity duration-150 dark:border-white/10 ${
         d.dimmed ? "opacity-[0.38]" : "opacity-100"
       }`}
-      style={{ width: NODE_W, height: NODE_H }}
+      style={nodeStyle}
     >
       <Handle
         type="target"
@@ -197,9 +307,10 @@ const BeguruFlowNode = memo(function BeguruFlowNode({ data }: NodeProps) {
         className="!h-2 !w-2 !border-0 !bg-zinc-400 dark:!bg-zinc-500"
       />
       <div
-        className={`flex h-full items-center justify-center whitespace-pre-line px-2 text-center text-[11px] font-medium leading-snug text-zinc-800 dark:text-zinc-100 ${
+        className={`flex h-full items-center justify-center whitespace-pre-line px-2 text-center text-[11px] font-semibold leading-snug ${
           d.dimmed ? "opacity-45" : ""
         }`}
+        style={{ color: d.color }}
       >
         {d.label}
       </div>
@@ -214,23 +325,31 @@ const BeguruFlowNode = memo(function BeguruFlowNode({ data }: NodeProps) {
 
 const nodeTypes = { beguru: BeguruFlowNode };
 
-function FitViewOnSpec({ specKey }: { specKey: string }) {
+function FitViewOnSpec({
+  specKey,
+  variant,
+}: {
+  specKey: string;
+  variant: "inline" | "fullscreen";
+}) {
   const { fitView } = useReactFlow();
   useEffect(() => {
     const id = requestAnimationFrame(() => {
-      fitView({ padding: 0.2, duration: 220, maxZoom: 1.25 });
+      fitView({ padding: 0.2, duration: 260, maxZoom: variant === "fullscreen" ? 1.4 : 1.25 });
     });
     return () => cancelAnimationFrame(id);
-  }, [fitView, specKey]);
+  }, [fitView, specKey, variant]);
   return null;
 }
 
-function BeguruFlowInner({
+function BeguruFlowCanvas({
   spec,
-  lang,
+  variant,
+  minHeightStyle,
 }: {
   spec: BeguruFlowSpec;
-  lang: "vi" | "en";
+  variant: "inline" | "fullscreen";
+  minHeightStyle?: string;
 }) {
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === "dark";
@@ -250,70 +369,57 @@ function BeguruFlowInner({
   }, [spec, hover, isDark, setNodes, setEdges]);
 
   const { height: layoutHeight } = layoutNodes(spec);
-  const containerH = Math.max(380, layoutHeight + 24);
+  const baseH = Math.max(380, layoutHeight + 24);
+  const heightPx =
+    variant === "fullscreen"
+      ? minHeightStyle ?? "78vh"
+      : `${baseH}px`;
 
   const onNodeEnter = useCallback((_: MouseEvent, node: Node) => {
     setHover(node.id);
   }, []);
   const onNodeLeave = useCallback(() => setHover(null), []);
 
-  const hint =
-    lang === "vi"
-      ? (spec.hintVi ?? spec.hintEn)
-      : (spec.hintEn ?? spec.hintVi);
-
   const specKey = useMemo(() => JSON.stringify(spec), [spec]);
 
   return (
-    <figure className="my-8 not-prose w-full overflow-hidden rounded-2xl border border-zinc-200/90 bg-gradient-to-b from-zinc-50 to-white shadow-sm dark:border-zinc-700 dark:from-zinc-900/80 dark:to-zinc-950/90">
-      {spec.title ? (
-        <figcaption className="px-4 pt-4 text-center text-sm font-semibold text-zinc-800 dark:text-zinc-100">
-          {spec.title}
-        </figcaption>
-      ) : null}
-      {hint ? (
-        <p className="px-4 pb-2 pt-2 text-center text-xs text-zinc-500 dark:text-zinc-400">
-          {hint}
-        </p>
-      ) : null}
-      <div
-        className="beguru-flow-rf w-full [&_.react-flow\_\_attribution]:bg-transparent [&_.react-flow\_\_attribution]:text-[10px]"
-        style={{ height: containerH }}
-        role="presentation"
+    <div
+      className="beguru-flow-rf w-full [&_.react-flow\_\_attribution]:bg-transparent [&_.react-flow\_\_attribution]:text-[10px]"
+      style={{ height: heightPx }}
+      role="presentation"
+    >
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeMouseEnter={onNodeEnter}
+        onNodeMouseLeave={onNodeLeave}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        panOnScroll
+        zoomOnScroll
+        zoomOnPinch
+        zoomOnDoubleClick={false}
+        minZoom={0.25}
+        maxZoom={variant === "fullscreen" ? 1.6 : 1.35}
+        className="bg-transparent"
+        aria-label={spec.title ?? "Architecture flow diagram"}
       >
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeMouseEnter={onNodeEnter}
-          onNodeMouseLeave={onNodeLeave}
-          nodesDraggable={false}
-          nodesConnectable={false}
-          elementsSelectable={false}
-          panOnScroll
-          zoomOnScroll
-          zoomOnPinch
-          zoomOnDoubleClick={false}
-          minZoom={0.35}
-          maxZoom={1.35}
-          className="rounded-b-2xl bg-transparent"
-          aria-label={spec.title ?? "Architecture flow diagram"}
-        >
-          <Background
-            gap={18}
-            size={1}
-            className="opacity-40 dark:opacity-25"
-          />
-          <Controls
-            showInteractive={false}
-            className="!m-2 !border-zinc-200 !bg-white/90 !shadow-sm dark:!border-zinc-600 dark:!bg-zinc-900/90"
-          />
-          <FitViewOnSpec specKey={specKey} />
-        </ReactFlow>
-      </div>
-    </figure>
+        <Background
+          gap={18}
+          size={1}
+          className="opacity-40 dark:opacity-25"
+        />
+        <Controls
+          showInteractive={false}
+          className="!m-2 !border-zinc-200 !bg-white/90 !shadow-sm dark:!border-zinc-600 dark:!bg-zinc-900/90"
+        />
+        <FitViewOnSpec specKey={`${specKey}-${variant}`} variant={variant} />
+      </ReactFlow>
+    </div>
   );
 }
 
@@ -324,10 +430,40 @@ type Props = {
 
 export function BeguruFlowDiagram({ spec, lang }: Props) {
   const specKey = useMemo(() => JSON.stringify(spec), [spec]);
+
+  const hint =
+    lang === "vi"
+      ? (spec.hintVi ?? spec.hintEn)
+      : (spec.hintEn ?? spec.hintVi);
+
+  const hintNode = hint ? (
+    <span>{hint}</span>
+  ) : undefined;
+
   return (
-    <ReactFlowProvider>
-      <BeguruFlowInner key={specKey} spec={spec} lang={lang} />
-    </ReactFlowProvider>
+    <ChartLightbox
+      title={spec.title}
+      hint={hintNode}
+      lang={lang}
+      fullscreenSlot={
+        <ReactFlowProvider>
+          <BeguruFlowCanvas
+            key={`fs-${specKey}`}
+            spec={spec}
+            variant="fullscreen"
+            minHeightStyle="72vh"
+          />
+        </ReactFlowProvider>
+      }
+    >
+      <ReactFlowProvider>
+        <BeguruFlowCanvas
+          key={`in-${specKey}`}
+          spec={spec}
+          variant="inline"
+        />
+      </ReactFlowProvider>
+    </ChartLightbox>
   );
 }
 

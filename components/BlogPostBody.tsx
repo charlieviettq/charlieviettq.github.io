@@ -145,7 +145,7 @@ export function BlogPostBody({
             ? raw.join("")
             : String(raw ?? "");
           if (cls.includes("language-mermaid")) {
-            return <MermaidBlock chart={text} />;
+            return <MermaidBlock chart={text} lang={lang} />;
           }
           if (cls.includes("language-beguru-flow")) {
             const spec = parseBeguruFlowSpec(text);

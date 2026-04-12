@@ -60,6 +60,27 @@ body {
   background-color: color-mix(in srgb, var(--foreground) 4%, transparent);
 }
 
+/* Chart (BeGuru flow / Mermaid): viền gradient + halo */
+.chart-glow-frame {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--brand-from) 55%, transparent),
+    color-mix(in srgb, var(--brand-to) 45%, transparent),
+    color-mix(in srgb, #a855f7 40%, transparent)
+  );
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand-from) 25%, transparent),
+    0 0 32px -6px color-mix(in srgb, var(--brand-from) 35%, transparent),
+    0 0 48px -12px color-mix(in srgb, var(--brand-to) 28%, transparent);
+}
+
+.dark .chart-glow-frame {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--brand-from) 20%, transparent),
+    0 0 40px -8px color-mix(in srgb, var(--brand-from) 30%, transparent),
+    0 0 56px -14px color-mix(in srgb, var(--brand-to) 22%, transparent);
+}
+
 .dark body {
   background-image:
     radial-gradient(
