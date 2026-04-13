@@ -8,12 +8,30 @@
   --brand-from: #0ea5e9;
   --brand-to: #6366f1;
   --surface-mid: #f1f5f9;
+  /* Sơ đồ kiến trúc / diagram shell */
+  --diagram-surface: color-mix(in srgb, #ffffff 88%, var(--surface-mid));
+  --diagram-surface-deep: color-mix(in srgb, var(--surface-mid) 70%, #ffffff);
+  --diagram-border: color-mix(in srgb, var(--foreground) 8%, transparent);
+  --diagram-border-strong: color-mix(in srgb, var(--brand-from) 22%, transparent);
+  --diagram-shadow: 0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent),
+    0 24px 48px -28px color-mix(in srgb, var(--brand-to) 18%, transparent),
+    0 12px 32px -20px color-mix(in srgb, var(--foreground) 12%, transparent);
+  --diagram-radius: 1rem;
+  --diagram-grid-dot: color-mix(in srgb, var(--foreground) 14%, transparent);
 }
 
 .dark {
   --background: #0a0f1a;
   --foreground: #e2e8f0;
   --surface-mid: #0c1324;
+  --diagram-surface: color-mix(in srgb, #0f172a 55%, #020617);
+  --diagram-surface-deep: color-mix(in srgb, #020617 40%, #0f172a);
+  --diagram-border: color-mix(in srgb, var(--foreground) 12%, transparent);
+  --diagram-border-strong: color-mix(in srgb, var(--brand-from) 28%, transparent);
+  --diagram-shadow: 0 1px 0 color-mix(in srgb, var(--foreground) 10%, transparent),
+    0 28px 56px -24px color-mix(in srgb, var(--brand-from) 14%, transparent),
+    0 16px 40px -22px color-mix(in srgb, #000000 55%, transparent);
+  --diagram-grid-dot: color-mix(in srgb, var(--foreground) 22%, transparent);
 }
 
 @theme inline {
@@ -60,25 +78,64 @@ body {
   background-color: color-mix(in srgb, var(--foreground) 4%, transparent);
 }
 
-/* Chart (BeGuru flow / Mermaid): viền gradient + halo */
+/* Chart (BeGuru flow / Mermaid): viền gradient tinh chỉnh, halo nhẹ hơn — editorial / modern */
 .chart-glow-frame {
   background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--brand-from) 55%, transparent),
-    color-mix(in srgb, var(--brand-to) 45%, transparent),
-    color-mix(in srgb, #a855f7 40%, transparent)
+    145deg,
+    color-mix(in srgb, var(--brand-from) 38%, transparent) 0%,
+    color-mix(in srgb, var(--brand-to) 32%, transparent) 42%,
+    color-mix(in srgb, #a855f7 22%, transparent) 100%
   );
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--brand-from) 25%, transparent),
-    0 0 32px -6px color-mix(in srgb, var(--brand-from) 35%, transparent),
-    0 0 48px -12px color-mix(in srgb, var(--brand-to) 28%, transparent);
+    0 0 0 1px var(--diagram-border-strong),
+    0 0 36px -10px color-mix(in srgb, var(--brand-from) 22%, transparent),
+    0 0 52px -16px color-mix(in srgb, var(--brand-to) 14%, transparent);
 }
 
 .dark .chart-glow-frame {
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--brand-from) 20%, transparent),
-    0 0 40px -8px color-mix(in srgb, var(--brand-from) 30%, transparent),
-    0 0 56px -14px color-mix(in srgb, var(--brand-to) 22%, transparent);
+    0 0 0 1px var(--diagram-border-strong),
+    0 0 44px -12px color-mix(in srgb, var(--brand-from) 18%, transparent),
+    0 0 64px -18px color-mix(in srgb, var(--brand-to) 12%, transparent);
+}
+
+/* Nội dung sơ đồ: surface + đổ trong suốt */
+.architecture-figure {
+  border-radius: var(--diagram-radius);
+}
+
+.architecture-figure__surface {
+  background: linear-gradient(
+    165deg,
+    var(--diagram-surface) 0%,
+    var(--diagram-surface-deep) 100%
+  );
+  box-shadow: var(--diagram-shadow);
+  border: 1px solid var(--diagram-border);
+}
+
+.architecture-figure__scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--foreground) 25%, transparent)
+    transparent;
+}
+
+.architecture-figure__scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.architecture-figure__scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 22%, transparent);
+}
+
+.dark .architecture-figure__scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--foreground) 35%, transparent);
+}
+
+/* React Flow (beguru-flow): lưới nền dùng token */
+.beguru-flow-rf .react-flow__background circle {
+  fill: var(--diagram-grid-dot);
 }
 
 .dark body {

@@ -6,37 +6,47 @@ import { useEffect, useId, useRef, useState } from "react";
 
 type Props = { chart: string; lang?: "vi" | "en" };
 
-/** Palette hex đồng bộ với BeGuru flow (gradient frame ngoài do ChartLightbox). */
+/**
+ * Mermaid `theme: base` — palette editorial, khớp brand sky/indigo + surface blog.
+ */
 function getMermaidThemeVars(isDark: boolean): Record<string, string> {
   if (isDark) {
     return {
-      primaryColor: "#4c1d95",
-      primaryTextColor: "#f5f3ff",
-      primaryBorderColor: "#a78bfa",
-      secondaryColor: "#312e81",
-      tertiaryColor: "#1e1b4b",
-      lineColor: "#94a3b8",
+      primaryColor: "#1e293b",
+      primaryTextColor: "#f1f5f9",
+      primaryBorderColor: "#64748b",
+      secondaryColor: "#334155",
+      tertiaryColor: "#0f172a",
+      lineColor: "#64748b",
       textColor: "#e2e8f0",
-      mainBkg: "#4338ca",
-      nodeBorder: "#818cf8",
-      clusterBkg: "rgba(67,56,202,0.35)",
-      titleColor: "#f1f5f9",
-      edgeLabelBackground: "#1e293b",
+      mainBkg: "#334155",
+      nodeBorder: "#94a3b8",
+      clusterBkg: "rgba(51,65,85,0.55)",
+      titleColor: "#f8fafc",
+      edgeLabelBackground: "#0f172a",
+      actorBkg: "#1e3a5f",
+      actorBorder: "#38bdf8",
+      actorTextColor: "#f0f9ff",
+      signalColor: "#7dd3fc",
     };
   }
   return {
-    primaryColor: "#ede9fe",
-    primaryTextColor: "#4c1d95",
-    primaryBorderColor: "#8b5cf6",
-    secondaryColor: "#e0e7ff",
-    tertiaryColor: "#f8fafc",
-    lineColor: "#64748b",
-    textColor: "#1e293b",
-    mainBkg: "#c4b5fd",
-    nodeBorder: "#7c3aed",
-    clusterBkg: "rgba(196,181,253,0.45)",
+    primaryColor: "#f8fafc",
+    primaryTextColor: "#0f172a",
+    primaryBorderColor: "#cbd5e1",
+    secondaryColor: "#f1f5f9",
+    tertiaryColor: "#ffffff",
+    lineColor: "#94a3b8",
+    textColor: "#334155",
+    mainBkg: "#e2e8f0",
+    nodeBorder: "#94a3b8",
+    clusterBkg: "rgba(148,163,184,0.2)",
     titleColor: "#0f172a",
     edgeLabelBackground: "#ffffff",
+    actorBkg: "#e0f2fe",
+    actorBorder: "#0ea5e9",
+    actorTextColor: "#0c4a6e",
+    signalColor: "#0284c7",
   };
 }
 
@@ -58,7 +68,7 @@ function MermaidCanvas({ chart }: { chart: string }) {
         const isDark = resolvedTheme === "dark";
         mermaid.initialize({
           startOnLoad: false,
-          theme: isDark ? "dark" : "neutral",
+          theme: "base",
           securityLevel: "loose",
           themeVariables: getMermaidThemeVars(isDark),
         });

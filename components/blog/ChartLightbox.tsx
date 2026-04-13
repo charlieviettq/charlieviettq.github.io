@@ -7,12 +7,15 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { ArchitectureFigure } from "@/components/blog/ArchitectureFigure";
 
 type Props = {
   /** Tiêu đề phía trên chart (inline + modal) */
   title?: string;
   /** Gợi ý nhỏ dưới tiêu đề */
   hint?: ReactNode;
+  /** Chú thích dưới khung (caption / SSOT) — optional */
+  footerNote?: ReactNode;
   /** Nội dung chart inline */
   children: ReactNode;
   /** Chart trong modal toàn màn (thường là instance thứ hai: React Flow / Mermaid) */
@@ -26,6 +29,7 @@ type Props = {
 export function ChartLightbox({
   title,
   hint,
+  footerNote,
   children,
   fullscreenSlot,
   expandLabelVi = "Mở rộng sơ đồ toàn màn hình",
@@ -75,8 +79,8 @@ export function ChartLightbox({
               onClick={() => setOpen(false)}
             />
             <div className="chart-glow-frame relative z-10 flex max-h-[96vh] w-full max-w-[min(100vw-1.5rem,1200px)] flex-col overflow-hidden rounded-2xl p-[1px] shadow-2xl">
-              <div className="relative flex max-h-[96vh] min-h-0 flex-col overflow-hidden rounded-[calc(1rem-1px)] bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900/95 dark:to-zinc-950">
-                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-200/90 px-4 py-3 dark:border-zinc-700/90">
+              <div className="architecture-figure__surface relative flex max-h-[96vh] min-h-0 flex-col overflow-hidden rounded-[calc(1rem-1px)]">
+                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-zinc-200/50 px-4 py-3 dark:border-zinc-700/50">
                   <div className="min-w-0 flex-1 pt-0.5">
                     {title ? (
                       <p
@@ -115,7 +119,9 @@ export function ChartLightbox({
                     </svg>
                   </button>
                 </div>
-                <div className="min-h-0 flex-1 overflow-auto">{fullscreenSlot}</div>
+                <div className="min-h-0 flex-1 overflow-auto bg-zinc-50/80 dark:bg-zinc-950/80">
+                  {fullscreenSlot}
+                </div>
               </div>
             </div>
           </div>,
@@ -145,19 +151,21 @@ export function ChartLightbox({
             <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
           </svg>
         </button>
-        <div className="overflow-hidden rounded-[calc(1rem-1px)] bg-gradient-to-b from-zinc-50 to-white dark:from-zinc-900/90 dark:to-zinc-950">
+        <ArchitectureFigure footer={footerNote}>
           {title ? (
-            <p className="px-4 pt-4 text-center text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+            <p className="border-b border-zinc-200/50 px-4 pb-3 pt-4 text-center text-sm font-semibold tracking-tight text-zinc-800 dark:border-zinc-700/50 dark:text-zinc-100">
               {title}
             </p>
           ) : null}
           {hint ? (
-            <div className="px-4 pb-2 pt-2 text-center text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="border-b border-zinc-200/40 px-4 py-2.5 text-center text-xs leading-snug text-zinc-500 dark:border-zinc-700/40 dark:text-zinc-400">
               {hint}
             </div>
           ) : null}
-          <div className="relative">{children}</div>
-        </div>
+          <div className="architecture-figure__scroll relative overflow-x-auto overscroll-x-contain px-1 pb-1 sm:px-2 sm:pb-2">
+            {children}
+          </div>
+        </ArchitectureFigure>
       </div>
       {modal}
     </>

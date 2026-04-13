@@ -42,6 +42,8 @@ BeGuru **không** cam kết đã triển khai đủ các lớp đó; bài [Mem0 
 
 Artifact-first: file `.guru/` / `design-system` vẫn là nguồn chân lý; nhớ ngữ nghĩa là lớp bổ sung. Về memory, BeGuru vận hành song song ba mặt: (1) short-term trong phiên (RawHistory → ContextCompressor → PinnedLayer), (2) artifact bền trên đĩa (templates, BUILD_STATE, MASTER), và (3) semantic long-term (MemoryPlane → mem0 → vector store). Hover vào ô để thấy luồng dữ liệu; dùng nút mở rộng để xem sơ đồ toàn màn.
 
+**Chú thích màu ô (kind):** `client` / `router` (xanh dương) · `api` (tím) · `agent` (hồng) · `llm` (amber) · `disk` / `template` (xanh lá / cam) · `memory` (đỏ nhạt) · `sandbox` (cyan) · `obs` (xám).
+
 ```beguru-flow
 {
   "title": "BeGuru — Tầng nhớ & Artifact",
@@ -319,6 +321,8 @@ BeGuru does **not** claim full implementation of those layers yet; [Mem0 & cross
 ### Target architecture
 
 Artifact-first: `.guru/` and project `design-system` form the durable artifact layer; semantic memory is additive. BeGuru's memory architecture spans short-term (in-session), durable artifacts on disk (templates, BUILD_STATE), and a roadmap semantic plane (MemoryPlane → mem0 → vector store). Use the diagram below to read flows; expand to fullscreen for detail.
+
+**Legend (node `kind`):** `client` / `router` (sky) · `api` (violet) · `agent` (fuchsia) · `llm` (amber) · `disk` / `template` (emerald / orange) · `memory` (rose) · `sandbox` (cyan) · `obs` (zinc).
 
 ```beguru-flow
 {

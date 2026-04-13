@@ -233,10 +233,10 @@ function buildNodesAndEdges(
     return from === hover || to === hover;
   };
 
-  const strokeMuted = isDark ? "#52525b" : "#a1a1aa";
-  const strokeActive = isDark ? "#22d3ee" : "#0ea5e9";
+  const strokeMuted = isDark ? "#52525b" : "#b4b9c2";
+  const strokeActive = isDark ? "#38bdf8" : "#0284c7";
   const strokeBase = isDark ? "#71717a" : "#94a3b8";
-  const labelFill = isDark ? "#a1a1aa" : "#52525b";
+  const labelFill = isDark ? "#a1a1aa" : "#64748b";
 
   const nodes: Node[] = [];
   for (const [id, n] of Object.entries(spec.nodes)) {
@@ -358,8 +358,15 @@ function FitViewOnSpec({
 }) {
   const { fitView } = useReactFlow();
   useEffect(() => {
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const id = requestAnimationFrame(() => {
-      fitView({ padding: 0.2, duration: 260, maxZoom: variant === "fullscreen" ? 1.4 : 1.25 });
+      fitView({
+        padding: 0.2,
+        duration: reduceMotion ? 0 : variant === "fullscreen" ? 280 : 240,
+        maxZoom: variant === "fullscreen" ? 1.4 : 1.25,
+      });
     });
     return () => cancelAnimationFrame(id);
   }, [fitView, specKey, variant]);
@@ -433,9 +440,9 @@ function BeguruFlowCanvas({
         aria-label={spec.title ?? "Architecture flow diagram"}
       >
         <Background
-          gap={18}
-          size={1}
-          className="opacity-40 dark:opacity-25"
+          gap={20}
+          size={1.15}
+          className="opacity-[0.38] dark:opacity-[0.22]"
         />
         <Controls
           showInteractive={false}
@@ -464,10 +471,31 @@ export function BeguruFlowDiagram({ spec, lang }: Props) {
     <span>{hint}</span>
   ) : undefined;
 
+  const footerNote = (
+    <span>
+      {lang === "vi" ? (
+        <>
+          Sơ đồ tương tác · SSOT:{" "}
+          <code className="rounded-md bg-zinc-200/90 px-1.5 py-0.5 font-mono text-[0.65rem] text-zinc-800 dark:bg-zinc-800/90 dark:text-zinc-200">
+            beguru-ai/docs
+          </code>
+        </>
+      ) : (
+        <>
+          Interactive · SSOT:{" "}
+          <code className="rounded-md bg-zinc-200/90 px-1.5 py-0.5 font-mono text-[0.65rem] text-zinc-800 dark:bg-zinc-800/90 dark:text-zinc-200">
+            beguru-ai/docs
+          </code>
+        </>
+      )}
+    </span>
+  );
+
   return (
     <ChartLightbox
       title={spec.title}
       hint={hintNode}
+      footerNote={footerNote}
       lang={lang}
       fullscreenSlot={
         <ReactFlowProvider>
