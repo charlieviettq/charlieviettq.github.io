@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>XGBoost flow — 1 input đi qua tree</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0b1020;
+        --panel: #101a33;
+        --stroke: rgba(255, 255, 255, 0.14);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.70);
+        --accent: #4ea1ff;
+        --leaf: #ffd166;
+        --ok: #5eead4;
+        --warn: #fda4af;
+        --miss: #c4b5fd;
+      }
+
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg: #f7f9ff;
+          --panel: #ffffff;
+          --stroke: rgba(2, 6, 23, 0.12);
+          --text: rgba(2, 6, 23, 0.92);
+          --muted: rgba(2, 6, 23, 0.65);
+          --accent: #2563eb;
+          --leaf: #b45309;
+          --ok: #0f766e;
+          --warn: #be123c;
+          --miss: #6d28d9;
+        }
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial,
+          "Apple Color Emoji",
+          "Segoe UI Emoji";
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      .header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 12px;
+      }
+      h1 {
+        font-size: 18px;
+        margin: 0;
+        letter-spacing: 0.2px;
+      }
+      .sub {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0;
+      }
+
+      .card {
+        background: color-mix(in oklab, var(--panel) 92%, transparent);
+        border: 1px solid var(--stroke);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 14px;
+        padding: 12px 14px;
+        border-top: 1px solid var(--stroke);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+      .dot.ok { background: var(--ok); }
+      .dot.warn { background: var(--warn); }
+      .dot.miss { background: var(--miss); }
+      .dot.leaf { background: var(--leaf); }
+
+      svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      .node {
+        fill: var(--panel);
+        stroke: var(--stroke);
+        stroke-width: 1;
+      }
+      .title {
+        font-size: 13px;
+        font-weight: 700;
+        fill: var(--text);
+      }
+      .label {
+        font-size: 12px;
+        fill: var(--muted);
+      }
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+          "Courier New", monospace;
+        font-size: 12px;
+        fill: var(--text);
+      }
+      .arrow {
+        stroke: var(--accent);
+        stroke-width: 2;
+        fill: none;
+        marker-end: url(#arrow);
+      }
+      .arrowSoft {
+        stroke: color-mix(in oklab, var(--accent) 65%, transparent);
+        stroke-width: 2;
+        fill: none;
+        marker-end: url(#arrow);
+      }
+      .arrowOk {
+        stroke: var(--ok);
+        stroke-width: 2;
+        fill: none;
+        marker-end: url(#arrowOk);
+      }
+      .arrowNo {
+        stroke: var(--warn);
+        stroke-width: 2;
+        fill: none;
+        marker-end: url(#arrowNo);
+      }
+      .arrowMiss {
+        stroke: var(--miss);
+        stroke-width: 2;
+        fill: none;
+        marker-end: url(#arrowMiss);
+      }
+      .leafBox {
+        fill: color-mix(in oklab, var(--leaf) 12%, var(--panel));
+        stroke: color-mix(in oklab, var(--leaf) 45%, var(--stroke));
+        stroke-width: 1;
+      }
+      .small {
+        font-size: 11px;
+        fill: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="header">
+        <h1>XGBoost flow (credit scoring) — 1 input đi qua tree</h1>
+        <p class="sub">Input → split (Yes/No/Missing) → leaf_value → cộng dồn nhiều cây → sigmoid → output</p>
+      </div>
+
+      <div class="card">
+        <svg viewBox="0 0 1300 520" role="img" aria-label="Flow of XGBoost inference for one input">
+          <defs>
+            <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"></path>
+            </marker>
+            <marker id="arrowOk" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ok)"></path>
+            </marker>
+            <marker id="arrowNo" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--warn)"></path>
+            </marker>
+            <marker id="arrowMiss" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--miss)"></path>
+            </marker>
+          </defs>
+
+          <rect class="node" x="40" y="80" width="240" height="140" rx="14"></rect>
+          <text class="title" x="60" y="110">Input (customer features)</text>
+          <text class="label" x="60" y="134">Point-in-time snapshot</text>
+          <text class="mono" x="60" y="162">x = [x0, x1, ..., xd-1]</text>
+          <text class="small" x="60" y="190">vd: utilization_30d, dpd_max_90d, ...</text>
+
+          <path class="arrow" d="M 280 150 C 320 150, 320 150, 360 150"></path>
+
+          <rect class="node" x="360" y="40" width="330" height="240" rx="14"></rect>
+          <text class="title" x="380" y="70">Tree 0</text>
+          <text class="label" x="380" y="92">Node split</text>
+
+          <rect class="node" x="385" y="110" width="280" height="70" rx="12"></rect>
+          <text class="mono" x="405" y="140">if x[j] &lt; split ?</text>
+          <text class="small" x="405" y="162">Yes / No / Missing</text>
+
+          <path class="arrowOk" d="M 525 180 C 525 220, 470 220, 470 255"></path>
+          <path class="arrowNo" d="M 525 180 C 525 220, 585 220, 585 255"></path>
+          <path class="arrowMiss" d="M 665 145 C 700 145, 720 145, 740 145"></path>
+
+          <text class="small" x="448" y="235">Yes</text>
+          <text class="small" x="575" y="235">No</text>
+          <text class="small" x="710" y="136">Missing</text>
+
+          <rect class="leafBox" x="420" y="255" width="190" height="58" rx="12"></rect>
+          <text class="title" x="440" y="286">Leaf value</text>
+          <text class="mono" x="440" y="306">= +0.150</text>
+
+          <rect class="node" x="720" y="70" width="200" height="150" rx="14"></rect>
+          <text class="title" x="740" y="100">Tree 1</text>
+          <text class="label" x="740" y="122">…</text>
+          <rect class="leafBox" x="740" y="140" width="160" height="58" rx="12"></rect>
+          <text class="title" x="758" y="170">Leaf value</text>
+          <text class="mono" x="758" y="190">= -0.267</text>
+
+          <rect class="node" x="950" y="70" width="200" height="150" rx="14"></rect>
+          <text class="title" x="970" y="100">Tree 2</text>
+          <text class="label" x="970" y="122">…</text>
+          <rect class="leafBox" x="970" y="140" width="160" height="58" rx="12"></rect>
+          <text class="title" x="988" y="170">Leaf value</text>
+          <text class="mono" x="988" y="190">= +0.046</text>
+
+          <text class="label" x="1165" y="150">…</text>
+
+          <path class="arrowSoft" d="M 690 320 C 760 320, 760 320, 830 320"></path>
+          <rect class="node" x="830" y="280" width="320" height="90" rx="14"></rect>
+          <text class="title" x="850" y="312">Accumulate</text>
+          <text class="mono" x="850" y="338">score = base_score + Σ tree_i(x)</text>
+
+          <path class="arrow" d="M 1150 325 C 1180 325, 1180 325, 1210 325"></path>
+          <rect class="node" x="1210" y="270" width="280" height="110" rx="14"></rect>
+          <text class="title" x="1230" y="302">Sigmoid (binary logistic)</text>
+          <text class="mono" x="1230" y="332">prob = 1 / (1 + exp(-score))</text>
+          <text class="small" x="1230" y="356">Output: probability / score</text>
+          <text class="small" x="1230" y="376">Policy dùng cut-off để quyết định</text>
+
+          <text class="small" x="40" y="468">
+            Ghi chú: ‘Missing’ là nhánh riêng khi feature NA (không phải lúc nào cũng map thành 0).
+          </text>
+        </svg>
+
+        <div class="legend">
+          <span class="pill"><span class="dot"></span>Arrow: flow chính</span>
+          <span class="pill"><span class="dot ok"></span>Yes branch</span>
+          <span class="pill"><span class="dot warn"></span>No branch</span>
+          <span class="pill"><span class="dot miss"></span>Missing branch</span>
+          <span class="pill"><span class="dot leaf"></span>Leaf value (đóng góp của tree)</span>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
