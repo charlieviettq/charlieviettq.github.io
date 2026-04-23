@@ -19,7 +19,7 @@ export default function BlogIndexPage() {
   return (
     <div className="space-y-12">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Blog</h1>
+        <h1 className="font-heading text-3xl font-bold tracking-tight">Blog</h1>
         <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
           Notes / Ghi chép ngắn — song ngữ trong bài khi phù hợp. Bốn chuyên mục:
           Data Science, Data Engineering, Gen AI, Banking Domain.
@@ -30,7 +30,7 @@ export default function BlogIndexPage() {
           </strong>{" "}
           <Link
             href="/blog/beguru-ai-architecture-overview"
-            className="text-sky-700 underline decoration-sky-500/40 underline-offset-2 hover:text-sky-800 dark:text-sky-400 dark:hover:text-sky-300"
+            className="text-amber-700 underline decoration-amber-500/40 underline-offset-2 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
           >
             Technical Docs (kiến trúc tổng quan)
           </Link>
@@ -54,7 +54,7 @@ export default function BlogIndexPage() {
             <a
               key={cat}
               href={`#${cat}`}
-              className={`inline-flex items-center rounded-full px-3 py-1 font-medium transition hover:opacity-90 ${getCategoryPillClasses(cat)}`}
+              className={`inline-flex items-center rounded-md px-3 py-1 font-medium transition hover:opacity-90 ${getCategoryPillClasses(cat)}`}
             >
               {getCategoryLabel(cat)}
             </a>
@@ -67,8 +67,8 @@ export default function BlogIndexPage() {
         return (
           <section key={cat} id={cat} className="scroll-mt-24">
             <GradientCard className="space-y-4">
-              <header className="border-b border-sky-200/50 pb-4 dark:border-sky-500/20">
-                <h2 className="text-xl font-bold tracking-tight">
+              <header className="border-b border-zinc-200/40 pb-4 dark:border-zinc-700/30">
+                <h2 className="font-heading text-xl font-bold tracking-tight">
                   {getCategoryLabel(cat)}
                 </h2>
                 <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
@@ -82,10 +82,10 @@ export default function BlogIndexPage() {
                   {posts.map((post) => (
                     <li
                       key={post.slug}
-                      className="border-b border-zinc-200/80 pb-5 last:border-0 last:pb-0 dark:border-zinc-700/80"
+                      className="group border-b border-zinc-200/60 pb-5 last:border-0 last:pb-0 dark:border-zinc-700/40"
                     >
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                        <p className="font-mono text-xs font-medium tabular-nums text-zinc-400 dark:text-zinc-500">
                           {post.date}
                         </p>
                         <span
@@ -97,7 +97,7 @@ export default function BlogIndexPage() {
                       <h3 className="mt-2 text-lg font-semibold">
                         <Link
                           href={`/blog/${post.slug}/`}
-                          className="text-zinc-900 hover:text-sky-600 dark:text-zinc-100 dark:hover:text-sky-400"
+                          className="text-zinc-900 hover:text-amber-600 dark:text-zinc-100 dark:hover:text-amber-400"
                         >
                           {post.title}
                         </Link>

@@ -56,7 +56,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-sky-200/80 bg-white/90 text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:bg-white hover:text-zinc-900 dark:border-sky-500/30 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:border-indigo-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-200/80 bg-white/90 text-zinc-600 shadow-sm transition hover:border-amber-300/80 hover:bg-white hover:text-zinc-900 dark:border-zinc-700/50 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:border-amber-500/40 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
       aria-label={
         isDark
           ? "Chuyển giao diện sáng / Switch to light mode"
@@ -68,7 +68,7 @@ export function ThemeToggle() {
       ) : isDark ? (
         <SunIcon className="text-amber-500" />
       ) : (
-        <MoonIcon className="text-sky-600 dark:text-sky-400" />
+        <MoonIcon className="text-slate-500" />
       )}
     </button>
   );

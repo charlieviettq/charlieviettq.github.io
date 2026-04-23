@@ -43,7 +43,7 @@ export function AboutBody() {
             onClick={() => setLanguage("vi")}
             className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
               lang === "vi"
-                ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm"
+                ? "bg-amber-600 text-white shadow-sm"
                 : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             }`}
           >
@@ -54,7 +54,7 @@ export function AboutBody() {
             onClick={() => setLanguage("en")}
             className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
               lang === "en"
-                ? "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm"
+                ? "bg-amber-600 text-white shadow-sm"
                 : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             }`}
           >

@@ -48,7 +48,7 @@ function TocNav({ items }: { items: TocItem[] }) {
   if (items.length === 0) return null;
   return (
     <nav aria-label="Mục lục / Table of contents">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+      <p className="mb-3 font-heading text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
         On this page
       </p>
       <ul className="space-y-2 text-sm">
@@ -59,7 +59,7 @@ function TocNav({ items }: { items: TocItem[] }) {
           >
             <a
               href={`#${item.id}`}
-              className="text-zinc-600 underline-offset-2 hover:text-sky-600 hover:underline dark:text-zinc-400 dark:hover:text-sky-400"
+              className="text-zinc-600 underline-offset-2 transition-colors hover:text-amber-600 hover:underline dark:text-zinc-400 dark:hover:text-amber-400"
             >
               {item.text}
             </a>
@@ -83,12 +83,12 @@ function CaseStudyKpiGrid({
       {kpis.map((kpi, i) => (
         <div
           key={`${kpi.value}-${i}`}
-          className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 backdrop-blur-sm md:px-4 md:py-4"
+          className="rounded-lg border border-white/10 border-l-2 border-l-amber-400/80 bg-white/5 px-3 py-3 backdrop-blur-sm md:px-4 md:py-4"
         >
           <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-zinc-400">
             {lang === "vi" ? kpi.labelVi : kpi.labelEn}
           </p>
-          <p className="mt-1 text-sm font-semibold leading-snug text-white md:text-base">
+          <p className="mt-1 font-heading text-sm font-bold leading-snug text-white md:text-base">
             {kpi.value}
           </p>
         </div>
@@ -205,7 +205,7 @@ export function BlogPostBody({
           <header
             className={
               caseStudy
-                ? "overflow-hidden rounded-2xl border border-zinc-200/80 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-6 text-zinc-100 shadow-xl ring-1 ring-white/10 dark:border-zinc-700/80"
+                ? "overflow-hidden rounded-2xl border border-zinc-200/80 border-t-2 border-t-amber-400/60 bg-gradient-to-br from-[#0F172A] via-slate-900 to-purple-950 p-6 text-zinc-100 shadow-xl ring-1 ring-white/10 dark:border-zinc-700/80"
                 : undefined
             }
           >
@@ -293,7 +293,7 @@ export function BlogPostBody({
                       lang === "vi"
                         ? caseStudy
                           ? "bg-white text-slate-900 shadow-sm"
-                          : "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm"
+                          : "bg-amber-600 text-white shadow-sm"
                         : caseStudy
                           ? "text-zinc-300 hover:text-white"
                           : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
@@ -308,7 +308,7 @@ export function BlogPostBody({
                       lang === "en"
                         ? caseStudy
                           ? "bg-white text-slate-900 shadow-sm"
-                          : "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm"
+                          : "bg-amber-600 text-white shadow-sm"
                         : caseStudy
                           ? "text-zinc-300 hover:text-white"
                           : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
@@ -323,7 +323,7 @@ export function BlogPostBody({
 
           {caseStudy ? (
             <div className="rounded-2xl border border-zinc-200/90 bg-white/90 p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 md:p-8">
-              <div className="beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
+              <div className="beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-amber-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
                 <ReactMarkdown
                   key={lang + (bilingual ? "" : "single")}
                   remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
@@ -339,7 +339,7 @@ export function BlogPostBody({
               </div>
             </div>
           ) : (
-            <div className="beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
+            <div className="beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-amber-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
               <ReactMarkdown
                 key={lang + (bilingual ? "" : "single")}
                 remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
@@ -357,13 +357,13 @@ export function BlogPostBody({
         </article>
 
         <p className="mt-10 text-sm">
-          <Link href="/blog/" className="text-sky-600 hover:underline dark:text-sky-400">
+          <Link href="/blog/" className="text-amber-600 hover:underline dark:text-amber-400">
             ← Blog
           </Link>
         </p>
       </div>
 
-      <aside className="order-2 w-full shrink-0 border-t border-zinc-200 pt-6 lg:order-1 lg:w-56 lg:border-r lg:border-t-0 lg:pr-6 dark:border-zinc-700">
+      <aside className="order-2 w-full shrink-0 border-t border-zinc-200/50 pt-6 lg:order-1 lg:w-52 lg:border-r lg:border-t-0 lg:pr-5 dark:border-zinc-700/40">
         <div className="lg:sticky lg:top-24">
           <TocNav items={toc} />
         </div>
