@@ -68,9 +68,9 @@ export function getCategoryPillClasses(cat: BlogCategory): string {
     "data-engineering":
       "bg-indigo-100 text-indigo-900 ring-1 ring-indigo-200/90 dark:bg-indigo-950/55 dark:text-indigo-200 dark:ring-indigo-500/35",
     "gen-ai":
-      "bg-violet-100 text-violet-900 ring-1 ring-violet-200/90 dark:bg-violet-950/55 dark:text-violet-200 dark:ring-violet-500/35",
+      "bg-purple-100 text-purple-900 ring-1 ring-purple-200/90 dark:bg-purple-950/55 dark:text-purple-200 dark:ring-purple-500/35",
     banking:
-      "bg-emerald-100 text-emerald-900 ring-1 ring-emerald-200/90 dark:bg-emerald-950/55 dark:text-emerald-200 dark:ring-emerald-500/35",
+      "bg-amber-100 text-amber-900 ring-1 ring-amber-200/90 dark:bg-amber-950/55 dark:text-amber-200 dark:ring-amber-500/35",
   };
   return map[cat];
 }

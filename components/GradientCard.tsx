@@ -8,7 +8,7 @@ type Props = {
 export function GradientCard({ children, className = "" }: Props) {
   return (
     <div
-      className={`rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-500/[0.09] via-white/85 to-indigo-500/[0.11] p-6 shadow-sm dark:border-sky-500/25 dark:from-sky-500/[0.12] dark:via-zinc-950/65 dark:to-indigo-500/[0.14] ${className}`}
+      className={`rounded-xl border border-zinc-200/60 bg-white/95 p-6 shadow-sm ring-1 ring-zinc-900/[0.04] transition-shadow hover:shadow-md dark:border-zinc-700/40 dark:bg-zinc-900/60 dark:ring-white/[0.04] ${className}`}
     >
       {children}
     </div>

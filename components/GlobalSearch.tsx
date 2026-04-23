@@ -134,12 +134,12 @@ export function GlobalSearch() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group flex items-center gap-2 rounded-full border border-sky-200/80 bg-white/90 px-3 py-1.5 text-sm text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:bg-white hover:text-zinc-900 dark:border-sky-500/30 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:border-indigo-400 dark:hover:bg-zinc-900"
+        className="group flex items-center gap-2 rounded-full border border-zinc-200/70 bg-white/90 px-3 py-1.5 text-sm text-zinc-600 shadow-sm transition hover:border-amber-300/70 hover:bg-white hover:text-zinc-900 dark:border-zinc-700/40 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:border-amber-500/50 dark:hover:bg-zinc-900"
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label="Tìm kiếm blog / Search blog"
       >
-        <SearchIcon className="text-sky-600 dark:text-sky-400" />
+        <SearchIcon className="text-amber-500 dark:text-amber-400" />
         <span className="hidden font-medium sm:inline">Tìm kiếm</span>
         <kbd className="hidden rounded border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 sm:inline-block">
           {shortcutHint}
@@ -159,11 +159,11 @@ export function GlobalSearch() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="global-search-title"
-            className="w-full max-w-lg rounded-2xl border border-sky-200/80 bg-gradient-to-b from-white to-zinc-50/95 p-1 shadow-2xl shadow-sky-900/10 dark:border-sky-500/25 dark:from-zinc-900 dark:to-zinc-950/95 dark:shadow-black/40"
+            className="w-full max-w-lg rounded-2xl border border-zinc-200/60 bg-gradient-to-b from-white to-zinc-50/95 p-1 shadow-2xl shadow-zinc-900/20 dark:border-zinc-700/40 dark:from-zinc-900 dark:to-zinc-950/95 dark:shadow-black/40"
           >
             <div className="rounded-xl bg-white/80 p-4 dark:bg-zinc-950/80">
               <div className="flex items-center gap-2 border-b border-zinc-200/80 pb-3 dark:border-zinc-700/80">
-                <SearchIcon className="shrink-0 text-sky-500 dark:text-sky-400" />
+                <SearchIcon className="shrink-0 text-amber-500 dark:text-amber-400" />
                 <div className="min-w-0 flex-1">
                   <h2 id="global-search-title" className="sr-only">
                     Tìm kiếm bài blog
@@ -209,7 +209,7 @@ export function GlobalSearch() {
                         onMouseEnter={() => setHighlighted(index)}
                         className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
                           index === highlighted
-                            ? "border-sky-400/80 bg-sky-50/90 dark:border-sky-500/50 dark:bg-sky-950/40"
+                            ? "border-amber-400/70 bg-amber-50/80 dark:border-amber-500/40 dark:bg-amber-950/30"
                             : "border-transparent bg-zinc-50/50 hover:border-zinc-200 hover:bg-white dark:bg-zinc-900/30 dark:hover:border-zinc-600 dark:hover:bg-zinc-900/60"
                         }`}
                       >
@@ -223,7 +223,7 @@ export function GlobalSearch() {
                             {CATEGORY_LABELS[item.category] ?? item.category}
                           </span>
                         </div>
-                        <p className="mt-0.5 font-semibold text-sky-800 dark:text-sky-300">
+                        <p className="mt-0.5 font-semibold text-amber-800 dark:text-amber-300">
                           {item.title}
                         </p>
                         <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">

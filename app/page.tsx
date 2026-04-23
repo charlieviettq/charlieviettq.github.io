@@ -7,20 +7,20 @@ export default function Home() {
     <div className="space-y-10">
       <GradientCard className="space-y-6">
         <div className="space-y-4">
-          <p className="text-sm font-medium uppercase tracking-wide text-sky-600 dark:text-sky-400">
+          <p className="text-sm font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400">
             Xin chào / Hello · TP. HCM
           </p>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
             Analytics · Data platform · Credit-risk ML · GenAI
           </h1>
-          <p className="max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
+          <p className="max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
             <strong className="text-zinc-800 dark:text-zinc-200">VI:</strong> Mình là{" "}
             <strong>Trần Quốc Việt</strong> — làm nền dữ liệu (Airflow, dbt, BigQuery,
             GCP), mô hình rủi ro tín dụng bán lẻ (OOT, drift, scorecard / boosting), và
             GenAI có thể vận hành (RAG, agent, observability). Trang này tổng hợp giới
             thiệu và blog ghi chép kỹ thuật theo bốn chuyên mục.
           </p>
-          <p className="max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
+          <p className="max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
             <strong className="text-zinc-800 dark:text-zinc-200">EN:</strong> I&apos;m{" "}
             <strong>Tran Quoc Viet (Charlie)</strong> — I work on data platforms (Airflow,
             dbt, BigQuery, GCP), retail credit-risk ML (OOT, drift, scorecards /
@@ -28,26 +28,43 @@ export default function Home() {
             is my bio plus technical notes organized in four topics.
           </p>
         </div>
+
+        <div className="grid grid-cols-2 gap-3 border-t border-zinc-200/60 pt-5 sm:grid-cols-4 dark:border-zinc-700/40">
+          {[
+            { label: "Focus Domain", value: "Credit Risk ML" },
+            { label: "Platform", value: "GCP · BigQuery" },
+            { label: "Stack", value: "Airflow · dbt · RAG" },
+            { label: "Location", value: "HCMC, Vietnam" },
+          ].map((s) => (
+            <div key={s.label} className="stat-card pl-3">
+              <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                {s.label}
+              </p>
+              <p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                {s.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
         <div className="flex flex-wrap gap-3">
           <Link
             href="/about/"
-            className="rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-sky-500/25 transition hover:from-sky-500 hover:to-indigo-500 dark:shadow-indigo-500/20"
+            className="rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-amber-500/20 transition hover:bg-amber-500"
           >
             About / Giới thiệu
           </Link>
           <Link
             href="/blog/"
-            className="rounded-xl border-2 border-transparent bg-gradient-to-r from-sky-500 to-indigo-500 p-[2px] text-sm font-semibold text-zinc-900 dark:text-zinc-100"
+            className="rounded-lg border border-zinc-200 bg-white px-5 py-2.5 text-sm font-semibold text-zinc-900 shadow-sm transition hover:border-amber-300/60 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-amber-500/30"
           >
-            <span className="flex h-full w-full items-center justify-center rounded-[10px] bg-white px-4 py-2 dark:bg-zinc-950">
-              Blog
-            </span>
+            Blog →
           </Link>
         </div>
       </GradientCard>
 
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+        <h2 className="font-heading text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
           Blog theo mục / Topics
         </h2>
         <div className="flex flex-wrap gap-2">
@@ -55,7 +72,7 @@ export default function Home() {
             <Link
               key={cat}
               href={`/blog/#${cat}`}
-              className="rounded-full border border-sky-200/80 bg-white/80 px-3 py-1.5 text-xs font-medium text-sky-800 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-sky-500/30 dark:bg-zinc-900/60 dark:text-sky-300 dark:hover:border-indigo-400 dark:hover:text-indigo-300"
+              className="rounded-md border border-zinc-200/80 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition hover:border-amber-300/60 hover:text-amber-700 dark:border-zinc-700/60 dark:bg-zinc-900/40 dark:text-zinc-300 dark:hover:border-amber-500/40 dark:hover:text-amber-400"
             >
               {getCategoryLabel(cat)}
             </Link>
