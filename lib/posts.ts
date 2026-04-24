@@ -170,3 +170,16 @@ export function getPostsByCategory(category: BlogCategory): Post[] {
     (p) => p.category === category && isListedPost(p),
   );
 }
+
+export function getAdjacentPosts(slug: string): {
+  prev: PostMeta | null;
+  next: PostMeta | null;
+} {
+  const posts = getAllPosts().filter(isListedPost); // newest-first
+  const idx = posts.findIndex((p) => p.slug === slug);
+  if (idx === -1) return { prev: null, next: null };
+  return {
+    prev: idx < posts.length - 1 ? posts[idx + 1] : null, // older post
+    next: idx > 0 ? posts[idx - 1] : null,                // newer post
+  };
+}
