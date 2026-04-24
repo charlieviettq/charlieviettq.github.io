@@ -85,6 +85,7 @@ function AboutVi() {
         hay lời khuyên đầu tư.
       </p>
 
+      <hr />
       <h2>Kinh nghiệm</h2>
       <h3 className="!mt-4 !mb-2 text-base font-semibold">
         Cake by VPBank — Digital Bank · <span className="font-normal">Data AI Engineer</span>
@@ -146,6 +147,7 @@ function AboutVi() {
         </li>
       </ul>
 
+      <hr />
       <h2>Trọng tâm kỹ thuật</h2>
       <ul>
         <li>
@@ -170,6 +172,7 @@ function AboutVi() {
         </li>
       </ul>
 
+      <hr />
       <h2>Học vấn &amp; ghi nhận</h2>
       <p>
         <strong>Đại học FPT</strong> — Cử nhân <strong>Trí tuệ nhân tạo</strong> (10/2019 — 10/2023),
@@ -178,6 +181,7 @@ function AboutVi() {
         (bậc phổ thông — theo hồ sơ công khai).
       </p>
 
+      <hr />
       <h2>Chứng chỉ (chọn lọc)</h2>
       <ul>
         <li>
@@ -219,6 +223,7 @@ function AboutEn() {
         employer and not investment advice.
       </p>
 
+      <hr />
       <h2>Experience</h2>
       <h3 className="!mt-4 !mb-2 text-base font-semibold">
         Cake by VPBank — Digital Bank · <span className="font-normal">Data AI Engineer</span>
@@ -282,6 +287,7 @@ function AboutEn() {
         </li>
       </ul>
 
+      <hr />
       <h2>Technical focus</h2>
       <ul>
         <li>
@@ -306,6 +312,7 @@ function AboutEn() {
         </li>
       </ul>
 
+      <hr />
       <h2>Education &amp; recognition</h2>
       <p>
         <strong>FPT University</strong> — Bachelor&apos;s in <strong>Artificial Intelligence</strong>{" "}
@@ -315,6 +322,7 @@ function AboutEn() {
         profile).
       </p>
 
+      <hr />
       <h2>Certifications (selected)</h2>
       <ul>
         <li>
