@@ -92,6 +92,53 @@ Sau khi có đủ outcome:
 
 **Không đủ volume cho statistical significance.** Một C/C 95/5 split với 500 đơn/tháng có nghĩa là chỉ 25 đơn vào Challenger mỗi tháng. 3 tháng = 75 đơn. Không đủ để kết luận bất cứ điều gì. Tính sample size requirement trước khi commit vào split ratio.
 
+### Code thực tế: Tính sample size và kiểm tra kết quả C/C
+
+```python
+import math
+from scipy.stats import proportions_ztest, norm
+
+def required_sample_size(
+    p_champion: float,
+    p_challenger: float,
+    alpha: float = 0.05,
+    power: float = 0.80
+) -> int:
+    """
+    Tính số lượng application tối thiểu cho mỗi arm của C/C test.
+    p_champion  : bad rate kỳ vọng của Champion (baseline)
+    p_challenger: bad rate kỳ vọng của Challenger (alternative)
+    """
+    z_alpha = norm.ppf(1 - alpha / 2)   # two-sided
+    z_beta  = norm.ppf(power)
+    p_bar   = (p_champion + p_challenger) / 2
+
+    numerator   = (z_alpha * math.sqrt(2 * p_bar * (1 - p_bar))
+                   + z_beta * math.sqrt(p_champion * (1 - p_champion)
+                                        + p_challenger * (1 - p_challenger))) ** 2
+    denominator = (p_champion - p_challenger) ** 2
+    return math.ceil(numerator / denominator)
+
+# Ví dụ: Champion bad rate 8%, Challenger kỳ vọng giảm xuống 6.5%
+n_per_arm = required_sample_size(p_champion=0.08, p_challenger=0.065)
+print(f"Mỗi arm cần: {n_per_arm} applications")
+# → ~1,024 applications per arm; với 95/5 split: Challenger arm cần ~21,000 total/month
+
+# Sau khi có outcome — kiểm tra statistical significance
+champion_bad,  champion_n  = 192, 2400   # 8.0% bad rate
+challenger_bad, challenger_n = 52,  800   # 6.5% bad rate
+
+stat, pvalue = proportions_ztest(
+    count=[champion_bad, challenger_bad],
+    nobs=[champion_n,    challenger_n],
+    alternative='larger'   # H1: Champion bad rate > Challenger bad rate
+)
+
+print(f"z-statistic: {stat:.3f}")
+print(f"p-value    : {pvalue:.4f}")
+print("Conclusion :", "Challenger significantly better ✅" if pvalue < 0.05 else "Not conclusive ⚠️")
+```
+
 ---
 
 ### Giá trị governance
@@ -163,6 +210,41 @@ These aren't difficult questions — they're the right questions. Backtesting an
 
 ---
 
+### Code Reference — Sample Size & Statistical Significance
+
+```python
+import math
+from scipy.stats import proportions_ztest, norm
+
+def required_sample_size(p1: float, p2: float,
+                          alpha: float = 0.05, power: float = 0.80) -> int:
+    """
+    Minimum sample per arm for a two-proportion z-test.
+    p1 = Champion bad rate (baseline).
+    p2 = Challenger bad rate (target improvement).
+    """
+    z_a = norm.ppf(1 - alpha / 2)
+    z_b = norm.ppf(power)
+    p_bar = (p1 + p2) / 2
+    n = ((z_a * math.sqrt(2 * p_bar * (1 - p_bar))
+          + z_b * math.sqrt(p1*(1-p1) + p2*(1-p2))) / (p1 - p2)) ** 2
+    return math.ceil(n)
+
+# Example: Champion 8% bad rate, target 6.5% with Challenger
+n = required_sample_size(0.08, 0.065)
+print(f"Required per arm: {n}")   # ~1,024 applications
+
+# After outcome window — test statistical significance
+stat, p = proportions_ztest(
+    count=[192, 52],   # bad counts: champion, challenger
+    nobs=[2400, 800],  # total counts
+    alternative='larger'   # H1: champion bad rate > challenger bad rate
+)
+print(f"p-value: {p:.4f} — {'Challenger wins ✅' if p < 0.05 else 'Inconclusive ⚠️'}")
+```
+
+**Why this matters:** a 95/5 split with 500 apps/month gives 25 Challenger apps monthly. After 3 months: 75 data points — statistically meaningless. Calculate `required_sample_size` before committing to a split ratio, not after you've already run the test.
+
 ### Real-World Edge Cases
 
 **Seasonality.** A C/C run over a Lunar New Year period captures a fundamentally different applicant profile. Either run long enough to cover at least one seasonal cycle, or document the limitation explicitly.
@@ -195,3 +277,11 @@ The second version creates an audit trail: who approved what, when, and on what 
 ### Takeaway
 
 If you don't have Champion-Challenger, you don't have evidence — you have belief. And belief is not what a risk committee accepts when NPL rises and someone asks "why did you deploy that model?"
+
+---
+
+**References**
+- ECB (July 2025). *Revised Guide to Internal Models — Chapter 9: Machine Learning Models*. ECB Banking Supervision. [bankingsupervision.europa.eu](https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide202507.en.pdf) — Formalises the expectation that model transitions must be evidence-based with full auditability; C/C is the industry mechanism that satisfies this requirement.
+- FSB (October 2025). *Monitoring Adoption of AI and Related Vulnerabilities in the Financial Sector*. Financial Stability Board. [fsb.org](https://www.fsb.org/2025/10/monitoring-adoption-of-artificial-intelligence-and-related-vulnerabilities-in-the-financial-sector/) — Recommends enhanced monitoring frameworks for AI model deployment; C/C generates the evidence trail regulators expect.
+- `scipy.stats.proportions_ztest`: [docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.proportions_ztest.html)
+- `scipy.stats` sample size utilities: [docs.scipy.org/doc/scipy/reference/stats.html](https://docs.scipy.org/doc/scipy/reference/stats.html)

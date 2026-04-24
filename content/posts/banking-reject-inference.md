@@ -113,6 +113,59 @@ Không phải lúc nào cũng cần làm reject inference đầy đủ. Ưu tiê
 
 ---
 
+### Code thực tế: Ba cách tiếp cận reject inference với Python
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+
+approved = df[df['decision'] == 'approved'].copy()
+rejected = df[df['decision'] == 'rejected'].copy()
+features = ['monthly_income', 'age', 'dpd_max_6m', 'job_tenure_months']
+
+# --- Cách 1: Hard Augmentation ---
+# Đơn giản nhất, luôn khả thi, conservative
+rejected_hard = rejected.copy()
+rejected_hard['bad_flag'] = 1   # gán tất cả reject = bad
+
+train_hard = pd.concat([approved, rejected_hard], ignore_index=True)
+model_hard = LogisticRegression(C=0.1, max_iter=500)
+model_hard.fit(train_hard[features], train_hard['bad_flag'])
+
+# --- Cách 2: Fuzzy Augmentation ---
+# Dùng score của model hiện tại để estimate bad probability cho reject
+# ⚠️  Cảnh báo: circular reasoning nếu dùng lặp lại nhiều chu kỳ
+rejected_fuzzy = rejected.copy()
+rejected_fuzzy['bad_prob'] = model_v1.predict_proba(rejected[features])[:, 1]
+
+X_augmented = pd.concat([approved[features], rejected_fuzzy[features]])
+y_augmented = pd.concat([approved['bad_flag'],
+                          pd.Series(np.ones(len(rejected_fuzzy)))])
+# Dùng bad_prob làm sample_weight, không hard-label
+weights = pd.concat([pd.Series(np.ones(len(approved))),
+                     rejected_fuzzy['bad_prob']])
+
+model_fuzzy = LogisticRegression(C=0.1, max_iter=500)
+model_fuzzy.fit(X_augmented, y_augmented, sample_weight=weights)
+
+# --- Monitor circular bias qua các generation ---
+# Nếu reject rate tăng dần → dấu hiệu bias tích lũy
+for gen_name, model in [('v1', model_v1), ('hard_aug', model_hard), ('fuzzy', model_fuzzy)]:
+    scores   = model.predict_proba(applicant_pool[features])[:, 1]
+    rej_rate = (scores > cutoff_threshold).mean()
+    print(f"Model {gen_name}: reject rate = {rej_rate:.2%}")
+
+# --- Cách 3: Parceling — dùng bureau data để break circular reasoning ---
+# Nếu có credit bureau score cho rejected applicants
+rejected_parceling = rejected.copy()
+rejected_parceling['bad_flag'] = (rejected_parceling['bureau_score'] < 500).astype(int)
+
+train_parceling = pd.concat([approved, rejected_parceling], ignore_index=True)
+model_parceling = LogisticRegression(C=0.1, max_iter=500)
+model_parceling.fit(train_parceling[features], train_parceling['bad_flag'])
+```
+
 ### Điều honest cần nói
 
 Reject inference không phải là vấn đề có solution hoàn hảo. Mọi approach đều là ước lượng với các assumption khác nhau. Điều quan trọng không phải là "giải quyết" hoàn toàn — mà là:
@@ -176,6 +229,50 @@ Credit scoring works the same way: the model learns from approved applicants, is
 
 **3. Parceling (Through-the-Door)** — Use external data (credit bureau, alternative data) to estimate outcomes for rejected applicants independently of the internal score. Breaks the circular reasoning loop. Requires good-quality external data, which isn't always available or affordable.
 
+### Code Reference — Three Approaches in Python
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+
+approved = df[df['decision'] == 'approved'].copy()
+rejected = df[df['decision'] == 'rejected'].copy()
+features = ['monthly_income', 'age', 'dpd_max_6m', 'job_tenure_months']
+
+# --- Approach 1: Hard Augmentation (always feasible baseline) ---
+rejected_hard = rejected.assign(bad_flag=1)
+train_hard = pd.concat([approved, rejected_hard])
+model_hard = LogisticRegression(C=0.1, max_iter=500).fit(
+    train_hard[features], train_hard['bad_flag']
+)
+
+# --- Approach 2: Fuzzy Augmentation (use with caution — circular risk) ---
+reject_bad_prob = model_v1.predict_proba(rejected[features])[:, 1]
+X_aug = pd.concat([approved[features], rejected[features]])
+y_aug = pd.concat([approved['bad_flag'], pd.Series(np.ones(len(rejected)))])
+w_aug = pd.concat([pd.Series(np.ones(len(approved))), pd.Series(reject_bad_prob)])
+model_fuzzy = LogisticRegression(C=0.1, max_iter=500).fit(X_aug, y_aug, sample_weight=w_aug)
+
+# --- Approach 3: Parceling (external data breaks circular loop) ---
+# Requires bureau data for rejected applicants
+rejected_parceling = rejected.assign(
+    bad_flag=(rejected['bureau_score'] < bureau_cutoff).astype(int)
+)
+train_parceling = pd.concat([approved, rejected_parceling])
+model_parceling = LogisticRegression(C=0.1, max_iter=500).fit(
+    train_parceling[features], train_parceling['bad_flag']
+)
+
+# --- Monitor for circular bias accumulation across model generations ---
+for label, model in [('v1 (original)', model_v1),
+                     ('v2 hard_aug',   model_hard),
+                     ('v2 fuzzy',      model_fuzzy)]:
+    reject_rate = (model.predict_proba(applicant_pool[features])[:, 1] > threshold).mean()
+    print(f"{label:20s}: reject_rate = {reject_rate:.2%}")
+# Rising reject rate across generations without business reason → circular bias signal
+```
+
 ---
 
 ### The Circular Reasoning Trap
@@ -229,3 +326,10 @@ Every credit model has selection bias — this isn't something to be ashamed of,
 A skilled practitioner is one who **knows this, quantifies it, documents it, and monitors it** — not one who assumes their model is "clean" because AUC on the approved population looks good.
 
 Reject inference is a test of intellectual honesty: are you willing to acknowledge what your model doesn't know?
+
+---
+
+**References**
+- Kozodoi, N., Lessmann, S., Alamgir, M., Moreira-Matias, L., & Papakonstantinou, K. (2025). Fighting sampling bias: A framework for training and evaluating credit scoring models. *European Journal of Operational Research*, 324(2), 616–628. [ideas.repec.org](https://ideas.repec.org/a/eee/ejores/v324y2025i2p616-628.html) — The most current EJOR paper directly addressing reject inference; proposes evaluation frameworks that account for the truncated sample problem.
+- EBA (November 2025). *AI Act: Implications for the EU Banking and Payments Sector*. European Banking Authority. [eba.europa.eu](https://www.eba.europa.eu/sites/default/files/2025-11/d8b999ce-a1d9-4964-9606-971bbc2aaf89/AI%20Act%20implications%20for%20the%20EU%20banking%20sector.pdf) — Supervisory focus on bias and fairness in credit AI directly links to reject inference as a systemic source of discriminatory outcomes.
+- Bücker, M., Szepannek, G., Gosiewska, A., & Biecek, P. (2022). Transparency, Auditability, and eXplainability of Machine Learning Models in Credit Scoring. *Journal of the Operational Research Society*, 73(1), 70–90. — Covers selection bias as an interpretability failure mode in ML-based credit models.
