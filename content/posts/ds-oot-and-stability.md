@@ -249,7 +249,8 @@ The most important discipline: distinguish between "the model got worse" and "th
 ---
 
 **References**
-- Federal Reserve SR Letter 11-7 (2011). *Guidance on Model Risk Management*. Board of Governors of the Federal Reserve System. [federalreserve.gov/supervisionreg/srletters/sr1107.htm](https://www.federalreserve.gov/supervisionreg/srletters/sr1107.htm) — The definitive regulatory standard for model monitoring and validation.
-- Basel Committee on Banking Supervision (2005). *An Explanatory Note on the Basel II IRB Risk Weight Functions*. Bank for International Settlements. [bis.org/bcbs/irbriskweight.pdf](https://www.bis.org/bcbs/irbriskweight.pdf)
-- `scipy.stats.ks_2samp`: [docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ks_2samp.html](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ks_2samp.html)
-- `sklearn.metrics.roc_auc_score`: [scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html)
+- ECB (July 2025). *Revised Guide to Internal Models — Chapter 9: Machine Learning Models*. ECB Banking Supervision. [bankingsupervision.europa.eu](https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide202507.en.pdf) — Formally requires auditability infrastructure (versioning, logging, replication) and at least annual assessment of explainability tools for ML models.
+- FSB (October 2025). *Monitoring Adoption of Artificial Intelligence and Related Vulnerabilities in the Financial Sector*. Financial Stability Board. [fsb.org](https://www.fsb.org/2025/10/monitoring-adoption-of-artificial-intelligence-and-related-vulnerabilities-in-the-financial-sector/) — Identifies model risk and data quality as key AI vulnerabilities; recommends enhanced monitoring frameworks.
+- Gonçalves, P., et al. (2024). Evolving Strategies in Machine Learning: A Systematic Review of Concept Drift Detection. *Information*, 15(12), 786. MDPI. [mdpi.com](https://www.mdpi.com/2078-2489/15/12/786) — PRISMA-based review of concept drift detection methodologies; provides theoretical grounding for why PSI alone is insufficient.
+- `scipy.stats.ks_2samp`: [docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ks_2samp.html)
+- `sklearn.metrics.roc_auc_score`: [scikit-learn.org](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html)

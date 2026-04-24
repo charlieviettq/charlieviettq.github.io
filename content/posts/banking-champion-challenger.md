@@ -281,7 +281,7 @@ If you don't have Champion-Challenger, you don't have evidence — you have beli
 ---
 
 **References**
-- `scipy.stats.proportions_ztest` docs: [docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.proportions_ztest.html)
-- Kohavi, R., Longbotham, R., et al. (2009). Controlled experiments on the web: survey and practical guide. *Data Mining and Knowledge Discovery*, 18(1), 140–181. — Core A/B test methodology that C/C is built upon.
-- Federal Reserve SR Letter 11-7 (2011). *Guidance on Model Risk Management*. [federalreserve.gov](https://www.federalreserve.gov/supervisionreg/srletters/sr1107.htm) — Section on model validation and ongoing monitoring.
-- Thomas, L.C. (2009). *Consumer Credit Models: Pricing, Profit and Portfolios*. Oxford University Press. — Chapter 6 covers champion-challenger design for credit models specifically.
+- ECB (July 2025). *Revised Guide to Internal Models — Chapter 9: Machine Learning Models*. ECB Banking Supervision. [bankingsupervision.europa.eu](https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide202507.en.pdf) — Formalises the expectation that model transitions must be evidence-based with full auditability; C/C is the industry mechanism that satisfies this requirement.
+- FSB (October 2025). *Monitoring Adoption of AI and Related Vulnerabilities in the Financial Sector*. Financial Stability Board. [fsb.org](https://www.fsb.org/2025/10/monitoring-adoption-of-artificial-intelligence-and-related-vulnerabilities-in-the-financial-sector/) — Recommends enhanced monitoring frameworks for AI model deployment; C/C generates the evidence trail regulators expect.
+- `scipy.stats.proportions_ztest`: [docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.proportions_ztest.html)
+- `scipy.stats` sample size utilities: [docs.scipy.org/doc/scipy/reference/stats.html](https://docs.scipy.org/doc/scipy/reference/stats.html)

@@ -283,8 +283,9 @@ print(f"Cutoff for {target_approval:.0%} approval rate: prob < {cutoff:.4f}")
 ```
 
 **References:**
+- ECB (July 2025). *Revised Guide to Internal Models — Chapter 9: Machine Learning Models*. ECB Banking Supervision. [bankingsupervision.europa.eu](https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide202507.en.pdf) — Gradient boosting models like XGBoost fall under the new ML chapter; explainability and auditability requirements apply when used for regulatory capital purposes.
+- EBA (November 2025). *AI Act: Implications for the EU Banking and Payments Sector*. [eba.europa.eu](https://www.eba.europa.eu/sites/default/files/2025-11/d8b999ce-a1d9-4964-9606-971bbc2aaf89/AI%20Act%20implications%20for%20the%20EU%20banking%20sector.pdf) — XGBoost used for creditworthiness assessment is classified as high-risk AI; SHAP-based explanations are expected but must be assessed for stability.
+- Siddiqui, M.K., et al. (2025). Enhancing Credit Risk Prediction through an Ensemble of Explainable Models. *Journal of Systems Science and Systems Engineering*. [doi:10.1007/s11518-025-5663-y](https://doi.org/10.1007/s11518-025-5663-y) — Empirical study combining XGBoost with SHAP and LIME for simultaneous accuracy + explanation in credit scoring.
 - XGBoost Prediction API (`output_margin`, `iteration_range`): [xgboost.readthedocs.io/en/stable/prediction.html](https://xgboost.readthedocs.io/en/stable/prediction.html)
-- Individual tree accumulation example: [xgboost.readthedocs.io/en/latest/python/examples/individual_trees.html](https://xgboost.readthedocs.io/en/latest/python/examples/individual_trees.html)
-- Chen, T. & Guestrin, C. (2016). XGBoost: A Scalable Tree Boosting System. *Proceedings of KDD 2016*. [doi:10.1145/2939672.2939785](https://doi.org/10.1145/2939672.2939785) — Original paper; Section 2 explains the additive model formulation (tree accumulation) formally.
-- `sklearn.metrics.roc_auc_score` for threshold analysis: [scikit-learn.org](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html)
+- Chen, T. & Guestrin, C. (2016). XGBoost: A Scalable Tree Boosting System. *KDD 2016*. [doi:10.1145/2939672.2939785](https://doi.org/10.1145/2939672.2939785) — Original formulation of additive tree accumulation.
 

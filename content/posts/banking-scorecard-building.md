@@ -346,8 +346,8 @@ A good scorecard is not just a model — it's a **contract of accountability** b
 ---
 
 **References**
-- Siddiqi, N. (2006). *Credit Risk Scorecards: Developing and Implementing Intelligent Credit Scoring*. John Wiley & Sons. — The definitive practitioner reference; Chapters 5–7 cover WOE binning and PDO scaling in detail.
-- Anderson, R. (2007). *The Credit Scoring Toolkit: Theory and Practice for Retail Credit Risk Management*. Oxford University Press. — Comprehensive treatment of scorecard calibration, validation, and deployment.
-- `scorecardpy` — Python library: [github.com/ShichenLiu/scorecardpy](https://github.com/ShichenLiu/scorecardpy)
-- `optbinning` — Scorecard class docs: [gnpalencia.org/optbinning/tutorials/tutorial_scorecard.html](https://gnpalencia.org/optbinning/tutorials/tutorial_scorecard.html)
-- Consumer Financial Protection Bureau (CFPB). *Adverse Action Notice Requirements Under the ECOA and FCRA*. [consumerfinance.gov](https://www.consumerfinance.gov/rules-policy/regulations/1002/9/) — Regulatory basis for why scorecards remain required in consumer lending.
+- ECB (July 2025). *Revised Guide to Internal Models — Chapter 9: Machine Learning Models*. ECB Banking Supervision. [bankingsupervision.europa.eu](https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide202507.en.pdf) — The ECB's first formal guidance on explainability and governance for ML-based credit risk models; directly relevant to why scorecard interpretability remains a hard regulatory requirement.
+- EBA (November 2025). *AI Act: Implications for the EU Banking and Payments Sector*. European Banking Authority. [eba.europa.eu](https://www.eba.europa.eu/sites/default/files/2025-11/d8b999ce-a1d9-4964-9606-971bbc2aaf89/AI%20Act%20implications%20for%20the%20EU%20banking%20sector.pdf) — Confirms ML-based credit scoring is "high-risk AI" under EU AI Act; classic scorecards derived from fixed weights likely fall outside this classification.
+- Bücker, M., Szepannek, G., Gosiewska, A., & Biecek, P. (2022). Transparency, Auditability, and eXplainability of Machine Learning Models in Credit Scoring. *Journal of the Operational Research Society*, 73(1), 70–90. — Systematic empirical comparison of XGBoost vs. scorecard across interpretability and auditability dimensions.
+- `scorecardpy`: [github.com/ShichenLiu/scorecardpy](https://github.com/ShichenLiu/scorecardpy)
+- `optbinning` Scorecard docs: [gnpalencia.org/optbinning](https://gnpalencia.org/optbinning/tutorials/tutorial_scorecard.html)

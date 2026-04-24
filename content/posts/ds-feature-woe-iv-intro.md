@@ -237,7 +237,8 @@ Pair them with domain knowledge and stability testing. The sieve finds the gold;
 ---
 
 **References**
-- Siddiqi, N. (2006). *Credit Risk Scorecards: Developing and Implementing Intelligent Credit Scoring*. John Wiley & Sons. — The industry standard reference for WOE/IV methodology.
-- `scorecardpy` library: [github.com/ShichenLiu/scorecardpy](https://github.com/ShichenLiu/scorecardpy)
-- `optbinning` library & docs: [gnpalencia.org/optbinning](https://gnpalencia.org/optbinning/)
-- Anderson, R. (2007). *The Credit Scoring Toolkit*. Oxford University Press. — Chapter 8 covers binning strategies and IV benchmarks in depth.
+- Kalatzis, A.E.G. et al. (2025). Machine learning powered financial credit scoring: a systematic literature review. *Artificial Intelligence Review*, 58, 144. [link.springer.com](https://link.springer.com/article/10.1007/s10462-025-11416-2) — Reviews 63 papers (2018–2024) on ML credit scoring methods; covers WOE-based feature engineering across approaches.
+- Chen, S., Calabrese, R., & Martin-Barragan, B. (2024). Interpretable machine learning for imbalanced credit scoring datasets. *European Journal of Operational Research*, 312(1), 357–372. [ideas.repec.org](https://ideas.repec.org/a/eee/ejores/v312y2024i1p357-372.html) — Analyses how class imbalance degrades SHAP/LIME stability; reinforces the practical robustness advantage of WOE-based encodings.
+- EBA (November 2025). *AI Act: Implications for the EU Banking and Payments Sector*. [eba.europa.eu](https://www.eba.europa.eu/sites/default/files/2025-11/d8b999ce-a1d9-4964-9606-971bbc2aaf89/AI%20Act%20implications%20for%20the%20EU%20banking%20sector.pdf) — Classifies ML-based credit scoring as high-risk AI; WOE+LogReg scorecards with fixed weights may be exempt.
+- `scorecardpy`: [github.com/ShichenLiu/scorecardpy](https://github.com/ShichenLiu/scorecardpy)
+- `optbinning`: [gnpalencia.org/optbinning](https://gnpalencia.org/optbinning/)

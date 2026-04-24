@@ -358,8 +358,8 @@ Three different questions, three different tools. Use all three, understand each
 ---
 
 **References**
-- Federal Reserve SR Letter 11-7 (2011). *Guidance on Model Risk Management*. [federalreserve.gov/supervisionreg/srletters/sr1107.htm](https://www.federalreserve.gov/supervisionreg/srletters/sr1107.htm) — Section III explicitly requires ongoing performance monitoring including back-testing and benchmarking.
-- OCC (2021). *Model Risk Management — Comptroller's Handbook*. [occ.gov](https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/model-risk-management/index-model-risk-management.html)
+- ECB (July 2025). *Revised Guide to Internal Models — Chapter 9: Machine Learning Models*. ECB Banking Supervision. [bankingsupervision.europa.eu](https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide202507.en.pdf) — Requires explainability tools to be assessed at least annually; sets formal expectations for performance monitoring of ML credit risk models across EU significant banks.
+- FSB (November 2024). *The Financial Stability Implications of Artificial Intelligence*. Financial Stability Board. [fsb.org](https://www.fsb.org/2024/11/the-financial-stability-implications-of-artificial-intelligence/) — Identifies model risk, data quality, and governance as primary AI vulnerabilities in financial services.
+- Gonçalves, P., et al. (2024). Evolving Strategies in Machine Learning: A Systematic Review of Concept Drift Detection. *Information*, 15(12), 786. MDPI. [mdpi.com](https://www.mdpi.com/2078-2489/15/12/786) — Comprehensive review of drift detection methods; provides academic grounding for PSI-based monitoring.
 - `sklearn.metrics.roc_auc_score`: [scikit-learn.org](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html)
 - `scipy.stats.ks_2samp`: [docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ks_2samp.html)
-- Thomas, L.C., Edelman, D.B., & Crook, J.N. (2002). *Credit Scoring and its Applications*. SIAM. — Chapter 9 covers Gini, KS, and population stability in production settings.

@@ -330,7 +330,6 @@ Reject inference is a test of intellectual honesty: are you willing to acknowled
 ---
 
 **References**
-- Hand, D.J. & Henley, W.E. (1997). Statistical classification methods in consumer credit scoring. *Journal of the Royal Statistical Society: Series A*, 160(3), 523–541. [doi:10.1111/j.1467-985X.1997.00078.x](https://doi.org/10.1111/j.1467-985X.1997.00078.x) — The canonical academic treatment of reject inference bias in consumer credit.
-- Anderson, R. (2007). *The Credit Scoring Toolkit*. Oxford University Press. — Chapter 12 covers reject inference methods with worked examples.
-- Siddiqi, N. (2006). *Credit Risk Scorecards*. John Wiley & Sons. — Chapter 5 discusses the truncated sample problem and practical approaches.
-- Banasik, J., Crook, J.N., & Thomas, L.C. (1999). Not if but when will borrowers default. *Journal of the Operational Research Society*, 50(12), 1185–1190. — Empirical study of reject inference impact on model accuracy.
+- Kozodoi, N., Lessmann, S., Alamgir, M., Moreira-Matias, L., & Papakonstantinou, K. (2025). Fighting sampling bias: A framework for training and evaluating credit scoring models. *European Journal of Operational Research*, 324(2), 616–628. [ideas.repec.org](https://ideas.repec.org/a/eee/ejores/v324y2025i2p616-628.html) — The most current EJOR paper directly addressing reject inference; proposes evaluation frameworks that account for the truncated sample problem.
+- EBA (November 2025). *AI Act: Implications for the EU Banking and Payments Sector*. European Banking Authority. [eba.europa.eu](https://www.eba.europa.eu/sites/default/files/2025-11/d8b999ce-a1d9-4964-9606-971bbc2aaf89/AI%20Act%20implications%20for%20the%20EU%20banking%20sector.pdf) — Supervisory focus on bias and fairness in credit AI directly links to reject inference as a systemic source of discriminatory outcomes.
+- Bücker, M., Szepannek, G., Gosiewska, A., & Biecek, P. (2022). Transparency, Auditability, and eXplainability of Machine Learning Models in Credit Scoring. *Journal of the Operational Research Society*, 73(1), 70–90. — Covers selection bias as an interpretability failure mode in ML-based credit models.
