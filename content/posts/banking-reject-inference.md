@@ -113,6 +113,59 @@ Không phải lúc nào cũng cần làm reject inference đầy đủ. Ưu tiê
 
 ---
 
+### Code thực tế: Ba cách tiếp cận reject inference với Python
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+
+approved = df[df['decision'] == 'approved'].copy()
+rejected = df[df['decision'] == 'rejected'].copy()
+features = ['monthly_income', 'age', 'dpd_max_6m', 'job_tenure_months']
+
+# --- Cách 1: Hard Augmentation ---
+# Đơn giản nhất, luôn khả thi, conservative
+rejected_hard = rejected.copy()
+rejected_hard['bad_flag'] = 1   # gán tất cả reject = bad
+
+train_hard = pd.concat([approved, rejected_hard], ignore_index=True)
+model_hard = LogisticRegression(C=0.1, max_iter=500)
+model_hard.fit(train_hard[features], train_hard['bad_flag'])
+
+# --- Cách 2: Fuzzy Augmentation ---
+# Dùng score của model hiện tại để estimate bad probability cho reject
+# ⚠️  Cảnh báo: circular reasoning nếu dùng lặp lại nhiều chu kỳ
+rejected_fuzzy = rejected.copy()
+rejected_fuzzy['bad_prob'] = model_v1.predict_proba(rejected[features])[:, 1]
+
+X_augmented = pd.concat([approved[features], rejected_fuzzy[features]])
+y_augmented = pd.concat([approved['bad_flag'],
+                          pd.Series(np.ones(len(rejected_fuzzy)))])
+# Dùng bad_prob làm sample_weight, không hard-label
+weights = pd.concat([pd.Series(np.ones(len(approved))),
+                     rejected_fuzzy['bad_prob']])
+
+model_fuzzy = LogisticRegression(C=0.1, max_iter=500)
+model_fuzzy.fit(X_augmented, y_augmented, sample_weight=weights)
+
+# --- Monitor circular bias qua các generation ---
+# Nếu reject rate tăng dần → dấu hiệu bias tích lũy
+for gen_name, model in [('v1', model_v1), ('hard_aug', model_hard), ('fuzzy', model_fuzzy)]:
+    scores   = model.predict_proba(applicant_pool[features])[:, 1]
+    rej_rate = (scores > cutoff_threshold).mean()
+    print(f"Model {gen_name}: reject rate = {rej_rate:.2%}")
+
+# --- Cách 3: Parceling — dùng bureau data để break circular reasoning ---
+# Nếu có credit bureau score cho rejected applicants
+rejected_parceling = rejected.copy()
+rejected_parceling['bad_flag'] = (rejected_parceling['bureau_score'] < 500).astype(int)
+
+train_parceling = pd.concat([approved, rejected_parceling], ignore_index=True)
+model_parceling = LogisticRegression(C=0.1, max_iter=500)
+model_parceling.fit(train_parceling[features], train_parceling['bad_flag'])
+```
+
 ### Điều honest cần nói
 
 Reject inference không phải là vấn đề có solution hoàn hảo. Mọi approach đều là ước lượng với các assumption khác nhau. Điều quan trọng không phải là "giải quyết" hoàn toàn — mà là:
@@ -176,6 +229,50 @@ Credit scoring works the same way: the model learns from approved applicants, is
 
 **3. Parceling (Through-the-Door)** — Use external data (credit bureau, alternative data) to estimate outcomes for rejected applicants independently of the internal score. Breaks the circular reasoning loop. Requires good-quality external data, which isn't always available or affordable.
 
+### Code Reference — Three Approaches in Python
+
+```python
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LogisticRegression
+
+approved = df[df['decision'] == 'approved'].copy()
+rejected = df[df['decision'] == 'rejected'].copy()
+features = ['monthly_income', 'age', 'dpd_max_6m', 'job_tenure_months']
+
+# --- Approach 1: Hard Augmentation (always feasible baseline) ---
+rejected_hard = rejected.assign(bad_flag=1)
+train_hard = pd.concat([approved, rejected_hard])
+model_hard = LogisticRegression(C=0.1, max_iter=500).fit(
+    train_hard[features], train_hard['bad_flag']
+)
+
+# --- Approach 2: Fuzzy Augmentation (use with caution — circular risk) ---
+reject_bad_prob = model_v1.predict_proba(rejected[features])[:, 1]
+X_aug = pd.concat([approved[features], rejected[features]])
+y_aug = pd.concat([approved['bad_flag'], pd.Series(np.ones(len(rejected)))])
+w_aug = pd.concat([pd.Series(np.ones(len(approved))), pd.Series(reject_bad_prob)])
+model_fuzzy = LogisticRegression(C=0.1, max_iter=500).fit(X_aug, y_aug, sample_weight=w_aug)
+
+# --- Approach 3: Parceling (external data breaks circular loop) ---
+# Requires bureau data for rejected applicants
+rejected_parceling = rejected.assign(
+    bad_flag=(rejected['bureau_score'] < bureau_cutoff).astype(int)
+)
+train_parceling = pd.concat([approved, rejected_parceling])
+model_parceling = LogisticRegression(C=0.1, max_iter=500).fit(
+    train_parceling[features], train_parceling['bad_flag']
+)
+
+# --- Monitor for circular bias accumulation across model generations ---
+for label, model in [('v1 (original)', model_v1),
+                     ('v2 hard_aug',   model_hard),
+                     ('v2 fuzzy',      model_fuzzy)]:
+    reject_rate = (model.predict_proba(applicant_pool[features])[:, 1] > threshold).mean()
+    print(f"{label:20s}: reject_rate = {reject_rate:.2%}")
+# Rising reject rate across generations without business reason → circular bias signal
+```
+
 ---
 
 ### The Circular Reasoning Trap
@@ -229,3 +326,11 @@ Every credit model has selection bias — this isn't something to be ashamed of,
 A skilled practitioner is one who **knows this, quantifies it, documents it, and monitors it** — not one who assumes their model is "clean" because AUC on the approved population looks good.
 
 Reject inference is a test of intellectual honesty: are you willing to acknowledge what your model doesn't know?
+
+---
+
+**References**
+- Hand, D.J. & Henley, W.E. (1997). Statistical classification methods in consumer credit scoring. *Journal of the Royal Statistical Society: Series A*, 160(3), 523–541. [doi:10.1111/j.1467-985X.1997.00078.x](https://doi.org/10.1111/j.1467-985X.1997.00078.x) — The canonical academic treatment of reject inference bias in consumer credit.
+- Anderson, R. (2007). *The Credit Scoring Toolkit*. Oxford University Press. — Chapter 12 covers reject inference methods with worked examples.
+- Siddiqi, N. (2006). *Credit Risk Scorecards*. John Wiley & Sons. — Chapter 5 discusses the truncated sample problem and practical approaches.
+- Banasik, J., Crook, J.N., & Thomas, L.C. (1999). Not if but when will borrowers default. *Journal of the Operational Research Society*, 50(12), 1185–1190. — Empirical study of reject inference impact on model accuracy.

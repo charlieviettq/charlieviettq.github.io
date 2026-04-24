@@ -58,6 +58,71 @@ Giả sử biến `thu nhập hàng tháng` với tổng 5,000 khách hàng (1,0
 | 0.30 – 0.50 | Mạnh — candidate tốt | Kiểm tra leakage |
 | > 0.50 | Rất mạnh — **đáng nghi** | **Kiểm tra nguồn data ngay** |
 
+### Code thực tế: Tính WOE/IV với Python
+
+Hai thư viện phổ biến nhất trong ngành: `scorecardpy` (đơn giản, phổ biến tại châu Á) và `optbinning` (nghiêm ngặt hơn, hỗ trợ monotonicity constraint).
+
+```python
+import numpy as np
+import pandas as pd
+import scorecardpy as sc
+
+# --- Cách 1: Tính thủ công để hiểu công thức ---
+def calc_woe_iv(df: pd.DataFrame, feature: str, target: str) -> pd.DataFrame:
+    total_bad  = df[target].sum()
+    total_good = (df[target] == 0).sum()
+
+    grouped = df.groupby(feature)[target].agg(['sum', 'count'])
+    grouped.columns = ['bad', 'total']
+    grouped['good'] = grouped['total'] - grouped['bad']
+
+    grouped['pct_bad']  = grouped['bad']  / total_bad
+    grouped['pct_good'] = grouped['good'] / total_good
+
+    eps = 1e-6  # tránh log(0)
+    grouped['WOE'] = np.log((grouped['pct_bad'] + eps) / (grouped['pct_good'] + eps))
+    grouped['IV']  = (grouped['pct_bad'] - grouped['pct_good']) * grouped['WOE']
+    grouped['IV_total'] = grouped['IV'].sum()
+    return grouped
+
+# --- Cách 2: scorecardpy — chuẩn production ---
+# Tự động binning + enforce monotonicity
+bins = sc.woebin(
+    df, y='bad_flag',
+    x=['monthly_income', 'dpd_max_6m', 'job_tenure_months'],
+    bin_num_limit=6,
+    # monotonic_binning=True  # bật nếu muốn enforce
+)
+
+# Tóm tắt IV của tất cả biến
+iv_table = pd.DataFrame({
+    col: {'IV': bins[col]['total_iv'].iloc[0]}
+    for col in bins
+}).T.sort_values('IV', ascending=False)
+print(iv_table)
+# monthly_income    0.391
+# dpd_max_6m        0.312
+# job_tenure_months 0.087
+
+# Transform sang WOE values để đưa vào Logistic Regression
+train_woe = sc.woebin_ply(train_df, bins)
+# ⚠️  QUAN TRỌNG: dùng đúng bảng bins này trên production
+# Không recalculate lại trên data mới — WOE map phải được lock khi deploy
+
+# --- Cách 3: optbinning — mạnh hơn, hỗ trợ nhiều constraint ---
+from optbinning import BinningProcess
+
+binning_process = BinningProcess(
+    variable_names=['monthly_income', 'dpd_max_6m'],
+    categorical_variables=[],
+    max_n_bins=6,
+    min_bin_size=0.05,   # mỗi bin tối thiểu 5% population
+    monotonic_trend='auto'
+)
+binning_process.fit(X_train, y_train)
+print(binning_process.summary()[['name', 'iv', 'js']].sort_values('iv', ascending=False))
+```
+
 ### Những rủi ro cần cảnh giác
 
 - **Lộ đề (Leakage):** Bạn vô tình dùng những thông tin chỉ có được *sau khi* khách hàng đã nợ xấu để dự báo cho lúc họ mới nộp đơn.
@@ -112,6 +177,51 @@ Suppose you have `monthly_income` as a variable, with 5,000 total customers (1,0
 
 **Practical tip:** A variable like `time_on_book` (how long the customer has been a client) often shows very high IV — because long-tenure customers are inherently lower risk by selection. But using it as a feature risks encoding approval history bias rather than genuine creditworthiness signal. Always ask: "Does this variable measure the customer, or does it measure our previous decisions about the customer?"
 
+### Code Reference — WOE/IV in Python
+
+Two production-grade options: `scorecardpy` (concise, widely adopted across Asian banking teams) and `optbinning` (rigorous monotonicity enforcement, preferred in Basel-governed environments).
+
+```python
+import numpy as np
+import pandas as pd
+import scorecardpy as sc
+
+# --- Option A: scorecardpy (fast iteration) ---
+bins = sc.woebin(
+    df, y='bad_flag',
+    x=['monthly_income', 'dpd_max_6m', 'job_tenure_months'],
+    bin_num_limit=6,
+)
+
+# IV summary across all variables
+iv_summary = pd.DataFrame({
+    col: {'IV': bins[col]['total_iv'].iloc[0]}
+    for col in bins
+}).T.sort_values('IV', ascending=False)
+print(iv_summary)
+# monthly_income    0.391   ← strong; check for leakage
+# dpd_max_6m        0.312
+# job_tenure_months 0.087   ← weak; consider dropping
+
+# Transform to WOE-encoded features for Logistic Regression
+train_woe = sc.woebin_ply(train_df, bins)
+# ⚠️  CRITICAL: save and freeze `bins` at deployment time.
+# Never recalculate WOE bins on production data — the encoding map must be locked.
+
+# --- Option B: optbinning (strict monotonicity, Basel-aligned) ---
+from optbinning import BinningProcess
+
+binning_process = BinningProcess(
+    variable_names=['monthly_income', 'dpd_max_6m'],
+    categorical_variables=[],
+    max_n_bins=6,
+    min_bin_size=0.05,       # at least 5% of population per bin
+    monotonic_trend='auto'   # auto-detect increasing or decreasing
+)
+binning_process.fit(X_train, y_train)
+print(binning_process.summary()[['name', 'iv', 'js']].sort_values('iv', ascending=False))
+```
+
 ### Pitfalls and Failure Modes
 
 - **Leakage:** Accidentally using information known only *after* the outcome (e.g., "number of overdue calls received") to predict the starting state.
@@ -123,3 +233,11 @@ Suppose you have `monthly_income` as a variable, with 5,000 total customers (1,0
 WOE and IV are the most practical tools for feature screening in credit scoring — not because they're the most sophisticated, but because every number they produce has a direct business interpretation. A WOE of +0.98 for low-income borrowers is something you can explain to a risk officer, a regulator, and a junior analyst in the same sentence.
 
 Pair them with domain knowledge and stability testing. The sieve finds the gold; judgment tells you whether it's actually gold.
+
+---
+
+**References**
+- Siddiqi, N. (2006). *Credit Risk Scorecards: Developing and Implementing Intelligent Credit Scoring*. John Wiley & Sons. — The industry standard reference for WOE/IV methodology.
+- `scorecardpy` library: [github.com/ShichenLiu/scorecardpy](https://github.com/ShichenLiu/scorecardpy)
+- `optbinning` library & docs: [gnpalencia.org/optbinning](https://gnpalencia.org/optbinning/)
+- Anderson, R. (2007). *The Credit Scoring Toolkit*. Oxford University Press. — Chapter 8 covers binning strategies and IV benchmarks in depth.

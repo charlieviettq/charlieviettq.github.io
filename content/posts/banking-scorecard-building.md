@@ -132,6 +132,57 @@ Thông thường có 3 zone: Approve (điểm cao) / Review (điểm trung) / De
 
 ---
 
+### Code thực tế: Xây scorecard end-to-end với Python
+
+```python
+import scorecardpy as sc
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score
+
+# Bước 1: WOE binning
+# monotonic_binning=True enforce xu hướng đơn điệu (thu nhập cao → WOE cao)
+bins = sc.woebin(
+    train_df, y='bad_flag',
+    x=['monthly_income', 'dpd_max_6m', 'job_tenure_months'],
+    bin_num_limit=6,
+    # monotonic_binning=True  # bật khi cần enforce
+)
+
+# Kiểm tra WOE plot trước khi đi tiếp
+sc.woebin_plot(bins['monthly_income'])
+
+# Bước 2: Transform — LUÔN dùng bins từ train, không refit trên test
+train_woe = sc.woebin_ply(train_df, bins)
+oot_woe   = sc.woebin_ply(oot_df,   bins)  # OOT validation set
+
+feature_cols = [c for c in train_woe.columns if c.endswith('_woe')]
+
+# Bước 3: Logistic Regression với regularization
+lr = LogisticRegression(C=0.1, solver='lbfgs', max_iter=500, random_state=42)
+lr.fit(train_woe[feature_cols], train_woe['bad_flag'])
+
+# Bước 4: Chuyển về điểm — PDO=20, base=600 tại odds 1:50 (2% bad rate)
+card = sc.scorecard(
+    bins, lr, feature_cols,
+    points0=600,       # base score tại odds0
+    odds0=1/50,        # odds bad:good tại base score (1 bad per 50 goods)
+    pdo=20             # tăng 20 điểm → odds gấp đôi
+)
+
+# Gán điểm cho từng applicant
+train_score = sc.scorecard_ply(train_df, card, print_step=0)
+oot_score   = sc.scorecard_ply(oot_df,   card, print_step=0)
+
+# Bước 5: Validate
+def gini(y_true, y_score):
+    return 2 * roc_auc_score(y_true, -y_score) - 1  # âm vì score cao = good
+
+print(f"Train Gini : {gini(train_df['bad_flag'], train_score['score']):.3f}")
+print(f"OOT   Gini : {gini(oot_df['bad_flag'],   oot_score['score']):.3f}")
+# Nếu OOT Gini thấp hơn Train > 5pt → có thể overfit, review biến
+```
+
 ### Tại sao không dùng XGBoost thay scorecard?
 
 Câu trả lời thực: nhiều ngân hàng **dùng cả hai**.
@@ -221,6 +272,47 @@ When Applicant B asks why: "Income below the 5M/month threshold; delinquency rec
 
 **Step 5 — Cutoff setting:** Cutoffs are business decisions, not purely mathematical. Set Approve / Review / Decline zones based on approval rate targets, NPL tolerance, and vintage delinquency rates by score band.
 
+### Code Reference — End-to-End Scorecard Build
+
+```python
+import scorecardpy as sc
+import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score
+
+# Step 1 — WOE binning (scorecardpy enforces monotonicity optionally)
+bins = sc.woebin(
+    train_df, y='bad_flag',
+    x=['monthly_income', 'dpd_max_6m', 'job_tenure_months'],
+    bin_num_limit=6,
+)
+
+# Step 2 — Transform: always use bins from training, never refit
+train_woe = sc.woebin_ply(train_df, bins)
+oot_woe   = sc.woebin_ply(oot_df,   bins)
+
+feature_cols = [c for c in train_woe.columns if c.endswith('_woe')]
+
+# Step 3 — Logistic Regression with L2 regularization
+lr = LogisticRegression(C=0.1, solver='lbfgs', max_iter=500, random_state=42)
+lr.fit(train_woe[feature_cols], train_woe['bad_flag'])
+
+# Step 4 — Convert to scorecard points (PDO=20, base=600, odds0=1:50)
+card = sc.scorecard(bins, lr, feature_cols, points0=600, odds0=1/50, pdo=20)
+
+# Step 5 — Score and validate
+train_s = sc.scorecard_ply(train_df, card, print_step=0)['score']
+oot_s   = sc.scorecard_ply(oot_df,   card, print_step=0)['score']
+
+gini = lambda y, s: 2 * roc_auc_score(y, -s) - 1  # higher score = lower risk
+print(f"Train Gini : {gini(train_df.bad_flag, train_s):.3f}")
+print(f"OOT   Gini : {gini(oot_df.bad_flag,   oot_s):.3f}")
+# Gap > 5pt between Train and OOT → overfit; review variable selection
+
+# For optbinning (stronger monotonicity guarantees, Basel-aligned):
+# from optbinning import Scorecard — see optbinning docs
+```
+
 ---
 
 ### When to Use Scorecard vs XGBoost
@@ -250,3 +342,12 @@ SHAP values help explain XGBoost predictions, but that's *post-hoc* — you gene
 ### Takeaway
 
 A good scorecard is not just a model — it's a **contract of accountability** between the data team, the risk function, the regulator, and the customer. That's why it's been around since the 1980s, and why every serious credit operation still has one at its core.
+
+---
+
+**References**
+- Siddiqi, N. (2006). *Credit Risk Scorecards: Developing and Implementing Intelligent Credit Scoring*. John Wiley & Sons. — The definitive practitioner reference; Chapters 5–7 cover WOE binning and PDO scaling in detail.
+- Anderson, R. (2007). *The Credit Scoring Toolkit: Theory and Practice for Retail Credit Risk Management*. Oxford University Press. — Comprehensive treatment of scorecard calibration, validation, and deployment.
+- `scorecardpy` — Python library: [github.com/ShichenLiu/scorecardpy](https://github.com/ShichenLiu/scorecardpy)
+- `optbinning` — Scorecard class docs: [gnpalencia.org/optbinning/tutorials/tutorial_scorecard.html](https://gnpalencia.org/optbinning/tutorials/tutorial_scorecard.html)
+- Consumer Financial Protection Bureau (CFPB). *Adverse Action Notice Requirements Under the ECOA and FCRA*. [consumerfinance.gov](https://www.consumerfinance.gov/rules-policy/regulations/1002/9/) — Regulatory basis for why scorecards remain required in consumer lending.

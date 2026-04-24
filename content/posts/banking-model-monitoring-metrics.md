@@ -135,6 +135,56 @@ Không phải mọi metric đều cần theo dõi hàng ngày — đó là recip
 
 ---
 
+### Code thực tế: Tính Gini, KS, PSI trong một pipeline
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.metrics import roc_auc_score
+from scipy.stats import ks_2samp
+
+# --- Gini ---
+def calc_gini(y_true: np.ndarray, y_score: np.ndarray) -> float:
+    return 2 * roc_auc_score(y_true, y_score) - 1
+
+# --- KS ---
+def calc_ks(y_true: np.ndarray, y_score: np.ndarray) -> float:
+    bad_scores  = y_score[y_true == 1]
+    good_scores = y_score[y_true == 0]
+    ks_stat, _ = ks_2samp(bad_scores, good_scores)
+    return ks_stat
+
+# --- PSI --- (breakpoints từ expected/training, không từ actual)
+def calc_psi(expected: pd.Series, actual: pd.Series, n_bins: int = 10) -> float:
+    breakpoints = np.nanpercentile(expected, np.linspace(0, 100, n_bins + 1))
+    breakpoints = np.unique(breakpoints)
+
+    exp_cnt, _ = np.histogram(expected, bins=breakpoints)
+    act_cnt, _ = np.histogram(actual,   bins=breakpoints)
+
+    exp_pct = np.where(exp_cnt == 0, 1e-4, exp_cnt / len(expected))
+    act_pct = np.where(act_cnt == 0, 1e-4, act_cnt / len(actual))
+
+    return float(np.sum((act_pct - exp_pct) * np.log(act_pct / exp_pct)))
+
+# --- Monitoring report hàng tuần ---
+gini = calc_gini(y_true, y_pred_prob)
+ks   = calc_ks(y_true, y_pred_prob)
+psi  = calc_psi(train_scores, live_scores)
+
+print(f"Gini : {gini:.3f}  {'✅' if gini > 0.35 else '⚠️' if gini > 0.30 else '🔴'}")
+print(f"KS   : {ks:.3f}  {'✅' if ks > 0.30 else '⚠️' if ks > 0.20 else '🔴'}")
+print(f"PSI  : {psi:.4f} {'✅ Stable' if psi < 0.10 else '⚠️ Investigate' if psi < 0.25 else '🔴 Review'}")
+
+# --- Feature-level PSI khi score PSI > 0.25 ---
+feature_psi = {
+    col: calc_psi(train_df[col].dropna(), live_df[col].dropna())
+    for col in model_feature_cols
+}
+print(pd.Series(feature_psi).sort_values(ascending=False).head(5))
+# Xác định biến nào đang drift — bắt đầu investigation từ đây
+```
+
 ### Pitfalls phổ biến
 
 **Alert fatigue.** Đặt quá nhiều threshold → mọi người ignore hết. Prioritize: PSI của score là tier 1, feature PSI là tier 2, Gini/KS là tier 3.
@@ -236,6 +286,42 @@ PSI = Σ (Actual% − Expected%) × ln(Actual% / Expected%)
 
 ---
 
+### Code Reference — Gini, KS, PSI in Python
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.metrics import roc_auc_score
+from scipy.stats import ks_2samp
+
+def calc_gini(y_true, y_score):
+    return 2 * roc_auc_score(y_true, y_score) - 1
+
+def calc_ks(y_true, y_score):
+    ks_stat, _ = ks_2samp(y_score[y_true == 1], y_score[y_true == 0])
+    return ks_stat
+
+def calc_psi(expected: pd.Series, actual: pd.Series, n_bins: int = 10) -> float:
+    """PSI using breakpoints derived from expected (training) distribution only."""
+    breakpoints = np.nanpercentile(expected, np.linspace(0, 100, n_bins + 1))
+    breakpoints = np.unique(breakpoints)
+    exp_cnt, _ = np.histogram(expected, bins=breakpoints)
+    act_cnt, _ = np.histogram(actual,   bins=breakpoints)
+    exp_pct = np.where(exp_cnt == 0, 1e-4, exp_cnt / len(expected))
+    act_pct = np.where(act_cnt == 0, 1e-4, act_cnt / len(actual))
+    return float(np.sum((act_pct - exp_pct) * np.log(act_pct / exp_pct)))
+
+# Weekly automated monitoring
+gini = calc_gini(y_true, y_pred_prob)
+ks   = calc_ks(y_true, y_pred_prob)
+psi  = calc_psi(train_scores, live_scores)
+
+print(f"Gini={gini:.3f}  KS={ks:.3f}  PSI={psi:.4f}")
+# PSI > 0.25 → drill into feature-level PSI before deciding to retrain
+feature_psi = {c: calc_psi(train_df[c].dropna(), live_df[c].dropna()) for c in features}
+print(pd.Series(feature_psi).nlargest(5))
+```
+
 ### Action Table
 
 | Signal | Likely cause | Action |
@@ -268,3 +354,12 @@ PSI = Σ (Actual% − Expected%) × ln(Actual% / Expected%)
 **PSI** asks: "Are today's applicants the same population the model learned from?"
 
 Three different questions, three different tools. Use all three, understand each one's limitations, and never let a single metric hide the full picture.
+
+---
+
+**References**
+- Federal Reserve SR Letter 11-7 (2011). *Guidance on Model Risk Management*. [federalreserve.gov/supervisionreg/srletters/sr1107.htm](https://www.federalreserve.gov/supervisionreg/srletters/sr1107.htm) — Section III explicitly requires ongoing performance monitoring including back-testing and benchmarking.
+- OCC (2021). *Model Risk Management — Comptroller's Handbook*. [occ.gov](https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/model-risk-management/index-model-risk-management.html)
+- `sklearn.metrics.roc_auc_score`: [scikit-learn.org](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html)
+- `scipy.stats.ks_2samp`: [docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ks_2samp.html)
+- Thomas, L.C., Edelman, D.B., & Crook, J.N. (2002). *Credit Scoring and its Applications*. SIAM. — Chapter 9 covers Gini, KS, and population stability in production settings.

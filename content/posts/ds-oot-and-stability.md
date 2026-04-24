@@ -73,6 +73,65 @@ Bước 4: Quyết định
 PSI cao ≠ model kém. PSI đo **population shift**, không đo model performance. Một model hoàn hảo vẫn có PSI cao nếu khách hàng thay đổi. Luôn pair PSI với Gini/KS để có bức tranh đầy đủ.
 :::
 
+### Code thực tế: Tính PSI với Python
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.metrics import roc_auc_score
+from scipy.stats import ks_2samp
+
+def calc_psi(expected: pd.Series, actual: pd.Series, n_bins: int = 10) -> float:
+    """
+    PSI theo chuẩn ngành.
+    expected = score distribution lúc training (baseline).
+    actual   = score distribution hiện tại (monitoring window).
+    """
+    # Tính breakpoints từ expected — KHÔNG dùng actual để tránh look-ahead bias
+    breakpoints = np.nanpercentile(expected, np.linspace(0, 100, n_bins + 1))
+    breakpoints = np.unique(breakpoints)
+
+    exp_counts, _ = np.histogram(expected, bins=breakpoints)
+    act_counts, _ = np.histogram(actual,   bins=breakpoints)
+
+    # Thay 0 bằng epsilon nhỏ để tránh log(0)
+    exp_pct = np.where(exp_counts == 0, 1e-4, exp_counts / len(expected))
+    act_pct = np.where(act_counts == 0, 1e-4, act_counts / len(actual))
+
+    psi = float(np.sum((act_pct - exp_pct) * np.log(act_pct / exp_pct)))
+    return psi
+
+def calc_gini(y_true, y_score) -> float:
+    return 2 * roc_auc_score(y_true, y_score) - 1
+
+def calc_ks(y_true, y_score) -> float:
+    bads  = y_score[y_true == 1]
+    goods = y_score[y_true == 0]
+    ks_stat, _ = ks_2samp(bads, goods)
+    return ks_stat
+
+# --- Ví dụ sử dụng trong monitoring pipeline ---
+# train_scores: Series — score của population lúc training
+# live_scores:  Series — score của applicants tuần này
+# y_true, y_pred: arrays với outcome đã materialise (approved customers only)
+
+psi   = calc_psi(train_scores, live_scores, n_bins=10)
+gini  = calc_gini(y_true, y_pred)
+ks    = calc_ks(y_true, y_pred)
+
+print(f"PSI  : {psi:.4f}  {'✅ Stable' if psi < 0.10 else '⚠️ Investigate' if psi < 0.25 else '🔴 Retrain'}")
+print(f"Gini : {gini:.3f}")
+print(f"KS   : {ks:.3f}")
+
+# --- Feature-level PSI khi score PSI cao ---
+feature_psi = {
+    col: calc_psi(train_df[col].dropna(), live_df[col].dropna())
+    for col in model_features
+}
+top_drifters = sorted(feature_psi.items(), key=lambda x: -x[1])[:5]
+print("Top drifting features:", top_drifters)
+```
+
 ### Những rủi ro thường trực
 
 - **Rò rỉ thông tin (Leakage):** Dùng dữ liệu "sau khi đã quyết định" để dạy cho AI đoán "trước khi quyết định". Đây là lỗi cơ bản nhưng cực kỳ tinh vi.
@@ -138,8 +197,59 @@ Step 4: Decision
   → Gini declining + unclear cause → trigger formal model review
 ```
 
+### Code Reference — PSI, Gini, KS in Python
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.metrics import roc_auc_score
+from scipy.stats import ks_2samp
+
+def calc_psi(expected: pd.Series, actual: pd.Series, n_bins: int = 10) -> float:
+    """
+    Population Stability Index — industry standard implementation.
+    Breakpoints are derived from `expected` only (training baseline).
+    Never use actual distribution to set breakpoints — that's look-ahead bias.
+    """
+    breakpoints = np.nanpercentile(expected, np.linspace(0, 100, n_bins + 1))
+    breakpoints = np.unique(breakpoints)
+
+    exp_counts, _ = np.histogram(expected, bins=breakpoints)
+    act_counts, _ = np.histogram(actual,   bins=breakpoints)
+
+    exp_pct = np.where(exp_counts == 0, 1e-4, exp_counts / len(expected))
+    act_pct = np.where(act_counts == 0, 1e-4, act_counts / len(actual))
+
+    return float(np.sum((act_pct - exp_pct) * np.log(act_pct / exp_pct)))
+
+# Gini and KS
+gini = 2 * roc_auc_score(y_true, y_score) - 1
+ks, _ = ks_2samp(y_score[y_true == 1], y_score[y_true == 0])
+
+# Weekly monitoring report
+psi = calc_psi(train_scores, live_scores)
+status = "✅ Stable" if psi < 0.10 else ("⚠️ Investigate" if psi < 0.25 else "🔴 Review")
+print(f"PSI={psi:.4f} ({status})  Gini={gini:.3f}  KS={ks:.3f}")
+
+# When PSI > 0.25 — drill down to feature level
+feature_psi = {
+    col: calc_psi(train_df[col].dropna(), live_df[col].dropna())
+    for col in model_features
+}
+top_drifters = sorted(feature_psi, key=lambda c: -feature_psi[c])[:5]
+print("Top drifting features:", [(c, round(feature_psi[c], 4)) for c in top_drifters])
+```
+
 ### Takeaways
 
 OOT and PSI are the production hygiene of risk modeling. Investing in clear sample definitions, robust documentation, and actionable **Runbooks** pays off far more than marginal gains from extra features.
 
 The most important discipline: distinguish between "the model got worse" and "the customers changed." PSI tells you the latter. Gini and KS tell you the former. You need both signals before making any decision about retraining.
+
+---
+
+**References**
+- Federal Reserve SR Letter 11-7 (2011). *Guidance on Model Risk Management*. Board of Governors of the Federal Reserve System. [federalreserve.gov/supervisionreg/srletters/sr1107.htm](https://www.federalreserve.gov/supervisionreg/srletters/sr1107.htm) — The definitive regulatory standard for model monitoring and validation.
+- Basel Committee on Banking Supervision (2005). *An Explanatory Note on the Basel II IRB Risk Weight Functions*. Bank for International Settlements. [bis.org/bcbs/irbriskweight.pdf](https://www.bis.org/bcbs/irbriskweight.pdf)
+- `scipy.stats.ks_2samp`: [docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ks_2samp.html](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ks_2samp.html)
+- `sklearn.metrics.roc_auc_score`: [scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html)
