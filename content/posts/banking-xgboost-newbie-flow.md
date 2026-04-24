@@ -105,19 +105,105 @@ Trong thực tế:
 
 ## EN
 
-### At a glance
+### At a Glance
 
-- XGBoost predicts by sending one input through **many trees**; each tree outputs a **leaf value**; the booster **adds them up**.
-- For `binary:logistic`, the accumulated value is usually the **margin/score**; apply sigmoid to obtain **probability**.
-- In credit scoring, **model output is not the final decision**: policy/cutoffs drive approvals.
+- XGBoost predicts by sending one input through **many trees**; each tree outputs a **leaf value**; the booster **accumulates them** into a score.
+- For `binary:logistic`, that accumulated score is a **log-odds margin** — apply sigmoid to get probability.
+- In credit scoring, **the model score is not the decision**: a policy layer (cutoffs, business rules) makes the final call.
 
-### Diagram (open in browser)
+---
 
-- HTML/SVG diagram: `/diagrams/xgboost_flow.html`
+### How One Input Travels Through XGBoost
 
-### References
+Think of XGBoost as a committee of simple decision-makers. Each member (tree) looks at the same applicant and writes down a number. The final answer is the sum of all those numbers — not a vote, an addition.
 
-- Prediction options (`output_margin`, `iteration_range`): `https://xgboost.readthedocs.io/en/stable/prediction.html`
-- Individual trees accumulation demo: `https://xgboost.readthedocs.io/en/latest/python/examples/individual_trees.html`
-- Dump parse fields (`Split`, `Yes/No/Missing`): `https://xgboost.readthedocs.io/en/latest/r_docs/R-package/docs/reference/xgb.model.dt.tree.html`
+**Step 1 — Input vector.** At prediction time, one applicant becomes a row of numbers: `income = 8,000,000`, `age = 32`, `days_past_due_6m = 0`, `employment_months = 14`, ...
+
+This vector is passed — simultaneously and identically — to every tree in the ensemble.
+
+**Step 2 — Traversing a single tree.** Each tree is a series of binary splits:
+
+```
+Is income ≤ 6,500,000?
+  YES → Is days_past_due_6m > 0?
+          YES → leaf_value = −0.18   (higher risk)
+          NO  → leaf_value = −0.03
+  NO  → Is employment_months ≤ 6?
+          YES → leaf_value = +0.04
+          NO  → leaf_value = +0.12   (lower risk)
+```
+
+Every input lands in exactly one leaf per tree. That leaf has a pre-learned `leaf_value`.
+
+**Step 3 — Accumulation across all trees.**
+
+```
+final_score = base_score + leaf_value(tree_1) + leaf_value(tree_2) + ... + leaf_value(tree_N)
+```
+
+With 100 trees and a `base_score` of 0.5, the score is the sum of 100 small leaf values plus the base. Each tree corrects the residual error left by the previous trees — that's what "boosting" means.
+
+**Step 4 — Score to probability (for binary:logistic).**
+
+The accumulated score is a **log-odds value** (margin), not a probability. To convert:
+
+```
+probability = 1 / (1 + e^(−score))
+```
+
+A score of 0 → 50% probability. Score of +2 → ~88%. Score of −2 → ~12%.
+
+**Step 5 — Probability is not the decision.**
+
+The probability tells you the model's estimate of default risk. The business then applies:
+- A **cutoff** (e.g., approve if probability < 0.15)
+- **Hard rules** (e.g., never approve if any DPD90 in past 12 months)
+- **Policy overrides** (e.g., VIP customers get manual review)
+
+`predict_proba(X) < 0.15` is not a credit policy. It's an input to one.
+
+---
+
+### When Banks Use XGBoost vs Scorecards
+
+XGBoost and scorecards are not competitors — they serve different roles in a credit operation:
+
+| Use case | Preferred model | Why |
+|---|---|---|
+| Regulated final approve/decline | **Scorecard** | Must explain each decision; adverse action notice requirement |
+| Pre-screening, risk tiering | **XGBoost** | Higher AUC; don't need per-decision explainability |
+| Fraud detection | **XGBoost + rules** | Speed and pattern complexity matter more than interpretability |
+| Portfolio analytics, pricing | Either | No regulatory requirement on the model form |
+
+A common production setup: XGBoost filters the top 80% of applicants into a fast-approval lane; the remaining 20% goes through a scorecard that can produce a written explanation for each case.
+
+---
+
+### The Threshold Trap
+
+One of the most common mistakes when deploying XGBoost in credit:
+
+> "We approve if `predict_proba > 0.5`."
+
+This is almost never right. The model's default 0.5 threshold was not calibrated to your portfolio's bad rate target. If your portfolio has a 5% bad rate, the "neutral" probability isn't 50% — it's somewhere much lower.
+
+Cutoff setting requires a trade-off analysis:
+- What approval rate does the business need?
+- What bad rate is acceptable at that approval rate?
+- What's the expected loss per approved account?
+
+Set the cutoff on **business logic applied to a sorted score distribution**, not on the model's raw probability threshold.
+
+---
+
+### Key Takeaways
+
+- XGBoost sums leaf values across all trees — each tree corrects the residual error of the previous one.
+- The output for `binary:logistic` is a log-odds margin; sigmoid converts it to probability.
+- Score ≠ probability ≠ decision. Each conversion step involves a separate design choice.
+- In credit, XGBoost is most powerful as a pre-screener or risk-tiering tool — not as the sole, directly explainable decision engine.
+
+**References:**
+- Prediction API (`output_margin`, `iteration_range`): https://xgboost.readthedocs.io/en/stable/prediction.html
+- Individual tree accumulation: https://xgboost.readthedocs.io/en/latest/python/examples/individual_trees.html
 
