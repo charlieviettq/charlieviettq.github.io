@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Exo_2, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteNav } from "@/components/SiteNav";
-import { ScrollToTop } from "@/components/ScrollToTop";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const exo2 = Exo_2({
@@ -49,7 +48,6 @@ export default function RootLayout({
         <ThemeProvider>
           <SiteNav />
           <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
-          <ScrollToTop />
           <footer className="mx-auto max-w-6xl border-t border-zinc-200/50 px-4 py-8 text-center text-sm text-zinc-600 dark:border-zinc-700/30 dark:text-zinc-400">
             <a
               href="https://github.com/charlieviettq"

@@ -159,7 +159,7 @@ export function GlobalSearch() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="global-search-title"
-            className="search-dialog-enter w-full max-w-lg rounded-2xl border border-zinc-200/60 bg-gradient-to-b from-white to-zinc-50/95 p-1 shadow-2xl shadow-zinc-900/20 dark:border-zinc-700/40 dark:from-zinc-900 dark:to-zinc-950/95 dark:shadow-black/40"
+            className="w-full max-w-lg rounded-2xl border border-zinc-200/60 bg-gradient-to-b from-white to-zinc-50/95 p-1 shadow-2xl shadow-zinc-900/20 dark:border-zinc-700/40 dark:from-zinc-900 dark:to-zinc-950/95 dark:shadow-black/40"
           >
             <div className="rounded-xl bg-white/80 p-4 dark:bg-zinc-950/80">
               <div className="flex items-center gap-2 border-b border-zinc-200/80 pb-3 dark:border-zinc-700/80">
