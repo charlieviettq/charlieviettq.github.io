@@ -225,7 +225,7 @@ export function BlogPostBody({
 
   // Shared prose class string
   const proseClass =
-    "beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-amber-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900";
+    "beguru-docs prose max-w-none prose-headings:scroll-mt-28 prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-amber-400";
 
   // Render a markdown block — reuses the same (unchanged) plugin arrays
   const renderMd = (markdown: string, key: string) => (
