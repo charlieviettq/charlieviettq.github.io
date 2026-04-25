@@ -81,6 +81,28 @@ body {
   background-color: color-mix(in srgb, var(--foreground) 4%, transparent);
 }
 
+/* Code blocks: đủ contrast trong light mode (bg page ≈ #f0f4f8, zinc-100 ≈ #f4f4f5 → vô hình) */
+.beguru-docs.prose pre {
+  background-color: #e4e8f0;
+  border: 1px solid color-mix(in srgb, var(--foreground) 14%, transparent);
+}
+.dark .beguru-docs.prose pre {
+  background-color: #111827; /* zinc-900 */
+  border-color: color-mix(in srgb, var(--foreground) 12%, transparent);
+}
+/* Inline code */
+.beguru-docs.prose :not(pre) > code {
+  background-color: #dde2ec;
+  border: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  border-radius: 0.3em;
+  padding: 0.1em 0.35em;
+  font-size: 0.875em;
+}
+.dark .beguru-docs.prose :not(pre) > code {
+  background-color: color-mix(in srgb, var(--foreground) 10%, transparent);
+  border-color: color-mix(in srgb, var(--foreground) 14%, transparent);
+}
+
 /* Chart (BeGuru flow / Mermaid): viền gradient tinh chỉnh, halo nhẹ hơn — editorial / modern */
 .chart-glow-frame {
   background: linear-gradient(
