@@ -365,16 +365,24 @@ function ContentVi() {
                   T3/2022 — T7/2023
                 </span>
               </div>
+              <p className="text-xs mb-2 italic" style={{ color: "var(--foreground-secondary)" }}>
+                Làm việc trực tiếp với CTO để xây dựng toàn bộ hệ thống Data &amp; AI từ raw log —
+                từ thu thập, transform, đến triển khai các sản phẩm AI production.
+              </p>
               <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
                 <li className="leading-relaxed">
-                  Xây <strong>data warehouse</strong> MongoDB; pipeline batch, real-time &amp; lambda.
+                  Xây dựng <strong>data warehouse</strong> từ raw log: thiết kế mô hình dữ liệu
+                  (user, post, hashtag, tương tác, quan hệ), pipeline batch, real-time &amp; lambda
+                  trên MongoDB.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>Kiểm duyệt nội dung</strong>: fine-tune PhoBERT, bán tự động phát hiện vi phạm
-                  &amp; xếp hạng mức độ cho reviewer.
+                  <strong>Hệ thống kiểm duyệt nội dung</strong>: fine-tune PhoBERT, bán tự động
+                  phát hiện vi phạm &amp; xếp hạng mức độ nghiêm trọng cho reviewer.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>Gợi ý tour &amp; bạn bè</strong> dùng graph embedding; phối hợp backend/QC.
+                  <strong>Hệ thống gợi ý &amp; ranking</strong>: gợi ý kết bạn, ranking user &amp;
+                  hashtag dùng graph embedding — phối hợp trực tiếp với backend &amp; QC để tích
+                  hợp API và release.
                 </li>
                 <li className="leading-relaxed text-xs" style={{ color: "var(--foreground-secondary)" }}>
                   Stack: Python · Airflow · Kafka · MongoDB · PyTorch · TensorFlow · Jenkins
@@ -572,16 +580,24 @@ function ContentEn() {
                   Mar 2022 — Jul 2023
                 </span>
               </div>
+              <p className="text-xs mb-2 italic" style={{ color: "var(--foreground-secondary)" }}>
+                Worked directly with the CTO to build the entire Data &amp; AI stack from raw
+                logs — from ingestion and transformation through to production AI products.
+              </p>
               <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
                 <li className="leading-relaxed">
-                  Built <strong>data warehouse</strong> on MongoDB; batch, real-time &amp; lambda pipelines.
+                  Built the <strong>data warehouse from raw logs</strong>: dimensional modelling
+                  (users, posts, hashtags, activity, relationships), batch, real-time &amp; lambda
+                  pipelines on MongoDB.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>Content moderation</strong>: PhoBERT fine-tuning for semi-automated violation
-                  detection and severity ranking.
+                  <strong>Content moderation system</strong>: PhoBERT fine-tuning for semi-automated
+                  violation detection and severity ranking for human reviewers.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>Tour &amp; friend recommendations</strong> via graph embedding; backend/QC collaboration.
+                  <strong>Recommendation &amp; ranking systems</strong>: friend suggestions, user &amp;
+                  hashtag ranking via graph embedding — collaborated directly with backend &amp; QC
+                  on API integration and releases.
                 </li>
                 <li className="leading-relaxed text-xs" style={{ color: "var(--foreground-secondary)" }}>
                   Stack: Python · Airflow · Kafka · MongoDB · PyTorch · TensorFlow · Jenkins
