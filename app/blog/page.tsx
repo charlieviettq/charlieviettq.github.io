@@ -18,43 +18,47 @@ export const metadata: Metadata = {
 export default function BlogIndexPage() {
   return (
     <div className="space-y-12">
+
+      {/* ── Page header ──────────────────────────────────────────────────────── */}
       <div>
-        <h1 className="font-heading text-3xl font-bold tracking-tight">Blog</h1>
-        <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
-          Notes / Ghi chép ngắn — song ngữ trong bài khi phù hợp. Bốn chuyên mục:
+        <h1
+          className="font-heading text-3xl font-bold tracking-tight"
+          style={{ color: "var(--foreground)" }}
+        >
+          Blog
+        </h1>
+        <p
+          className="mt-2 max-w-2xl text-base leading-relaxed"
+          style={{ color: "var(--foreground-secondary)" }}
+        >
+          Ghi chép kỹ thuật — song ngữ VI/EN. Bốn chủ đề:
           Data Science, Data Engineering, Gen AI, Banking Domain.
         </p>
-        <p className="mt-3 max-w-2xl text-sm text-zinc-600 dark:text-zinc-400">
-          <strong className="font-medium text-zinc-700 dark:text-zinc-300">
-            BeGuru / Gen AI:
-          </strong>{" "}
+
+        {/* BeGuru featured link */}
+        <p className="mt-3 max-w-2xl text-sm" style={{ color: "var(--foreground-secondary)" }}>
+          <strong style={{ color: "var(--foreground)" }}>BeGuru / Gen AI:</strong>{" "}
           <Link
             href="/blog/beguru-ai-architecture-overview"
-            className="text-amber-700 underline decoration-amber-500/40 underline-offset-2 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-300"
+            style={{ color: "var(--brand-from)" }}
+            className="underline decoration-current/30 underline-offset-2 hover:opacity-80 transition"
           >
-            Technical Docs (kiến trúc tổng quan)
+            Technical Docs — kiến trúc tổng quan
           </Link>
-          {" — "}
-          <span className="text-zinc-500 dark:text-zinc-400">
-            architecture overview (runtime, disk artifacts, memory).
-          </span>
+          {" "}(runtime, disk artifacts, memory).
         </p>
-        <p className="mt-3 max-w-2xl text-sm text-zinc-500 dark:text-zinc-400">
-          <strong className="font-medium text-zinc-600 dark:text-zinc-300">Tìm bài:</strong> dùng nút{" "}
-          <span className="whitespace-nowrap rounded border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 font-mono text-xs dark:border-zinc-600 dark:bg-zinc-800">
-            Tìm kiếm
-          </span>{" "}
-          trên thanh điều hướng hoặc phím tắt ⌘K / Ctrl+K.
+
+        <p className="mt-2 text-sm" style={{ color: "var(--foreground-secondary)" }}>
+          <strong style={{ color: "var(--foreground)" }}>Tìm bài:</strong> ⌘K / Ctrl+K
         </p>
-        <nav
-          className="mt-4 flex flex-wrap gap-2 text-sm"
-          aria-label="Jump to category"
-        >
+
+        {/* Category jump nav */}
+        <nav className="mt-4 flex flex-wrap gap-2" aria-label="Jump to category">
           {BLOG_CATEGORY_ORDER.map((cat) => (
             <a
               key={cat}
               href={`#${cat}`}
-              className={`inline-flex items-center rounded-md px-3 py-1 font-medium transition hover:opacity-90 ${getCategoryPillClasses(cat)}`}
+              className={`inline-flex items-center rounded-md px-3 py-1.5 text-xs font-bold tracking-wide transition hover:opacity-90 ${getCategoryPillClasses(cat)}`}
             >
               {getCategoryLabel(cat)}
             </a>
@@ -62,51 +66,87 @@ export default function BlogIndexPage() {
         </nav>
       </div>
 
+      {/* ── Category sections ─────────────────────────────────────────────────── */}
       {BLOG_CATEGORY_ORDER.map((cat) => {
         const posts = getPostsByCategory(cat);
         return (
           <section key={cat} id={cat} className="scroll-mt-24">
-            <GradientCard className="space-y-4">
-              <header className="border-b border-zinc-200/40 pb-4 dark:border-zinc-700/30">
-                <h2 className="font-heading text-xl font-bold tracking-tight">
-                  {getCategoryLabel(cat)}
-                </h2>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  {getCategorySubtitleVi(cat)}
-                </p>
+            <GradientCard className="space-y-0 overflow-hidden !p-0">
+
+              {/* Section header */}
+              <header
+                className="flex items-center gap-4 px-6 py-5"
+                style={{ borderBottom: "1px solid var(--border-warm)" }}
+              >
+                {/* Colour accent bar matching the category */}
+                <span
+                  className={`h-10 w-1 shrink-0 rounded-full ${getCategoryPillClasses(cat).split(" ")[0]}`}
+                />
+                <div>
+                  <h2
+                    className="font-heading text-xl font-bold tracking-tight"
+                    style={{ color: "var(--foreground)" }}
+                  >
+                    {getCategoryLabel(cat)}
+                  </h2>
+                  <p className="mt-0.5 text-sm" style={{ color: "var(--foreground-secondary)" }}>
+                    {getCategorySubtitleVi(cat)}
+                  </p>
+                </div>
               </header>
+
+              {/* Post list */}
               {posts.length === 0 ? (
-                <p className="text-sm text-zinc-500">No posts in this category yet.</p>
+                <p className="px-6 py-5 text-sm" style={{ color: "var(--foreground-secondary)" }}>
+                  No posts yet.
+                </p>
               ) : (
-                <ul className="space-y-5">
+                <ul className="divide-y" style={{ borderColor: "var(--border-warm)" }}>
                   {posts.map((post) => (
-                    <li
-                      key={post.slug}
-                      className="group -mx-4 rounded-lg border-b border-zinc-200/60 px-4 pb-5 last:border-0 last:pb-0 transition-colors hover:bg-zinc-50/60 dark:border-zinc-700/40 dark:hover:bg-zinc-800/20"
-                    >
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-mono text-xs font-medium tabular-nums text-zinc-400 dark:text-zinc-500">
-                          {post.date}
-                        </p>
-                        <span
-                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${getCategoryPillClasses(post.category)}`}
-                        >
-                          {getCategoryLabel(post.category)}
-                        </span>
+                    <li key={post.slug} className="post-item relative">
+
+                      {/* Orange left accent — appears on hover via CSS */}
+                      <span
+                        className="post-accent absolute left-0 top-0 h-full w-[3px]"
+                        style={{ backgroundColor: "var(--brand-from)" }}
+                      />
+
+                      <div className="px-6 py-5">
+                        {/* Category pill + date — pill is prominent */}
+                        <div className="mb-3 flex flex-wrap items-center gap-2.5">
+                          <span
+                            className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-bold tracking-wide ${getCategoryPillClasses(post.category)}`}
+                          >
+                            {getCategoryLabel(post.category)}
+                          </span>
+                          <span
+                            className="font-mono text-xs tabular-nums"
+                            style={{ color: "var(--foreground-secondary)" }}
+                          >
+                            {post.date}
+                          </span>
+                        </div>
+
+                        {/* Title — large, bold, brand-color on hover via CSS */}
+                        <h3 className="font-heading text-xl font-bold leading-snug">
+                          <Link
+                            href={`/blog/${post.slug}/`}
+                            className="post-title-link"
+                          >
+                            {post.title}
+                          </Link>
+                        </h3>
+
+                        {/* Excerpt */}
+                        {post.excerpt && (
+                          <p
+                            className="mt-1.5 line-clamp-2 text-sm leading-relaxed"
+                            style={{ color: "var(--foreground-secondary)" }}
+                          >
+                            {post.excerpt}
+                          </p>
+                        )}
                       </div>
-                      <h3 className="mt-2 text-lg font-semibold">
-                        <Link
-                          href={`/blog/${post.slug}/`}
-                          className="text-zinc-900 hover:text-amber-600 dark:text-zinc-100 dark:hover:text-amber-400"
-                        >
-                          {post.title}
-                        </Link>
-                      </h3>
-                      {post.excerpt ? (
-                        <p className="mt-2 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">
-                          {post.excerpt}
-                        </p>
-                      ) : null}
                     </li>
                   ))}
                 </ul>
