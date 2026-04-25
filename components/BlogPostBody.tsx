@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   Children,
   isValidElement,
@@ -22,6 +21,7 @@ import {
   parseBeguruFlowSpec,
 } from "@/components/blog/BeguruFlowDiagram";
 import { MermaidBlock } from "@/components/MermaidBlock";
+import { PostLeftSidebar } from "@/components/blog/PostLeftSidebar";
 import { extractToc, type TocItem } from "@/lib/bilingual-post";
 import remarkDocDirectives from "@/lib/remark-doc-directives";
 import { blogSanitizeSchema } from "@/lib/rehype-blog-sanitize";
@@ -44,6 +44,7 @@ type Props = {
   kpis: PostKpi[];
 };
 
+// ─── TocNav ───────────────────────────────────────────────────────────────────
 function TocNav({ items }: { items: TocItem[] }) {
   if (items.length === 0) return null;
   return (
@@ -70,6 +71,7 @@ function TocNav({ items }: { items: TocItem[] }) {
   );
 }
 
+// ─── CaseStudyKpiGrid ─────────────────────────────────────────────────────────
 function CaseStudyKpiGrid({
   kpis,
   lang,
@@ -97,6 +99,34 @@ function CaseStudyKpiGrid({
   );
 }
 
+// ─── PaneHeader ───────────────────────────────────────────────────────────────
+function PaneHeader({
+  lang,
+  open,
+  onToggle,
+}: {
+  lang: "vi" | "en";
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div className="mb-4 flex items-center justify-between border-b border-zinc-200/60 pb-2 dark:border-zinc-700/40">
+      <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        {lang === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}
+      </span>
+      <button
+        type="button"
+        onClick={onToggle}
+        title={open ? "Thu gọn / Collapse" : "Mở rộng / Expand"}
+        className="rounded px-2 py-0.5 text-xs text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-amber-600 dark:hover:bg-zinc-800 dark:hover:text-amber-400"
+      >
+        {open ? "← Thu" : "Mở →"}
+      </button>
+    </div>
+  );
+}
+
+// ─── BlogPostBody ─────────────────────────────────────────────────────────────
 export function BlogPostBody({
   title,
   date,
@@ -110,6 +140,10 @@ export function BlogPostBody({
   kpis,
 }: Props) {
   const [lang, setLang] = useState<Lang>("vi");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [splitView, setSplitView] = useState(false);
+  const [viPaneOpen, setViPaneOpen] = useState(true);
+  const [enPaneOpen, setEnPaneOpen] = useState(true);
 
   useEffect(() => {
     try {
@@ -128,8 +162,11 @@ export function BlogPostBody({
 
   const caseStudy = layout === "case-study";
 
-  const toc = useMemo(() => extractToc(activeMarkdown), [activeMarkdown]);
+  // In split mode TOC follows viMarkdown; in single mode follows activeMarkdown
+  const tocSource = bilingual && splitView ? viMarkdown : activeMarkdown;
+  const toc = useMemo(() => extractToc(tocSource), [tocSource]);
 
+  // ── markdownComponents — DO NOT MODIFY THIS BLOCK ─────────────────────────
   const markdownComponents = useMemo(
     () => ({
       pre({ children }: { children?: ReactNode }) {
@@ -188,6 +225,7 @@ export function BlogPostBody({
     }),
     [lang],
   );
+  // ── end markdownComponents ─────────────────────────────────────────────────
 
   const setLanguage = (next: Lang) => {
     setLang(next);
@@ -198,10 +236,46 @@ export function BlogPostBody({
     }
   };
 
+  // Shared prose class string
+  const proseClass =
+    "beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-amber-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900";
+
+  // Render a markdown block — reuses the same (unchanged) plugin arrays
+  const renderMd = (markdown: string, key: string) => (
+    <div className={proseClass}>
+      <ReactMarkdown
+        key={key}
+        remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
+        rehypePlugins={[
+          rehypeRaw,
+          [rehypeSanitize, blogSanitizeSchema],
+          rehypeSlug,
+        ]}
+        components={markdownComponents}
+      >
+        {markdown}
+      </ReactMarkdown>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-      <div className="order-1 min-w-0 flex-1 lg:order-2">
+    <div className="flex min-h-0 items-start">
+      {/* ── LEFT SIDEBAR (desktop only) ────────────────────────────────────── */}
+      <PostLeftSidebar
+        open={sidebarOpen}
+        onToggle={() => setSidebarOpen((o) => !o)}
+        tocNode={<TocNav items={toc} />}
+        bilingual={bilingual}
+        splitView={splitView}
+        onSplitToggle={() => setSplitView((s) => !s)}
+        lang={lang}
+        onLangChange={setLanguage}
+      />
+
+      {/* ── MAIN CONTENT ───────────────────────────────────────────────────── */}
+      <div className="min-w-0 flex-1 pl-0 lg:pl-6">
         <article className="space-y-8">
+          {/* ── Post header ───────────────────────────────────────────────── */}
           <header
             className={
               caseStudy
@@ -209,13 +283,7 @@ export function BlogPostBody({
                 : undefined
             }
           >
-            <div
-              className={
-                caseStudy
-                  ? "flex flex-wrap items-center gap-2"
-                  : "flex flex-wrap items-center gap-2"
-              }
-            >
+            <div className="flex flex-wrap items-center gap-2">
               <p
                 className={
                   caseStudy
@@ -235,6 +303,7 @@ export function BlogPostBody({
                 {categoryLabel}
               </span>
             </div>
+
             <h1
               className={
                 caseStudy
@@ -244,6 +313,7 @@ export function BlogPostBody({
             >
               {title}
             </h1>
+
             {excerpt ? (
               <p
                 className={
@@ -260,12 +330,13 @@ export function BlogPostBody({
               <CaseStudyKpiGrid kpis={kpis} lang={lang} />
             ) : null}
 
+            {/* Mobile-only language toggle (sidebar hidden on mobile) */}
             {bilingual ? (
               <div
                 className={
                   caseStudy
-                    ? "mt-8 flex flex-wrap items-center gap-2 border-t border-white/10 pt-6"
-                    : "mt-6 flex flex-wrap items-center gap-2"
+                    ? "mt-8 flex flex-wrap items-center gap-2 border-t border-white/10 pt-6 lg:hidden"
+                    : "mt-6 flex flex-wrap items-center gap-2 lg:hidden"
                 }
                 role="group"
                 aria-label="Chọn ngôn ngữ / Language"
@@ -321,53 +392,58 @@ export function BlogPostBody({
             ) : null}
           </header>
 
-          {caseStudy ? (
-            <div className="rounded-2xl border border-zinc-200/90 bg-white/90 p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 md:p-8">
-              <div className="beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-amber-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
-                <ReactMarkdown
-                  key={lang + (bilingual ? "" : "single")}
-                  remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
-                  rehypePlugins={[
-                    rehypeRaw,
-                    [rehypeSanitize, blogSanitizeSchema],
-                    rehypeSlug,
-                  ]}
-                  components={markdownComponents}
-                >
-                  {activeMarkdown}
-                </ReactMarkdown>
+          {/* ── Content area ──────────────────────────────────────────────── */}
+          {splitView && bilingual ? (
+            /* ── SPLIT VIEW: VI | EN side by side (desktop) ──────────────── */
+            <div className="flex items-start gap-0 lg:gap-2">
+              {/* VI pane */}
+              <div
+                className={
+                  viPaneOpen
+                    ? "min-w-0 flex-1 overflow-x-auto"
+                    : "w-auto shrink-0"
+                }
+              >
+                <PaneHeader
+                  lang="vi"
+                  open={viPaneOpen}
+                  onToggle={() => setViPaneOpen((o) => !o)}
+                />
+                {viPaneOpen && renderMd(viMarkdown, "vi")}
+              </div>
+
+              {/* Vertical divider between panes */}
+              {viPaneOpen && enPaneOpen && (
+                <div className="mx-3 hidden w-px self-stretch shrink-0 bg-zinc-200/70 dark:bg-zinc-700/50 lg:block" />
+              )}
+
+              {/* EN pane */}
+              <div
+                className={
+                  enPaneOpen
+                    ? "min-w-0 flex-1 overflow-x-auto"
+                    : "w-auto shrink-0"
+                }
+              >
+                <PaneHeader
+                  lang="en"
+                  open={enPaneOpen}
+                  onToggle={() => setEnPaneOpen((o) => !o)}
+                />
+                {enPaneOpen && renderMd(enMarkdown, "en")}
               </div>
             </div>
-          ) : (
-            <div className="beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-amber-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
-              <ReactMarkdown
-                key={lang + (bilingual ? "" : "single")}
-                remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
-                rehypePlugins={[
-                  rehypeRaw,
-                  [rehypeSanitize, blogSanitizeSchema],
-                  rehypeSlug,
-                ]}
-                components={markdownComponents}
-              >
-                {activeMarkdown}
-              </ReactMarkdown>
+          ) : caseStudy ? (
+            /* ── SINGLE VIEW — case-study card wrapper ────────────────────── */
+            <div className="rounded-2xl border border-zinc-200/90 bg-white/90 p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 md:p-8">
+              {renderMd(activeMarkdown, lang + (bilingual ? "" : "single"))}
             </div>
+          ) : (
+            /* ── SINGLE VIEW — default prose ──────────────────────────────── */
+            renderMd(activeMarkdown, lang + (bilingual ? "" : "single"))
           )}
         </article>
-
-        <p className="mt-10 text-sm">
-          <Link href="/blog/" className="text-amber-600 hover:underline dark:text-amber-400">
-            ← Blog
-          </Link>
-        </p>
       </div>
-
-      <aside className="order-2 w-full shrink-0 border-t border-zinc-200/50 pt-6 lg:order-1 lg:w-52 lg:border-r lg:border-t-0 lg:pr-5 dark:border-zinc-700/40">
-        <div className="lg:sticky lg:top-24">
-          <TocNav items={toc} />
-        </div>
-      </aside>
     </div>
   );
 }

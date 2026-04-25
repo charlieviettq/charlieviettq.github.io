@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BlogPostBody } from "@/components/BlogPostBody";
 import { PostNav } from "@/components/blog/PostNav";
+import { RelatedPosts } from "@/components/blog/RelatedPosts";
 import { splitBilingualMarkdown } from "@/lib/bilingual-post";
 import {
   getAdjacentPosts,
@@ -10,6 +11,7 @@ import {
   getCategoryPillClasses,
   getPostBySlug,
   getPostSlugs,
+  getRelatedPosts,
 } from "@/lib/posts";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -39,6 +41,7 @@ export default async function BlogPostPage(props: Props) {
   const viMarkdown = parts?.vi ?? post.content;
   const enMarkdown = parts?.en ?? post.content;
   const { prev, next } = getAdjacentPosts(slug);
+  const related = getRelatedPosts(slug, post);
 
   return (
     <>
@@ -61,6 +64,7 @@ export default async function BlogPostPage(props: Props) {
         kpis={post.kpis}
       />
       <PostNav prev={prev} next={next} />
+      <RelatedPosts posts={related} />
     </>
   );
 }
