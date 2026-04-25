@@ -18,6 +18,19 @@
   --brand-from: #f54e00;    /* Cursor orange — primary accent */
   --brand-to:   #c08532;    /* warm gold — secondary */
 
+  /* sugar-high syntax highlighting — warm Cursor palette
+     Keywords=orange, Strings=sage, Comments=muted, Classes=lavender,
+     Properties=blue, Entities=peach (mirrors Cursor AI timeline colors) */
+  --sh-keyword:     #f87840;
+  --sh-string:      #9fc9a2;
+  --sh-comment:     rgba(232, 230, 222, 0.38);
+  --sh-class:       #c0a8dd;
+  --sh-identifier:  #e8e6de;
+  --sh-sign:        rgba(232, 230, 222, 0.55);
+  --sh-property:    #9fbbe0;
+  --sh-entity:      #dfa88f;
+  --sh-jsxliterals: #dfa88f;
+
   /* Borders: warm brown at varying opacity */
   --border-warm:        rgba(38, 37, 30, 0.1);
   --border-warm-md:     rgba(38, 37, 30, 0.2);

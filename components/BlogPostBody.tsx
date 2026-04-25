@@ -21,6 +21,7 @@ import {
   parseBeguruFlowSpec,
 } from "@/components/blog/BeguruFlowDiagram";
 import { MermaidBlock } from "@/components/MermaidBlock";
+import { CodeBlock } from "@/components/blog/CodeBlock";
 import { PostLeftSidebar } from "@/components/blog/PostLeftSidebar";
 import { extractToc } from "@/lib/bilingual-post";
 import remarkDocDirectives from "@/lib/remark-doc-directives";
@@ -184,6 +185,11 @@ export function BlogPostBody({
                 <pre className="mt-2 overflow-x-auto text-xs">{text}</pre>
               </div>
             );
+          }
+          // Any other language-* → syntax-highlighted CodeBlock with copy button
+          const langMatch = cls.match(/language-(\w[\w-]*)/);
+          if (langMatch) {
+            return <CodeBlock lang={langMatch[1]} code={text} />;
           }
         }
         return <pre>{children}</pre>;
