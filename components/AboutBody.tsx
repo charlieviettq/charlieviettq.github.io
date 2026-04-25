@@ -237,18 +237,21 @@ function ContentVi() {
       <section className="mb-8">
         <p className="about-section-title">Giới thiệu</p>
         <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--foreground)" }}>
-          Mình là <strong>Trần Quốc Việt</strong> — Data Scientist tại <strong>Cake by VPBank</strong>, tập trung vào{" "}
-          <strong>Credit Scoring</strong>: xây hệ thống <strong>CakeAutoML</strong> (Label Preparation →
-          Data Preparation → Feature Selection → Training → Validator), đóng góp vào{" "}
-          <strong>ML workflow</strong>, và nghiên cứu <strong>Alternative Credit Scoring</strong>{" "}
-          dựa trên dữ liệu hành vi giao dịch &amp; ứng dụng cho các sản phẩm{" "}
-          <strong>Embedded Finance</strong>.
+          Ba năm trước mình đang build mô hình kiểm duyệt nội dung cho một mạng xã hội du lịch.
+          Bây giờ mình đang tự động hoá quyết định tín dụng tại một digital bank. Ở giữa là: data
+          pipeline, feature store, hệ thống chat agent đa tầng, và không ít đêm debug model tới sáng.
+        </p>
+        <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--foreground)" }}>
+          Mình thích những bài toán mà <strong>data lộn xộn, hậu quả có thật</strong>, và không có
+          benchmark sạch nào để núp vào.
         </p>
         <p className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>
-          Giai đoạn trước (2023–2025) ở vai trò <strong>Data AI Engineer</strong>, mình tập trung vào{" "}
-          <strong>Generative AI</strong>, <strong>Data Platform</strong> và nền tảng{" "}
-          <strong>ML Platform</strong> — pipeline batch/stream, data modeling (BigQuery, Doris),
-          chat agent multi-agent, FeatureStore và MLOps.
+          Hiện tại mình đang build <strong>CakeAutoML</strong> — hệ thống tự động hoá toàn bộ quy
+          trình từ chuẩn bị nhãn đến model tín dụng đã được validate — và nghiên cứu xem{" "}
+          <strong>lịch sử giao dịch &amp; hành vi ứng dụng</strong> có thể chấm điểm tín dụng cho
+          những người mà credit bureau truyền thống chưa từng &ldquo;thấy&rdquo;. Điểm giao nhau của{" "}
+          <strong>alternative data</strong>, <strong>embedded finance</strong> và{" "}
+          <strong>ML production</strong> là chỗ mình muốn dành thời gian.
         </p>
         <p className="mt-3 text-xs" style={{ color: "var(--foreground-secondary)" }}>
           Nội dung trang là mô tả năng lực cá nhân; không phải thông tin chính thức của tổ chức hay lời khuyên đầu tư.
@@ -428,18 +431,22 @@ function ContentEn() {
       <section className="mb-8">
         <p className="about-section-title">About</p>
         <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--foreground)" }}>
-          I&apos;m <strong>Tran Quoc Viet</strong> — Data Scientist at <strong>Cake by VPBank</strong>,
-          focused on <strong>Credit Scoring</strong>: building the <strong>CakeAutoML</strong> system
-          (Label Preparation → Data Preparation → Feature Selection → Training → Validator),
-          contributing to the <strong>ML workflow</strong>, and researching{" "}
-          <strong>Alternative Credit Scoring</strong> using transaction behaviour and app-usage
-          signals for <strong>Embedded Finance</strong> products.
+          Three years ago I was building content moderation models at a travel startup. Today
+          I&apos;m automating credit decisions at a digital bank. In between: data pipelines,
+          feature stores, multi-agent chat systems, and more than a few sleepless model
+          debugging sessions.
+        </p>
+        <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--foreground)" }}>
+          I like problems where <strong>data is messy, stakes are real</strong>, and there&apos;s
+          no clean benchmark to hide behind.
         </p>
         <p className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>
-          Previously (2023–2025) as <strong>Data AI Engineer</strong>, I focused on{" "}
-          <strong>Generative AI</strong>, <strong>Data Platform</strong>, and{" "}
-          <strong>ML Platform</strong> foundations — batch/stream pipelines, data modeling
-          (BigQuery, Doris), multi-agent chat systems, FeatureStore, and MLOps.
+          Right now I&apos;m building <strong>CakeAutoML</strong> — an end-to-end system that
+          takes raw data all the way from label preparation to a validated credit model — and
+          researching whether <strong>transaction history &amp; app behaviour</strong> can score
+          credit for people traditional bureaus have never seen. The intersection of{" "}
+          <strong>alternative data</strong>, <strong>embedded finance</strong>, and{" "}
+          <strong>production ML</strong> is where I want to spend my time.
         </p>
         <p className="mt-3 text-xs" style={{ color: "var(--foreground-secondary)" }}>
           This page describes my own skills and experience; not an official statement by any employer and not investment advice.
