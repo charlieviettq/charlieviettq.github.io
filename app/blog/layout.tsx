@@ -18,7 +18,7 @@ export default function BlogLayout({
     label: getCategoryLabel(cat),
     posts: allPosts
       .filter((p) => p.category === cat)
-      .map((p) => ({ slug: p.slug, title: p.title })),
+      .map((p) => ({ slug: p.slug, title: p.title, navTitle: p.navTitle })),
   })).filter((g) => g.posts.length > 0);
 
   return (
