@@ -328,6 +328,36 @@ h4, h5      { letter-spacing: -0.01em; }
   box-shadow: var(--shadow-ambient);
 }
 
+/* ── Charlie Logo SVG animations ────────────────────────────────────────────── */
+@keyframes charlie-arc-draw {
+  from { stroke-dashoffset: 488; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes charlie-line-draw {
+  from { stroke-dashoffset: 220; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes charlie-dot-in {
+  from { opacity: 0; transform: scale(0); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes charlie-glow-bloom {
+  from { opacity: 0; }
+  to   { opacity: 0.2; }
+}
+@keyframes charlie-text-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes charlie-float {
+  from { transform: translateY(0px); }
+  to   { transform: translateY(-8px); }
+}
+@keyframes charlie-pulse {
+  0%, 100% { opacity: 0.18; }
+  50%       { opacity: 0.38; }
+}
+
 /* ── Focus ring — Cursor orange ─────────────────────────────────────────────── */
 :focus-visible {
   outline: 2px solid #f54e00;

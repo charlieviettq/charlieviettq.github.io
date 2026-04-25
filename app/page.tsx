@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { GradientCard } from "@/components/GradientCard";
+import { CharlieLogoSVG } from "@/components/CharlieLogoSVG";
 import {
   BLOG_CATEGORY_ORDER,
   getCategoryLabel,
@@ -12,7 +13,12 @@ export default function Home() {
     <div className="space-y-10">
       {/* ── Hero card ──────────────────────────────────────────────────────── */}
       <GradientCard className="space-y-6">
-        <div className="space-y-5">
+        {/* ── Logo + intro text (side-by-side desktop, stacked mobile) ──── */}
+        <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start sm:gap-7">
+          <div className="shrink-0">
+            <CharlieLogoSVG size={148} />
+          </div>
+          <div className="space-y-5 min-w-0 flex-1">
           <p
             className="text-xs font-semibold uppercase tracking-widest"
             style={{ color: "var(--brand-from)" }}
@@ -45,6 +51,7 @@ export default function Home() {
             boosting), and production-minded GenAI (RAG, agents, observability). This site
             is my bio plus technical notes organized in four topics.
           </p>
+        </div>
         </div>
 
         {/* ── Stat strip ─────────────────────────────────────────────────── */}
