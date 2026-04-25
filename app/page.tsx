@@ -96,7 +96,7 @@ export default function Home() {
                     <Link
                       href="/about/"
                       className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
-                      style={{ backgroundColor: "var(--brand-from)" }}
+                      style={{ backgroundColor: "var(--cta-action)" }}
                     >
                       About / Giới thiệu
                     </Link>
