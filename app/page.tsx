@@ -1,16 +1,21 @@
 import Link from "next/link";
 import { GradientCard } from "@/components/GradientCard";
-import { BLOG_CATEGORY_ORDER, getCategoryLabel } from "@/lib/posts";
+import {
+  BLOG_CATEGORY_ORDER,
+  getCategoryLabel,
+  getCategoryPillClasses,
+} from "@/lib/posts";
 
 export default function Home() {
   return (
     <div className="space-y-10">
-      <GradientCard className="space-y-6">
+      {/* ── Hero card ──────────────────────────────────────────────────────── */}
+      <GradientCard className="space-y-6 border-t-2 border-t-amber-400/70">
         <div className="space-y-4">
           <p className="text-sm font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-400">
             Xin chào / Hello · TP. HCM
           </p>
-          <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
+          <h1 className="font-heading text-4xl font-bold tracking-tight sm:text-5xl">
             Analytics · Data platform · Credit-risk ML · GenAI
           </h1>
           <p className="max-w-2xl text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
@@ -29,6 +34,7 @@ export default function Home() {
           </p>
         </div>
 
+        {/* ── Stat strip ─────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 gap-3 border-t border-zinc-200/60 pt-5 sm:grid-cols-4 dark:border-zinc-700/40">
           {[
             { label: "Focus Domain", value: "Credit Risk ML" },
@@ -40,13 +46,14 @@ export default function Home() {
               <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 {s.label}
               </p>
-              <p className="mt-0.5 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+              <p className="mt-0.5 font-heading text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 {s.value}
               </p>
             </div>
           ))}
         </div>
 
+        {/* ── CTA buttons ────────────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3">
           <Link
             href="/about/"
@@ -63,6 +70,7 @@ export default function Home() {
         </div>
       </GradientCard>
 
+      {/* ── Category pills ─────────────────────────────────────────────────── */}
       <section className="space-y-3">
         <h2 className="font-heading text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
           Blog theo mục / Topics
@@ -72,7 +80,7 @@ export default function Home() {
             <Link
               key={cat}
               href={`/blog/#${cat}`}
-              className="rounded-md border border-zinc-200/80 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-700 shadow-sm transition hover:border-amber-300/60 hover:text-amber-700 dark:border-zinc-700/60 dark:bg-zinc-900/40 dark:text-zinc-300 dark:hover:border-amber-500/40 dark:hover:text-amber-400"
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm transition hover:opacity-90 ${getCategoryPillClasses(cat)}`}
             >
               {getCategoryLabel(cat)}
             </Link>

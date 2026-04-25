@@ -22,7 +22,7 @@ import {
 } from "@/components/blog/BeguruFlowDiagram";
 import { MermaidBlock } from "@/components/MermaidBlock";
 import { PostLeftSidebar } from "@/components/blog/PostLeftSidebar";
-import { extractToc, type TocItem } from "@/lib/bilingual-post";
+import { extractToc } from "@/lib/bilingual-post";
 import remarkDocDirectives from "@/lib/remark-doc-directives";
 import { blogSanitizeSchema } from "@/lib/rehype-blog-sanitize";
 import type { PostKpi, PostLayout } from "@/lib/posts";
@@ -43,33 +43,6 @@ type Props = {
   layout: PostLayout;
   kpis: PostKpi[];
 };
-
-// ─── TocNav ───────────────────────────────────────────────────────────────────
-function TocNav({ items }: { items: TocItem[] }) {
-  if (items.length === 0) return null;
-  return (
-    <nav aria-label="Mục lục / Table of contents">
-      <p className="mb-3 font-heading text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
-        On this page
-      </p>
-      <ul className="space-y-2 text-sm">
-        {items.map((item, index) => (
-          <li
-            key={`${item.id}-${index}`}
-            className={item.depth === 3 ? "pl-3" : undefined}
-          >
-            <a
-              href={`#${item.id}`}
-              className="text-zinc-600 underline-offset-2 transition-colors hover:text-amber-600 hover:underline dark:text-zinc-400 dark:hover:text-amber-400"
-            >
-              {item.text}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}
 
 // ─── CaseStudyKpiGrid ─────────────────────────────────────────────────────────
 function CaseStudyKpiGrid({
@@ -110,15 +83,15 @@ function PaneHeader({
   onToggle: () => void;
 }) {
   return (
-    <div className="mb-4 flex items-center justify-between border-b border-zinc-200/60 pb-2 dark:border-zinc-700/40">
-      <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+    <div className="mb-4 flex items-center justify-between rounded-lg border border-zinc-200/70 bg-zinc-50/80 px-3 py-2 dark:border-zinc-700/50 dark:bg-zinc-800/40">
+      <span className="font-heading text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
         {lang === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}
       </span>
       <button
         type="button"
         onClick={onToggle}
         title={open ? "Thu gọn / Collapse" : "Mở rộng / Expand"}
-        className="rounded px-2 py-0.5 text-xs text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-amber-600 dark:hover:bg-zinc-800 dark:hover:text-amber-400"
+        className="rounded px-2 py-0.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-white hover:text-amber-600 dark:hover:bg-zinc-700 dark:hover:text-amber-400"
       >
         {open ? "← Thu" : "Mở →"}
       </button>
@@ -227,6 +200,20 @@ export function BlogPostBody({
   );
   // ── end markdownComponents ─────────────────────────────────────────────────
 
+  // ── Panel safety: prevent both panes from being collapsed simultaneously ──
+  const handleViToggle = () =>
+    setViPaneOpen((o) => {
+      const next = !o;
+      if (!next && !enPaneOpen) setEnPaneOpen(true);
+      return next;
+    });
+  const handleEnToggle = () =>
+    setEnPaneOpen((o) => {
+      const next = !o;
+      if (!next && !viPaneOpen) setViPaneOpen(true);
+      return next;
+    });
+
   const setLanguage = (next: Lang) => {
     setLang(next);
     try {
@@ -264,7 +251,7 @@ export function BlogPostBody({
       <PostLeftSidebar
         open={sidebarOpen}
         onToggle={() => setSidebarOpen((o) => !o)}
-        tocNode={<TocNav items={toc} />}
+        toc={toc}
         bilingual={bilingual}
         splitView={splitView}
         onSplitToggle={() => setSplitView((s) => !s)}
@@ -407,7 +394,7 @@ export function BlogPostBody({
                 <PaneHeader
                   lang="vi"
                   open={viPaneOpen}
-                  onToggle={() => setViPaneOpen((o) => !o)}
+                  onToggle={handleViToggle}
                 />
                 {viPaneOpen && renderMd(viMarkdown, "vi")}
               </div>
@@ -428,7 +415,7 @@ export function BlogPostBody({
                 <PaneHeader
                   lang="en"
                   open={enPaneOpen}
-                  onToggle={() => setEnPaneOpen((o) => !o)}
+                  onToggle={handleEnToggle}
                 />
                 {enPaneOpen && renderMd(enMarkdown, "en")}
               </div>
