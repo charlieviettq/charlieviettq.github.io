@@ -83,15 +83,31 @@ function PaneHeader({
   onToggle: () => void;
 }) {
   return (
-    <div className="mb-4 flex items-center justify-between rounded-lg border border-zinc-200/70 bg-zinc-50/80 px-3 py-2 dark:border-zinc-700/50 dark:bg-zinc-800/40">
-      <span className="font-heading text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+    <div
+      className="mb-4 flex items-center justify-between rounded-lg px-3 py-2"
+      style={{
+        backgroundColor: "var(--surface-300)",
+        border: "1px solid var(--border-warm)",
+      }}
+    >
+      <span
+        className="font-heading text-xs font-semibold uppercase tracking-wider"
+        style={{ color: "var(--foreground-secondary)" }}
+      >
         {lang === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}
       </span>
       <button
         type="button"
         onClick={onToggle}
         title={open ? "Thu gọn / Collapse" : "Mở rộng / Expand"}
-        className="rounded px-2 py-0.5 text-xs font-medium text-zinc-400 transition-colors hover:bg-white hover:text-amber-600 dark:hover:bg-zinc-700 dark:hover:text-amber-400"
+        className="rounded-full px-2.5 py-0.5 text-xs font-medium transition-all duration-150"
+        style={{ color: "var(--foreground-secondary)" }}
+        onMouseEnter={(e) =>
+          ((e.currentTarget as HTMLElement).style.color = "var(--brand-from)")
+        }
+        onMouseLeave={(e) =>
+          ((e.currentTarget as HTMLElement).style.color = "var(--foreground-secondary)")
+        }
       >
         {open ? "← Thu" : "Mở →"}
       </button>
