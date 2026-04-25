@@ -1,10 +1,184 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const LANG_KEY = "about-lang";
-
 type Lang = "vi" | "en";
+
+/* ── Shared data (language-agnostic) ──────────────────────────────────────── */
+
+const SKILL_GROUPS_VI = [
+  {
+    cat: "Credit Scoring",
+    badges: ["AutoML Pipeline", "Feature Engineering", "Scorecard", "OOT / Stability", "Alternative Data"],
+  },
+  {
+    cat: "Data Platform",
+    badges: ["Airflow", "dbt", "BigQuery", "Kafka", "Doris", "MongoDB"],
+  },
+  {
+    cat: "ML Platform",
+    badges: ["FeatureStore (Feast)", "MLOps", "DAG Orchestration", "Production Scoring"],
+  },
+  {
+    cat: "GenAI & Agent",
+    badges: ["Hybrid RAG", "Multi-agent", "Function Calling", "Eval & Tracing", "Vertex AI"],
+  },
+  {
+    cat: "Cloud & BI",
+    badges: ["GCP", "Looker Studio", "Superset"],
+  },
+];
+
+const SKILL_GROUPS_EN = [
+  {
+    cat: "Credit Scoring",
+    badges: ["AutoML Pipeline", "Feature Engineering", "Scorecard", "OOT / Stability", "Alternative Data"],
+  },
+  {
+    cat: "Data Platform",
+    badges: ["Airflow", "dbt", "BigQuery", "Kafka", "Doris", "MongoDB"],
+  },
+  {
+    cat: "ML Platform",
+    badges: ["FeatureStore (Feast)", "MLOps", "DAG Orchestration", "Production Scoring"],
+  },
+  {
+    cat: "GenAI & Agents",
+    badges: ["Hybrid RAG", "Multi-agent", "Function Calling", "Eval & Tracing", "Vertex AI"],
+  },
+  {
+    cat: "Cloud & BI",
+    badges: ["GCP", "Looker Studio", "Superset"],
+  },
+];
+
+/* ── Sub-components ───────────────────────────────────────────────────────── */
+
+function LangToggle({ lang, setLanguage }: { lang: Lang; setLanguage: (l: Lang) => void }) {
+  return (
+    <div
+      className="mb-8 flex flex-wrap items-center gap-2"
+      role="group"
+      aria-label="Chọn ngôn ngữ / Language"
+    >
+      <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--foreground-secondary)" }}>
+        Language:
+      </span>
+      <div
+        className="inline-flex rounded-lg p-0.5"
+        style={{ border: "1px solid var(--border-warm)", background: "var(--surface-300)" }}
+      >
+        {(["vi", "en"] as Lang[]).map((l) => (
+          <button
+            key={l}
+            type="button"
+            onClick={() => setLanguage(l)}
+            className="rounded-md px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition"
+            style={
+              lang === l
+                ? { background: "var(--brand-from)", color: "#fff" }
+                : { color: "var(--foreground-secondary)" }
+            }
+          >
+            {l === "vi" ? "Tiếng Việt" : "English"}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NowCard({ vi }: { vi: boolean }) {
+  return (
+    <div className="about-now-card mb-8">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
+        <span
+          className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white"
+          style={{ background: "var(--brand-from)" }}
+        >
+          {vi ? "Hiện tại" : "Now"}
+        </span>
+        <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+          Data Scientist · Cake by VPBank
+        </span>
+        <span className="text-xs" style={{ color: "var(--foreground-secondary)" }}>
+          {vi ? "T12/2025 — nay" : "Dec 2025 — present"}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {["CakeAutoML", "ML Workflow", vi ? "Alternative Credit Scoring" : "Alt. Credit Scoring", "Embedded Finance"].map((tag) => (
+          <span
+            key={tag}
+            className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold"
+            style={{
+              background: "color-mix(in srgb, var(--brand-from) 12%, transparent)",
+              color: "var(--brand-from)",
+              border: "1px solid color-mix(in srgb, var(--brand-from) 25%, transparent)",
+            }}
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StatsStrip({ vi }: { vi: boolean }) {
+  const stats = vi
+    ? [
+        { label: "Kinh nghiệm", value: "3+ năm" },
+        { label: "Role hiện tại", value: "Data Scientist" },
+        { label: "Công ty", value: "Cake by VPBank" },
+        { label: "Vị trí", value: "TP. HCM" },
+      ]
+    : [
+        { label: "Experience", value: "3+ years" },
+        { label: "Current role", value: "Data Scientist" },
+        { label: "Company", value: "Cake by VPBank" },
+        { label: "Location", value: "HCMC, Vietnam" },
+      ];
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      {stats.map((s) => (
+        <div key={s.label} className="stat-card pl-3 py-2">
+          <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--foreground-secondary)" }}>
+            {s.label}
+          </p>
+          <p className="mt-0.5 font-heading text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+            {s.value}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SkillsSection({ vi }: { vi: boolean }) {
+  const groups = vi ? SKILL_GROUPS_VI : SKILL_GROUPS_EN;
+  return (
+    <section className="mb-8">
+      <p className="about-section-title">{vi ? "Trọng tâm kỹ thuật" : "Technical focus"}</p>
+      <div style={{ border: "1px solid var(--border-warm)", borderRadius: "0.75rem", overflow: "hidden" }}>
+        {groups.map((g) => (
+          <div key={g.cat} className="cv-skill-row" style={{ padding: "0.65rem 1rem" }}>
+            <span className="cv-skill-cat">{g.cat}</span>
+            <div className="cv-skill-badges">
+              {g.badges.map((b) => (
+                <span key={b} className="cv-skill-badge">{b}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ── Main component ───────────────────────────────────────────────────────── */
 
 export function AboutBody() {
   const [lang, setLang] = useState<Lang>("vi");
@@ -13,419 +187,425 @@ export function AboutBody() {
     try {
       const stored = localStorage.getItem(LANG_KEY);
       if (stored === "en" || stored === "vi") setLang(stored);
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   }, []);
 
   const setLanguage = (next: Lang) => {
     setLang(next);
-    try {
-      localStorage.setItem(LANG_KEY, next);
-    } catch {
-      /* ignore */
-    }
+    try { localStorage.setItem(LANG_KEY, next); } catch { /* ignore */ }
   };
 
   return (
-    <>
-      <div
-        className="mb-6 flex flex-wrap items-center gap-2"
-        role="group"
-        aria-label="Chọn ngôn ngữ / Language"
-      >
-        <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-          Language / Ngôn ngữ:
-        </span>
-        <div className="inline-flex rounded-lg border border-zinc-200 bg-white p-0.5 shadow-sm dark:border-zinc-600 dark:bg-zinc-900">
-          <button
-            type="button"
-            onClick={() => setLanguage("vi")}
-            className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
-              lang === "vi"
-                ? "bg-amber-600 text-white shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            }`}
-          >
-            Tiếng Việt
-          </button>
-          <button
-            type="button"
-            onClick={() => setLanguage("en")}
-            className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
-              lang === "en"
-                ? "bg-amber-600 text-white shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-            }`}
-          >
-            English
-          </button>
+    <div style={{ maxWidth: "720px" }}>
+      {/* ── Name / title header ── */}
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+        <div>
+          <h1 className="font-heading text-2xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+            Trần Quốc Việt
+          </h1>
+          <p className="mt-1 text-sm" style={{ color: "var(--foreground-secondary)" }}>
+            Data Scientist · Credit Scoring &amp; ML · TP. Hồ Chí Minh
+          </p>
+        </div>
+        <div className="flex gap-3 text-sm font-medium">
+          <a href="https://github.com/charlieviettq" target="_blank" rel="noopener noreferrer"
+            className="transition hover:opacity-70" style={{ color: "var(--brand-from)" }}>
+            GitHub
+          </a>
+          <a href="https://www.linkedin.com/in/aivietqt/" target="_blank" rel="noopener noreferrer"
+            className="transition hover:opacity-70" style={{ color: "var(--brand-from)" }}>
+            LinkedIn
+          </a>
         </div>
       </div>
 
-      {lang === "vi" ? <AboutVi /> : <AboutEn />}
-    </>
+      <LangToggle lang={lang} setLanguage={setLanguage} />
+      <NowCard vi={lang === "vi"} />
+      <StatsStrip vi={lang === "vi"} />
+
+      {lang === "vi" ? <ContentVi /> : <ContentEn />}
+    </div>
   );
 }
 
-function AboutVi() {
+/* ── Vietnamese content ───────────────────────────────────────────────────── */
+
+function ContentVi() {
   return (
     <>
-      <p>
-        Mình là <strong>Trần Quốc Việt</strong> — <strong>Data Scientist</strong> tại{" "}
-        <strong>Cake by VPBank</strong>, TP. Hồ Chí Minh. Hiện tập trung vào{" "}
-        <strong>Credit Scoring</strong>: xây dựng hệ thống{" "}
-        <strong>CakeAutoML</strong> (Label Preparation → Data Preparation → Feature
-        Selection → Training → Validator), đóng góp vào <strong>ML workflow</strong>, và
-        nghiên cứu <strong>Alternative Credit Scoring</strong> dựa trên dữ liệu hành vi
-        giao dịch &amp; ứng dụng cho các sản phẩm <strong>Embedded Finance</strong>.
-      </p>
-      <p>
-        Giai đoạn trước (2023–2025) ở vai trò <strong>Data AI Engineer</strong>, mình tập
-        trung vào <strong>Generative AI</strong>, <strong>Data Platform</strong> và nền tảng{" "}
-        <strong>ML Platform</strong> — từ pipeline batch/stream, data modeling trên BigQuery
-        &amp; Doris, đến hệ chat agent multi-agent, FeatureStore và MLOps.
-      </p>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Nội dung trang là mô tả năng lực cá nhân; không phải thông tin chính thức của tổ
-        chức hay lời khuyên đầu tư.
-      </p>
-
-      <hr />
-      <h2>Kinh nghiệm</h2>
-
-      {/* ── Cake — company header ── */}
-      <h3 className="!mt-4 !mb-1 text-base font-semibold">
-        Cake by VPBank — Digital Bank
-      </h3>
-
-      {/* Sub-role 1: Data Scientist (current) */}
-      <h4 className="!mt-3 !mb-1 text-sm font-semibold" style={{ color: "var(--brand-from)" }}>
-        Data Scientist
-      </h4>
-      <p className="!mt-0 !mb-2 text-sm text-zinc-600 dark:text-zinc-400">
-        T12/2025 — hiện tại · TP.HCM
-      </p>
-      <ul>
-        <li>
-          Xây dựng <strong>CakeAutoML</strong> — hệ thống tự động hoá toàn bộ pipeline credit
-          scoring: <em>Label Preparation → Data Preparation → Feature Selection → Training →
-          Validator</em>; giảm thiểu can thiệp thủ công từ khâu chuẩn bị dữ liệu đến đánh giá
-          mô hình.
-        </li>
-        <li>
-          Đóng góp vào <strong>ML workflow</strong>: orchestration DAG, chuẩn hoá quy trình
-          training và deployment cho nhóm Data Science.
-        </li>
-        <li>
-          Nghiên cứu và triển khai <strong>Alternative Credit Scoring</strong> dựa trên tín
-          hiệu hành vi giao dịch (<em>transaction behaviour</em>) và hành vi ứng dụng (
-          <em>app usage</em>) — phục vụ chấm điểm tín dụng cho các sản phẩm{" "}
+      {/* Intro */}
+      <section className="mb-8">
+        <p className="about-section-title">Giới thiệu</p>
+        <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--foreground)" }}>
+          Mình là <strong>Trần Quốc Việt</strong> — Data Scientist tại <strong>Cake by VPBank</strong>, tập trung vào{" "}
+          <strong>Credit Scoring</strong>: xây hệ thống <strong>CakeAutoML</strong> (Label Preparation →
+          Data Preparation → Feature Selection → Training → Validator), đóng góp vào{" "}
+          <strong>ML workflow</strong>, và nghiên cứu <strong>Alternative Credit Scoring</strong>{" "}
+          dựa trên dữ liệu hành vi giao dịch &amp; ứng dụng cho các sản phẩm{" "}
           <strong>Embedded Finance</strong>.
-        </li>
-      </ul>
+        </p>
+        <p className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>
+          Giai đoạn trước (2023–2025) ở vai trò <strong>Data AI Engineer</strong>, mình tập trung vào{" "}
+          <strong>Generative AI</strong>, <strong>Data Platform</strong> và nền tảng{" "}
+          <strong>ML Platform</strong> — pipeline batch/stream, data modeling (BigQuery, Doris),
+          chat agent multi-agent, FeatureStore và MLOps.
+        </p>
+        <p className="mt-3 text-xs" style={{ color: "var(--foreground-secondary)" }}>
+          Nội dung trang là mô tả năng lực cá nhân; không phải thông tin chính thức của tổ chức hay lời khuyên đầu tư.
+        </p>
+      </section>
 
-      {/* Sub-role 2: Data AI Engineer (previous) */}
-      <h4 className="!mt-5 !mb-1 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-        Data AI Engineer
-      </h4>
-      <p className="!mt-0 !mb-2 text-sm text-zinc-600 dark:text-zinc-400">
-        T7/2023 — T11/2025 · TP.HCM
-      </p>
-      <ul>
-        <li>
-          Dẫn triển khai end-to-end <strong>hệ chat agent</strong> kiến trúc{" "}
-          <strong>multi-agent</strong> (supervisor), kết hợp <strong>hybrid RAG</strong>,
-          function calling và GenAI — kèm test/eval, tracing, logging và orchestration hành
-          động; hướng tới ~<strong>80% hỗ trợ người dùng tự động</strong>.
-        </li>
-        <li>
-          <strong>Data Modeling</strong> trên <strong>BigQuery</strong> và{" "}
-          <strong>Doris</strong> cho Conversation Insight, Callbot và Feature Store; phục vụ
-          BI qua <strong>Looker Studio</strong> và <strong>Superset</strong>.
-        </li>
-        <li>
-          Xây dựng <strong>Data Pipeline</strong> batch &amp; streaming (<strong>Airflow</strong>,{" "}
-          <strong>dbt</strong> SQL/Python, <strong>Kafka</strong>) và dashboard giám sát vận
-          hành/chi phí cho Callbot.
-        </li>
-        <li>
-          Build nền tảng <strong>ML Platform</strong>: <strong>FeatureStore</strong> (Feast),
-          MLOps, feature engineering và scoring production cho bài toán tín dụng/rủi ro
-          (NTB/ETB).
-        </li>
-        <li>
-          Công cụ <strong>Auto EDA</strong> qua chatting agent (MCP/DataHub style) để rút ngắn
-          vòng lặp khám phá dữ liệu.
-        </li>
-        <li>
-          Cải tiến <strong>CMS</strong> với tự động phân tích case (~70%), giảm thao tác thủ
-          công cho team vận hành.
-        </li>
-      </ul>
+      {/* Experience */}
+      <section className="mb-8">
+        <p className="about-section-title">Kinh nghiệm</p>
 
-      {/* ── Hahalolo ── */}
-      <h3 className="!mt-8 !mb-2 text-base font-semibold">
-        Hahalolo Travel Social Network · <span className="font-normal">AI Engineer</span>
-      </h3>
-      <p className="!mt-0 text-sm text-zinc-600 dark:text-zinc-400">3/2022 — 7/2023 · TP.HCM</p>
-      <ul>
-        <li>
-          Xây <strong>data warehouse</strong> trên MongoDB, pipeline <strong>batch</strong>,{" "}
-          <strong>real-time</strong> và kiến trúc <strong>lambda</strong>.
-        </li>
-        <li>
-          Thiết kế mô hình dữ liệu (user, hashtag, post, tương tác, quan hệ) phục vụ phân tích.
-        </li>
-        <li>
-          <strong>Kiểm duyệt nội dung</strong>: fine-tune <strong>PhoBERT</strong>, bán tự động
-          phát hiện vi phạm và xếp hạng mức độ cho reviewer.
-        </li>
-        <li>
-          <strong>Gợi ý tour</strong> và <strong>gợi ý bạn bè</strong> dùng graph embedding;
-          phối hợp backend/QC, API và triển khai.
-        </li>
-        <li>Stack tiêu biểu: Python, Airflow, Kafka, MongoDB, PyTorch, TensorFlow, Jenkins, …</li>
-      </ul>
+        {/* Cake */}
+        <div className="mb-6">
+          <p className="text-sm font-bold mb-3" style={{ color: "var(--foreground)" }}>
+            Cake by VPBank — Digital Bank
+          </p>
+          <div className="cv-timeline">
 
-      <hr />
-      <h2>Trọng tâm kỹ thuật</h2>
-      <ul>
-        <li>
-          <strong>Credit Scoring &amp; ML</strong> — AutoML pipeline, feature engineering, model
-          training &amp; validation, alternative data (transaction behaviour, app usage),
-          scorecard / boosting, OOT &amp; stability.
-        </li>
-        <li>
-          <strong>Nền tảng dữ liệu</strong> — ELT, Kafka, Airflow, dbt, BigQuery, Doris,
-          MongoDB; pipeline batch/stream và báo cáo vận hành.
-        </li>
-        <li>
-          <strong>ML Platform &amp; MLOps</strong> — FeatureStore (Feast), orchestration DAG,
-          scoring production, CI/CD cho mô hình.
-        </li>
-        <li>
-          <strong>GenAI &amp; Agent</strong> — hybrid RAG, multi-agent (supervisor), function
-          calling, eval &amp; tracing; Vertex AI / GCP.
-        </li>
-        <li>
-          <strong>Cloud &amp; BI</strong> — GCP, Looker Studio, Superset.
-        </li>
-      </ul>
+            {/* Data Scientist */}
+            <div className="cv-role">
+              <span className="cv-dot current" style={{ left: "-1.25rem" }} />
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
+                <span className="text-sm font-semibold" style={{ color: "var(--brand-from)" }}>
+                  Data Scientist
+                </span>
+                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                  T12/2025 — nay
+                </span>
+              </div>
+              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                <li className="leading-relaxed">
+                  Xây dựng <strong>CakeAutoML</strong> — tự động hoá toàn bộ pipeline credit scoring:{" "}
+                  <span style={{ color: "var(--foreground-secondary)" }}>
+                    Label Preparation → Data Preparation → Feature Selection → Training → Validator
+                  </span>.
+                </li>
+                <li className="leading-relaxed">
+                  Đóng góp vào <strong>ML workflow</strong>: orchestration DAG, chuẩn hoá quy trình training
+                  và deployment cho nhóm Data Science.
+                </li>
+                <li className="leading-relaxed">
+                  Nghiên cứu &amp; triển khai <strong>Alternative Credit Scoring</strong> từ tín hiệu{" "}
+                  <em>transaction behaviour</em> + <em>app usage</em> — phục vụ chấm điểm tín dụng cho
+                  sản phẩm <strong>Embedded Finance</strong>.
+                </li>
+              </ul>
+            </div>
 
-      <hr />
-      <h2>Học vấn &amp; ghi nhận</h2>
-      <p>
-        <strong>Đại học FPT</strong> — Cử nhân <strong>Trí tuệ nhân tạo</strong> (10/2019 —
-        10/2023), xếp loại <strong>Very Good</strong>. Học bổng{" "}
-        <strong>100% Đại học FPT</strong>; học bổng{" "}
-        <strong>100%++ tập đoàn FPT cho tỉnh Bình Định</strong>;{" "}
-        <strong>Top 10 học sinh tỉnh Bình Định</strong> (bậc phổ thông — theo hồ sơ công khai).
-      </p>
+            {/* Data AI Engineer */}
+            <div className="cv-role">
+              <span className="cv-dot" style={{ left: "-1.25rem" }} />
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
+                <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                  Data AI Engineer
+                </span>
+                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                  T7/2023 — T11/2025
+                </span>
+              </div>
+              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                <li className="leading-relaxed">
+                  Dẫn triển khai end-to-end <strong>hệ chat agent</strong> kiến trúc{" "}
+                  <strong>multi-agent</strong> (supervisor) với <strong>hybrid RAG</strong>, function
+                  calling và GenAI — eval, tracing, logging, orchestration; ~<strong>80% tự động hoá</strong>.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Data Modeling</strong>: BigQuery &amp; Doris (Conversation Insight, Callbot,
+                  Feature Store); BI qua Looker Studio &amp; Superset.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Data Pipeline</strong> batch &amp; streaming: Airflow, dbt (SQL/Python), Kafka;
+                  dashboard giám sát vận hành &amp; chi phí.
+                </li>
+                <li className="leading-relaxed">
+                  Build nền tảng <strong>ML Platform</strong>: FeatureStore (Feast), MLOps, feature
+                  engineering, scoring production (NTB/ETB).
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Auto EDA</strong> agent (MCP/DataHub style); <strong>CMS</strong> tự động phân
+                  tích case (~70%).
+                </li>
+              </ul>
+            </div>
 
-      <hr />
-      <h2>Chứng chỉ (chọn lọc)</h2>
-      <ul>
-        <li>
-          <strong>Natural Language Processing</strong> — DeepLearning.AI (6/2023)
-        </li>
-        <li>
-          <strong>Fundamentals of Machine Learning in Finance</strong> — NYU Tandon School of
-          Engineering (6/2023)
-        </li>
-      </ul>
+          </div>
+        </div>
 
-      <h2>Links</h2>
-      <ul>
-        <li>
-          <a href="https://github.com/charlieviettq">GitHub — charlieviettq</a> (README: stack,
-          pins)
-        </li>
-        <li>
-          <a href="https://www.linkedin.com/in/aivietqt/">LinkedIn — aivietqt</a>
-        </li>
-      </ul>
+        {/* Hahalolo */}
+        <div>
+          <p className="text-sm font-bold mb-3" style={{ color: "var(--foreground)" }}>
+            Hahalolo Travel Social Network
+          </p>
+          <div className="cv-timeline">
+            <div className="cv-role">
+              <span className="cv-dot" style={{ left: "-1.25rem" }} />
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
+                <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                  AI Engineer
+                </span>
+                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                  T3/2022 — T7/2023
+                </span>
+              </div>
+              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                <li className="leading-relaxed">
+                  Xây <strong>data warehouse</strong> MongoDB; pipeline batch, real-time &amp; lambda.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Kiểm duyệt nội dung</strong>: fine-tune PhoBERT, bán tự động phát hiện vi phạm
+                  &amp; xếp hạng mức độ cho reviewer.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Gợi ý tour &amp; bạn bè</strong> dùng graph embedding; phối hợp backend/QC.
+                </li>
+                <li className="leading-relaxed text-xs" style={{ color: "var(--foreground-secondary)" }}>
+                  Stack: Python · Airflow · Kafka · MongoDB · PyTorch · TensorFlow · Jenkins
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SkillsSection vi={true} />
+
+      {/* Education */}
+      <section className="mb-8">
+        <p className="about-section-title">Học vấn &amp; ghi nhận</p>
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-1">
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>Đại học FPT</p>
+            <p className="text-xs" style={{ color: "var(--foreground-secondary)" }}>
+              Cử nhân Trí tuệ nhân tạo · 10/2019 — 10/2023 · Xếp loại Very Good
+            </p>
+          </div>
+        </div>
+        <ul className="mt-3 space-y-1">
+          {[
+            "Học bổng 100% Đại học FPT",
+            "Học bổng 100%++ tập đoàn FPT cho tỉnh Bình Định",
+            "Top 10 học sinh tỉnh Bình Định (bậc phổ thông)",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-2 text-sm" style={{ color: "var(--foreground)" }}>
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: "var(--brand-from)" }} />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Certs */}
+      <section className="mb-8">
+        <p className="about-section-title">Chứng chỉ</p>
+        <ul className="space-y-2">
+          {[
+            { name: "Natural Language Processing", org: "DeepLearning.AI", date: "6/2023" },
+            { name: "Fundamentals of Machine Learning in Finance", org: "NYU Tandon", date: "6/2023" },
+          ].map((c) => (
+            <li key={c.name} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+              <span className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{c.name}</span>
+              <span className="text-xs" style={{ color: "var(--foreground-secondary)" }}>
+                {c.org} · {c.date}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
     </>
   );
 }
 
-function AboutEn() {
+/* ── English content ──────────────────────────────────────────────────────── */
+
+function ContentEn() {
   return (
     <>
-      <p>
-        I&apos;m <strong>Tran Quoc Viet</strong> — <strong>Data Scientist</strong> at{" "}
-        <strong>Cake by VPBank</strong>, Ho Chi Minh City. Currently focused on{" "}
-        <strong>Credit Scoring</strong>: building the <strong>CakeAutoML</strong> system
-        (Label Preparation → Data Preparation → Feature Selection → Training → Validator),
-        contributing to the <strong>ML workflow</strong>, and researching{" "}
-        <strong>Alternative Credit Scoring</strong> using transaction behaviour and app-usage
-        signals for <strong>Embedded Finance</strong> products.
-      </p>
-      <p>
-        Previously (2023–2025) as <strong>Data AI Engineer</strong>, I focused on{" "}
-        <strong>Generative AI</strong>, <strong>Data Platform</strong>, and{" "}
-        <strong>ML Platform</strong> foundations — spanning batch/stream pipelines, data
-        modeling on BigQuery &amp; Doris, multi-agent chat systems, FeatureStore, and MLOps.
-      </p>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        This page describes my own skills and experience; it is not an official statement by
-        any employer and not investment advice.
-      </p>
+      {/* Intro */}
+      <section className="mb-8">
+        <p className="about-section-title">About</p>
+        <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--foreground)" }}>
+          I&apos;m <strong>Tran Quoc Viet</strong> — Data Scientist at <strong>Cake by VPBank</strong>,
+          focused on <strong>Credit Scoring</strong>: building the <strong>CakeAutoML</strong> system
+          (Label Preparation → Data Preparation → Feature Selection → Training → Validator),
+          contributing to the <strong>ML workflow</strong>, and researching{" "}
+          <strong>Alternative Credit Scoring</strong> using transaction behaviour and app-usage
+          signals for <strong>Embedded Finance</strong> products.
+        </p>
+        <p className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>
+          Previously (2023–2025) as <strong>Data AI Engineer</strong>, I focused on{" "}
+          <strong>Generative AI</strong>, <strong>Data Platform</strong>, and{" "}
+          <strong>ML Platform</strong> foundations — batch/stream pipelines, data modeling
+          (BigQuery, Doris), multi-agent chat systems, FeatureStore, and MLOps.
+        </p>
+        <p className="mt-3 text-xs" style={{ color: "var(--foreground-secondary)" }}>
+          This page describes my own skills and experience; not an official statement by any employer and not investment advice.
+        </p>
+      </section>
 
-      <hr />
-      <h2>Experience</h2>
+      {/* Experience */}
+      <section className="mb-8">
+        <p className="about-section-title">Experience</p>
 
-      {/* ── Cake — company header ── */}
-      <h3 className="!mt-4 !mb-1 text-base font-semibold">
-        Cake by VPBank — Digital Bank
-      </h3>
+        {/* Cake */}
+        <div className="mb-6">
+          <p className="text-sm font-bold mb-3" style={{ color: "var(--foreground)" }}>
+            Cake by VPBank — Digital Bank
+          </p>
+          <div className="cv-timeline">
 
-      {/* Sub-role 1: Data Scientist (current) */}
-      <h4 className="!mt-3 !mb-1 text-sm font-semibold" style={{ color: "var(--brand-from)" }}>
-        Data Scientist
-      </h4>
-      <p className="!mt-0 !mb-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Dec 2025 — present · HCMC
-      </p>
-      <ul>
-        <li>
-          Building <strong>CakeAutoML</strong> — an end-to-end automated credit scoring
-          pipeline: <em>Label Preparation → Data Preparation → Feature Selection → Training →
-          Validator</em>; reducing manual intervention from data prep through model evaluation.
-        </li>
-        <li>
-          Contributing to the <strong>ML workflow</strong>: DAG orchestration, standardising
-          training and deployment processes across the Data Science team.
-        </li>
-        <li>
-          Researching and implementing <strong>Alternative Credit Scoring</strong> using
-          transaction behaviour and app-usage signals — enabling credit assessment for{" "}
-          <strong>Embedded Finance</strong> products.
-        </li>
-      </ul>
+            {/* Data Scientist */}
+            <div className="cv-role">
+              <span className="cv-dot current" style={{ left: "-1.25rem" }} />
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
+                <span className="text-sm font-semibold" style={{ color: "var(--brand-from)" }}>
+                  Data Scientist
+                </span>
+                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                  Dec 2025 — present
+                </span>
+              </div>
+              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                <li className="leading-relaxed">
+                  Building <strong>CakeAutoML</strong> — end-to-end automated credit scoring pipeline:{" "}
+                  <span style={{ color: "var(--foreground-secondary)" }}>
+                    Label Preparation → Data Preparation → Feature Selection → Training → Validator
+                  </span>.
+                </li>
+                <li className="leading-relaxed">
+                  Contributing to the <strong>ML workflow</strong>: DAG orchestration, standardising
+                  training and deployment processes for the Data Science team.
+                </li>
+                <li className="leading-relaxed">
+                  Researching &amp; implementing <strong>Alternative Credit Scoring</strong> using{" "}
+                  <em>transaction behaviour</em> + <em>app-usage</em> signals — enabling credit
+                  assessment for <strong>Embedded Finance</strong> products.
+                </li>
+              </ul>
+            </div>
 
-      {/* Sub-role 2: Data AI Engineer (previous) */}
-      <h4 className="!mt-5 !mb-1 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
-        Data AI Engineer
-      </h4>
-      <p className="!mt-0 !mb-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Jul 2023 — Nov 2025 · HCMC
-      </p>
-      <ul>
-        <li>
-          Led end-to-end development of a <strong>multi-agent chat system</strong> (supervisor
-          architecture) with <strong>hybrid RAG</strong>, function calling, and GenAI —
-          including automated tests, evaluation, tracing, logging, and action orchestration;
-          targeting ~<strong>80% automated user support</strong>.
-        </li>
-        <li>
-          <strong>Data Modeling</strong> on <strong>BigQuery</strong> and{" "}
-          <strong>Doris</strong> for Conversation Insight, Callbot, and Feature Store; BI via{" "}
-          <strong>Looker Studio</strong> and <strong>Superset</strong>.
-        </li>
-        <li>
-          Built batch &amp; streaming <strong>Data Pipelines</strong> (<strong>Airflow</strong>,{" "}
-          <strong>dbt</strong> SQL/Python, <strong>Kafka</strong>) and operational/cost
-          monitoring dashboards for the Callbot.
-        </li>
-        <li>
-          Established <strong>ML Platform</strong> foundations: <strong>FeatureStore</strong>{" "}
-          (Feast), MLOps, feature engineering, and production scoring for credit/risk use cases
-          (NTB/ETB).
-        </li>
-        <li>
-          <strong>Auto EDA</strong> tooling via a chatting agent (MCP/DataHub-style) to
-          accelerate exploratory analytics cycles.
-        </li>
-        <li>
-          <strong>CMS</strong> enhancements with ~<strong>70% automated case parsing</strong>{" "}
-          to reduce manual workload for operations teams.
-        </li>
-      </ul>
+            {/* Data AI Engineer */}
+            <div className="cv-role">
+              <span className="cv-dot" style={{ left: "-1.25rem" }} />
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
+                <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                  Data AI Engineer
+                </span>
+                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                  Jul 2023 — Nov 2025
+                </span>
+              </div>
+              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                <li className="leading-relaxed">
+                  Led end-to-end <strong>multi-agent chat system</strong> (supervisor architecture)
+                  with <strong>hybrid RAG</strong>, function calling, GenAI — eval, tracing, logging,
+                  action orchestration; ~<strong>80% automated support</strong>.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Data Modeling</strong>: BigQuery &amp; Doris (Conversation Insight, Callbot,
+                  Feature Store); BI via Looker Studio &amp; Superset.
+                </li>
+                <li className="leading-relaxed">
+                  Batch &amp; streaming <strong>Data Pipelines</strong>: Airflow, dbt (SQL/Python),
+                  Kafka; operational and cost monitoring dashboards.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>ML Platform</strong> foundations: FeatureStore (Feast), MLOps, feature
+                  engineering, production scoring (NTB/ETB).
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Auto EDA</strong> agent (MCP/DataHub-style); <strong>CMS</strong> automation
+                  with ~70% automated case parsing.
+                </li>
+              </ul>
+            </div>
 
-      {/* ── Hahalolo ── */}
-      <h3 className="!mt-8 !mb-2 text-base font-semibold">
-        Hahalolo Travel Social Network · <span className="font-normal">AI Engineer</span>
-      </h3>
-      <p className="!mt-0 text-sm text-zinc-600 dark:text-zinc-400">Mar 2022 — Jul 2023 · HCMC</p>
-      <ul>
-        <li>
-          Built a <strong>data warehouse</strong> on MongoDB; <strong>batch</strong>,{" "}
-          <strong>real-time</strong>, and <strong>lambda-style</strong> pipelines.
-        </li>
-        <li>
-          Designed dimensional models (users, hashtags, posts, activity, relationships) for
-          analytics.
-        </li>
-        <li>
-          <strong>Content moderation</strong>: <strong>PhoBERT</strong> fine-tuning for
-          semi-automated violation detection and severity ranking for human review.
-        </li>
-        <li>
-          <strong>Recommendation</strong> for tours and friend suggestions using graph
-          embedding; collaboration with backend/QC on APIs and releases.
-        </li>
-        <li>Stack highlights: Python, Airflow, Kafka, MongoDB, PyTorch, TensorFlow, Jenkins, …</li>
-      </ul>
+          </div>
+        </div>
 
-      <hr />
-      <h2>Technical focus</h2>
-      <ul>
-        <li>
-          <strong>Credit Scoring &amp; ML</strong> — AutoML pipelines, feature engineering,
-          model training &amp; validation, alternative data (transaction behaviour, app usage),
-          scorecards / boosting, OOT &amp; stability monitoring.
-        </li>
-        <li>
-          <strong>Data platforms</strong> — ELT, Kafka, Airflow, dbt, BigQuery, Doris,
-          MongoDB; batch/stream patterns and operational reporting.
-        </li>
-        <li>
-          <strong>ML Platform &amp; MLOps</strong> — FeatureStore (Feast), DAG orchestration,
-          production scoring, model CI/CD.
-        </li>
-        <li>
-          <strong>GenAI &amp; agents</strong> — hybrid RAG, multi-agent systems (supervisor),
-          function calling, eval &amp; tracing; Vertex AI / GCP.
-        </li>
-        <li>
-          <strong>Cloud &amp; BI</strong> — GCP, Looker Studio, Superset.
-        </li>
-      </ul>
+        {/* Hahalolo */}
+        <div>
+          <p className="text-sm font-bold mb-3" style={{ color: "var(--foreground)" }}>
+            Hahalolo Travel Social Network
+          </p>
+          <div className="cv-timeline">
+            <div className="cv-role">
+              <span className="cv-dot" style={{ left: "-1.25rem" }} />
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
+                <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                  AI Engineer
+                </span>
+                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                  Mar 2022 — Jul 2023
+                </span>
+              </div>
+              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                <li className="leading-relaxed">
+                  Built <strong>data warehouse</strong> on MongoDB; batch, real-time &amp; lambda pipelines.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Content moderation</strong>: PhoBERT fine-tuning for semi-automated violation
+                  detection and severity ranking.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>Tour &amp; friend recommendations</strong> via graph embedding; backend/QC collaboration.
+                </li>
+                <li className="leading-relaxed text-xs" style={{ color: "var(--foreground-secondary)" }}>
+                  Stack: Python · Airflow · Kafka · MongoDB · PyTorch · TensorFlow · Jenkins
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <hr />
-      <h2>Education &amp; recognition</h2>
-      <p>
-        <strong>FPT University</strong> — Bachelor&apos;s in{" "}
-        <strong>Artificial Intelligence</strong> (Oct 2019 — Oct 2023),{" "}
-        <strong>Very Good</strong>. <strong>100% scholarship</strong> at FPT University;{" "}
-        <strong>100%++ FPT Corporation scholarship</strong> for Binh Dinh province;{" "}
-        <strong>Top 10 scholarships of Binh Dinh province</strong> (secondary level — per
-        public profile).
-      </p>
+      <SkillsSection vi={false} />
 
-      <hr />
-      <h2>Certifications (selected)</h2>
-      <ul>
-        <li>
-          <strong>Natural Language Processing</strong> — DeepLearning.AI (Jun 2023)
-        </li>
-        <li>
-          <strong>Fundamentals of Machine Learning in Finance</strong> — NYU Tandon School of
-          Engineering (Jun 2023)
-        </li>
-      </ul>
+      {/* Education */}
+      <section className="mb-8">
+        <p className="about-section-title">Education &amp; recognition</p>
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-1">
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>FPT University</p>
+            <p className="text-xs" style={{ color: "var(--foreground-secondary)" }}>
+              Bachelor&apos;s in Artificial Intelligence · Oct 2019 — Oct 2023 · Very Good
+            </p>
+          </div>
+        </div>
+        <ul className="mt-3 space-y-1">
+          {[
+            "100% scholarship at FPT University",
+            "100%++ FPT Corporation scholarship for Binh Dinh province",
+            "Top 10 scholarships of Binh Dinh province (secondary level)",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-2 text-sm" style={{ color: "var(--foreground)" }}>
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: "var(--brand-from)" }} />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </section>
 
-      <h2>Links</h2>
-      <ul>
-        <li>
-          <a href="https://github.com/charlieviettq">GitHub — charlieviettq</a> (README: stack,
-          pins)
-        </li>
-        <li>
-          <a href="https://www.linkedin.com/in/aivietqt/">LinkedIn — aivietqt</a>
-        </li>
-      </ul>
+      {/* Certs */}
+      <section className="mb-8">
+        <p className="about-section-title">Certifications</p>
+        <ul className="space-y-2">
+          {[
+            { name: "Natural Language Processing", org: "DeepLearning.AI", date: "Jun 2023" },
+            { name: "Fundamentals of Machine Learning in Finance", org: "NYU Tandon", date: "Jun 2023" },
+          ].map((c) => (
+            <li key={c.name} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+              <span className="text-sm font-medium" style={{ color: "var(--foreground)" }}>{c.name}</span>
+              <span className="text-xs" style={{ color: "var(--foreground-secondary)" }}>
+                {c.org} · {c.date}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
     </>
   );
 }
