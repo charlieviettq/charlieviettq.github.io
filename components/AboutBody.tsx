@@ -72,57 +72,100 @@ function AboutVi() {
   return (
     <>
       <p>
-        Mình là <strong>Trần Quốc Việt</strong> — làm việc tại <strong>TP. Hồ Chí Minh</strong>{" "}
-        với định vị <strong>Machine Learning Engineer</strong>, tập trung{" "}
-        <strong>hệ agentic</strong>, <strong>GenAI</strong> và <strong>nền dữ liệu</strong> trong
-        bối cảnh sản phẩm số và ngân hàng số. Mình kết nối <strong>pipeline batch &amp; stream</strong>
-        , <strong>warehouse / lakehouse</strong>, <strong>MLOps &amp; feature store</strong>, và{" "}
-        <strong>RAG / multi-agent</strong> để đưa mô hình vào vận hành có đo lường, kiểm thử và
-        quan sát end-to-end.
+        Mình là <strong>Trần Quốc Việt</strong> — <strong>Data Scientist</strong> tại{" "}
+        <strong>Cake by VPBank</strong>, TP. Hồ Chí Minh. Hiện tập trung vào{" "}
+        <strong>Credit Scoring</strong>: xây dựng hệ thống{" "}
+        <strong>CakeAutoML</strong> (Label Preparation → Data Preparation → Feature
+        Selection → Training → Validator), đóng góp vào <strong>ML workflow</strong>, và
+        nghiên cứu <strong>Alternative Credit Scoring</strong> dựa trên dữ liệu hành vi
+        giao dịch &amp; ứng dụng cho các sản phẩm <strong>Embedded Finance</strong>.
+      </p>
+      <p>
+        Giai đoạn trước (2023–2025) ở vai trò <strong>Data AI Engineer</strong>, mình tập
+        trung vào <strong>Generative AI</strong>, <strong>Data Platform</strong> và nền tảng{" "}
+        <strong>ML Platform</strong> — từ pipeline batch/stream, data modeling trên BigQuery
+        &amp; Doris, đến hệ chat agent multi-agent, FeatureStore và MLOps.
       </p>
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Nội dung trang là mô tả năng lực cá nhân; không phải thông tin chính thức của tổ chức
-        hay lời khuyên đầu tư.
+        Nội dung trang là mô tả năng lực cá nhân; không phải thông tin chính thức của tổ
+        chức hay lời khuyên đầu tư.
       </p>
 
       <hr />
       <h2>Kinh nghiệm</h2>
-      <h3 className="!mt-4 !mb-2 text-base font-semibold">
-        Cake by VPBank — Digital Bank · <span className="font-normal">Data AI Engineer</span>
+
+      {/* ── Cake — company header ── */}
+      <h3 className="!mt-4 !mb-1 text-base font-semibold">
+        Cake by VPBank — Digital Bank
       </h3>
-      <p className="!mt-0 text-sm text-zinc-600 dark:text-zinc-400">T7/2023 — hiện tại · TP.HCM</p>
+
+      {/* Sub-role 1: Data Scientist (current) */}
+      <h4 className="!mt-3 !mb-1 text-sm font-semibold" style={{ color: "var(--brand-from)" }}>
+        Data Scientist
+      </h4>
+      <p className="!mt-0 !mb-2 text-sm text-zinc-600 dark:text-zinc-400">
+        T12/2025 — hiện tại · TP.HCM
+      </p>
       <ul>
         <li>
-          Dẫn triển khai end-to-end <strong>hệ chat agent</strong> kiến trúc multi-agent (supervisor),
-          kết hợp <strong>hybrid RAG</strong>, function calling và GenAI; mục tiêu vận hành ghi nhận
-          khoảng <strong>~80% hỗ trợ người dùng tự động</strong> (theo mô tả nội bộ), kèm test/eval,
-          tracing, logging và orchestration hành động.
+          Xây dựng <strong>CakeAutoML</strong> — hệ thống tự động hoá toàn bộ pipeline credit
+          scoring: <em>Label Preparation → Data Preparation → Feature Selection → Training →
+          Validator</em>; giảm thiểu can thiệp thủ công từ khâu chuẩn bị dữ liệu đến đánh giá
+          mô hình.
         </li>
         <li>
-          <strong>Callbot</strong> và pipeline dữ liệu streaming + batch, dashboard báo cáo/giám
-          sát phục vụ vận hành và chi phí.
+          Đóng góp vào <strong>ML workflow</strong>: orchestration DAG, chuẩn hoá quy trình
+          training và deployment cho nhóm Data Science.
         </li>
         <li>
-          Cải tiến <strong>CMS</strong> với tự động phân tích case (~70% theo mô tả dự án), giảm thao
-          tác thủ công.
-        </li>
-        <li>
-          Mô hình dữ liệu trên <strong>BigQuery</strong> và <strong>Doris</strong> cho Conversation
-          Insight, Callbot, Feature Store; phục vụ BI qua <strong>Looker Studio</strong> và{" "}
-          <strong>Superset</strong>.
-        </li>
-        <li>
-          <strong>MLOps</strong>, feature engineering với <strong>Feast</strong>,{" "}
-          <strong>Airflow</strong>, <strong>dbt</strong> (SQL/Python), hỗ trợ scoring production và
-          đánh giá tín dụng/rủi ro (NTB/ETB).
-        </li>
-        <li>
-          Công cụ <strong>Auto EDA</strong> qua chatting agent, áp dụng kỹ thuật MCP/DataHub để rút
-          ngắn vòng lặp khám phá dữ liệu.
+          Nghiên cứu và triển khai <strong>Alternative Credit Scoring</strong> dựa trên tín
+          hiệu hành vi giao dịch (<em>transaction behaviour</em>) và hành vi ứng dụng (
+          <em>app usage</em>) — phục vụ chấm điểm tín dụng cho các sản phẩm{" "}
+          <strong>Embedded Finance</strong>.
         </li>
       </ul>
 
-      <h3 className="!mt-6 !mb-2 text-base font-semibold">
+      {/* Sub-role 2: Data AI Engineer (previous) */}
+      <h4 className="!mt-5 !mb-1 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+        Data AI Engineer
+      </h4>
+      <p className="!mt-0 !mb-2 text-sm text-zinc-600 dark:text-zinc-400">
+        T7/2023 — T11/2025 · TP.HCM
+      </p>
+      <ul>
+        <li>
+          Dẫn triển khai end-to-end <strong>hệ chat agent</strong> kiến trúc{" "}
+          <strong>multi-agent</strong> (supervisor), kết hợp <strong>hybrid RAG</strong>,
+          function calling và GenAI — kèm test/eval, tracing, logging và orchestration hành
+          động; hướng tới ~<strong>80% hỗ trợ người dùng tự động</strong>.
+        </li>
+        <li>
+          <strong>Data Modeling</strong> trên <strong>BigQuery</strong> và{" "}
+          <strong>Doris</strong> cho Conversation Insight, Callbot và Feature Store; phục vụ
+          BI qua <strong>Looker Studio</strong> và <strong>Superset</strong>.
+        </li>
+        <li>
+          Xây dựng <strong>Data Pipeline</strong> batch &amp; streaming (<strong>Airflow</strong>,{" "}
+          <strong>dbt</strong> SQL/Python, <strong>Kafka</strong>) và dashboard giám sát vận
+          hành/chi phí cho Callbot.
+        </li>
+        <li>
+          Build nền tảng <strong>ML Platform</strong>: <strong>FeatureStore</strong> (Feast),
+          MLOps, feature engineering và scoring production cho bài toán tín dụng/rủi ro
+          (NTB/ETB).
+        </li>
+        <li>
+          Công cụ <strong>Auto EDA</strong> qua chatting agent (MCP/DataHub style) để rút ngắn
+          vòng lặp khám phá dữ liệu.
+        </li>
+        <li>
+          Cải tiến <strong>CMS</strong> với tự động phân tích case (~70%), giảm thao tác thủ
+          công cho team vận hành.
+        </li>
+      </ul>
+
+      {/* ── Hahalolo ── */}
+      <h3 className="!mt-8 !mb-2 text-base font-semibold">
         Hahalolo Travel Social Network · <span className="font-normal">AI Engineer</span>
       </h3>
       <p className="!mt-0 text-sm text-zinc-600 dark:text-zinc-400">3/2022 — 7/2023 · TP.HCM</p>
@@ -135,50 +178,49 @@ function AboutVi() {
           Thiết kế mô hình dữ liệu (user, hashtag, post, tương tác, quan hệ) phục vụ phân tích.
         </li>
         <li>
-          <strong>Kiểm duyệt nội dung</strong>: fine-tune <strong>PhoBERT</strong>, bán tự động phát
-          hiện vi phạm và xếp hạng mức độ cho reviewer.
+          <strong>Kiểm duyệt nội dung</strong>: fine-tune <strong>PhoBERT</strong>, bán tự động
+          phát hiện vi phạm và xếp hạng mức độ cho reviewer.
         </li>
         <li>
-          <strong>Gợi ý tour</strong> và <strong>gợi ý bạn bè</strong> dùng graph embedding; phối hợp
-          backend/QC, API và triển khai.
+          <strong>Gợi ý tour</strong> và <strong>gợi ý bạn bè</strong> dùng graph embedding;
+          phối hợp backend/QC, API và triển khai.
         </li>
-        <li>
-          Stack tiêu biểu: Python, Airflow, Kafka, MongoDB, PyTorch, TensorFlow, Jenkins, …
-        </li>
+        <li>Stack tiêu biểu: Python, Airflow, Kafka, MongoDB, PyTorch, TensorFlow, Jenkins, …</li>
       </ul>
 
       <hr />
       <h2>Trọng tâm kỹ thuật</h2>
       <ul>
         <li>
-          <strong>Nền tảng dữ liệu</strong> — ELT, Kafka, Airflow, dbt, BigQuery, MongoDB; pipeline
-          batch/stream và báo cáo vận hành.
+          <strong>Credit Scoring &amp; ML</strong> — AutoML pipeline, feature engineering, model
+          training &amp; validation, alternative data (transaction behaviour, app usage),
+          scorecard / boosting, OOT &amp; stability.
         </li>
         <li>
-          <strong>ML &amp; MLOps</strong> — feature store (Feast), huấn luyện/tái lập cấu hình,
-          scoring production, AutoML trong bối cảnh rủi ro tín dụng (theo dự án Cake).
+          <strong>Nền tảng dữ liệu</strong> — ELT, Kafka, Airflow, dbt, BigQuery, Doris,
+          MongoDB; pipeline batch/stream và báo cáo vận hành.
         </li>
         <li>
-          <strong>GenAI &amp; agent</strong> — RAG hybrid, multi-agent, function calling, đánh giá &
-          tracing; Vertex AI / GCP.
+          <strong>ML Platform &amp; MLOps</strong> — FeatureStore (Feast), orchestration DAG,
+          scoring production, CI/CD cho mô hình.
         </li>
         <li>
-          <strong>Ứng dụng cổ điển</strong> — NLP (PhoBERT), recommendation, graph embedding (giai
-          đoạn Hahalolo).
+          <strong>GenAI &amp; Agent</strong> — hybrid RAG, multi-agent (supervisor), function
+          calling, eval &amp; tracing; Vertex AI / GCP.
         </li>
         <li>
-          <strong>Cloud &amp; BI</strong> — GCP, Looker Studio, Superset; Doris cho workload phân
-          tích tương ứng.
+          <strong>Cloud &amp; BI</strong> — GCP, Looker Studio, Superset.
         </li>
       </ul>
 
       <hr />
       <h2>Học vấn &amp; ghi nhận</h2>
       <p>
-        <strong>Đại học FPT</strong> — Cử nhân <strong>Trí tuệ nhân tạo</strong> (10/2019 — 10/2023),
-        xếp loại <strong>Very Good</strong>. Học bổng <strong>100% Đại học FPT</strong>; học bổng{" "}
-        <strong>100%++ tập đoàn FPT cho tỉnh Bình Định</strong>; <strong>Top 10 học sinh tỉnh Bình Định</strong>{" "}
-        (bậc phổ thông — theo hồ sơ công khai).
+        <strong>Đại học FPT</strong> — Cử nhân <strong>Trí tuệ nhân tạo</strong> (10/2019 —
+        10/2023), xếp loại <strong>Very Good</strong>. Học bổng{" "}
+        <strong>100% Đại học FPT</strong>; học bổng{" "}
+        <strong>100%++ tập đoàn FPT cho tỉnh Bình Định</strong>;{" "}
+        <strong>Top 10 học sinh tỉnh Bình Định</strong> (bậc phổ thông — theo hồ sơ công khai).
       </p>
 
       <hr />
@@ -196,7 +238,8 @@ function AboutVi() {
       <h2>Links</h2>
       <ul>
         <li>
-          <a href="https://github.com/charlieviettq">GitHub — charlieviettq</a> (README: stack, pins)
+          <a href="https://github.com/charlieviettq">GitHub — charlieviettq</a> (README: stack,
+          pins)
         </li>
         <li>
           <a href="https://www.linkedin.com/in/aivietqt/">LinkedIn — aivietqt</a>
@@ -210,58 +253,98 @@ function AboutEn() {
   return (
     <>
       <p>
-        I&apos;m <strong>Tran Quoc Viet</strong>, based in <strong>Ho Chi Minh City</strong>. I work
-        as a <strong>Machine Learning Engineer</strong> with a focus on{" "}
-        <strong>agentic systems</strong>, <strong>GenAI</strong>, and <strong>data platforms</strong>{" "}
-        in digital-banking and product settings. I connect <strong>batch and streaming pipelines</strong>
-        , <strong>warehouse / lakehouse</strong> modeling, <strong>MLOps and feature stores</strong>,
-        and <strong>RAG / multi-agent</strong> patterns so models ship with testing, evaluation, and
-        production observability.
+        I&apos;m <strong>Tran Quoc Viet</strong> — <strong>Data Scientist</strong> at{" "}
+        <strong>Cake by VPBank</strong>, Ho Chi Minh City. Currently focused on{" "}
+        <strong>Credit Scoring</strong>: building the <strong>CakeAutoML</strong> system
+        (Label Preparation → Data Preparation → Feature Selection → Training → Validator),
+        contributing to the <strong>ML workflow</strong>, and researching{" "}
+        <strong>Alternative Credit Scoring</strong> using transaction behaviour and app-usage
+        signals for <strong>Embedded Finance</strong> products.
+      </p>
+      <p>
+        Previously (2023–2025) as <strong>Data AI Engineer</strong>, I focused on{" "}
+        <strong>Generative AI</strong>, <strong>Data Platform</strong>, and{" "}
+        <strong>ML Platform</strong> foundations — spanning batch/stream pipelines, data
+        modeling on BigQuery &amp; Doris, multi-agent chat systems, FeatureStore, and MLOps.
       </p>
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        This page describes my own skills and experience; it is not an official statement by any
-        employer and not investment advice.
+        This page describes my own skills and experience; it is not an official statement by
+        any employer and not investment advice.
       </p>
 
       <hr />
       <h2>Experience</h2>
-      <h3 className="!mt-4 !mb-2 text-base font-semibold">
-        Cake by VPBank — Digital Bank · <span className="font-normal">Data AI Engineer</span>
+
+      {/* ── Cake — company header ── */}
+      <h3 className="!mt-4 !mb-1 text-base font-semibold">
+        Cake by VPBank — Digital Bank
       </h3>
-      <p className="!mt-0 text-sm text-zinc-600 dark:text-zinc-400">Jul 2023 — present · HCMC</p>
+
+      {/* Sub-role 1: Data Scientist (current) */}
+      <h4 className="!mt-3 !mb-1 text-sm font-semibold" style={{ color: "var(--brand-from)" }}>
+        Data Scientist
+      </h4>
+      <p className="!mt-0 !mb-2 text-sm text-zinc-600 dark:text-zinc-400">
+        Dec 2025 — present · HCMC
+      </p>
       <ul>
         <li>
-          Led end-to-end <strong>chat agent</strong> development using a <strong>multi-agent</strong>{" "}
-          architecture with a <strong>supervisor</strong> pattern, <strong>hybrid RAG</strong>,
-          function calling, and GenAI — targeting roughly <strong>~80% automated user support</strong>{" "}
-          (as reported in-role), with automated tests, evaluation, tracing, logging, and action
-          orchestration.
+          Building <strong>CakeAutoML</strong> — an end-to-end automated credit scoring
+          pipeline: <em>Label Preparation → Data Preparation → Feature Selection → Training →
+          Validator</em>; reducing manual intervention from data prep through model evaluation.
         </li>
         <li>
-          <strong>Callbot</strong> support via streaming and batch data pipelines plus reporting and
-          monitoring dashboards for operations and cost insight.
+          Contributing to the <strong>ML workflow</strong>: DAG orchestration, standardising
+          training and deployment processes across the Data Science team.
         </li>
         <li>
-          <strong>CMS</strong> enhancements with ~<strong>70% automated case parsing</strong> to cut
-          manual work.
-        </li>
-        <li>
-          Data models in <strong>BigQuery</strong> and <strong>Doris</strong> for Conversation
-          Insight, Callbot, and Feature Store; BI via <strong>Looker Studio</strong> and{" "}
-          <strong>Superset</strong>.
-        </li>
-        <li>
-          <strong>MLOps</strong>, feature engineering with <strong>Feast</strong>,{" "}
-          <strong>Airflow</strong>, and <strong>dbt</strong> (SQL/Python) for production scoring and
-          credit/risk use cases (NTB/ETB).
-        </li>
-        <li>
-          <strong>Auto EDA</strong> tooling through a chatting agent using MCP/DataHub-style
-          techniques for faster exploratory analytics.
+          Researching and implementing <strong>Alternative Credit Scoring</strong> using
+          transaction behaviour and app-usage signals — enabling credit assessment for{" "}
+          <strong>Embedded Finance</strong> products.
         </li>
       </ul>
 
-      <h3 className="!mt-6 !mb-2 text-base font-semibold">
+      {/* Sub-role 2: Data AI Engineer (previous) */}
+      <h4 className="!mt-5 !mb-1 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+        Data AI Engineer
+      </h4>
+      <p className="!mt-0 !mb-2 text-sm text-zinc-600 dark:text-zinc-400">
+        Jul 2023 — Nov 2025 · HCMC
+      </p>
+      <ul>
+        <li>
+          Led end-to-end development of a <strong>multi-agent chat system</strong> (supervisor
+          architecture) with <strong>hybrid RAG</strong>, function calling, and GenAI —
+          including automated tests, evaluation, tracing, logging, and action orchestration;
+          targeting ~<strong>80% automated user support</strong>.
+        </li>
+        <li>
+          <strong>Data Modeling</strong> on <strong>BigQuery</strong> and{" "}
+          <strong>Doris</strong> for Conversation Insight, Callbot, and Feature Store; BI via{" "}
+          <strong>Looker Studio</strong> and <strong>Superset</strong>.
+        </li>
+        <li>
+          Built batch &amp; streaming <strong>Data Pipelines</strong> (<strong>Airflow</strong>,{" "}
+          <strong>dbt</strong> SQL/Python, <strong>Kafka</strong>) and operational/cost
+          monitoring dashboards for the Callbot.
+        </li>
+        <li>
+          Established <strong>ML Platform</strong> foundations: <strong>FeatureStore</strong>{" "}
+          (Feast), MLOps, feature engineering, and production scoring for credit/risk use cases
+          (NTB/ETB).
+        </li>
+        <li>
+          <strong>Auto EDA</strong> tooling via a chatting agent (MCP/DataHub-style) to
+          accelerate exploratory analytics cycles.
+        </li>
+        <li>
+          <strong>CMS</strong> enhancements with ~<strong>70% automated case parsing</strong>{" "}
+          to reduce manual workload for operations teams.
+        </li>
+      </ul>
+
+      {/* ── Hahalolo ── */}
+      <h3 className="!mt-8 !mb-2 text-base font-semibold">
         Hahalolo Travel Social Network · <span className="font-normal">AI Engineer</span>
       </h3>
       <p className="!mt-0 text-sm text-zinc-600 dark:text-zinc-400">Mar 2022 — Jul 2023 · HCMC</p>
@@ -275,51 +358,50 @@ function AboutEn() {
           analytics.
         </li>
         <li>
-          <strong>Content moderation</strong>: <strong>PhoBERT</strong> fine-tuning for semi-automated
-          violation detection and severity ranking for human review.
+          <strong>Content moderation</strong>: <strong>PhoBERT</strong> fine-tuning for
+          semi-automated violation detection and severity ranking for human review.
         </li>
         <li>
-          <strong>Recommendation</strong> for tours and friend suggestions using graph embedding;
-          collaboration with backend/QC on APIs and releases.
+          <strong>Recommendation</strong> for tours and friend suggestions using graph
+          embedding; collaboration with backend/QC on APIs and releases.
         </li>
-        <li>
-          Stack highlights: Python, Airflow, Kafka, MongoDB, PyTorch, TensorFlow, Jenkins, …
-        </li>
+        <li>Stack highlights: Python, Airflow, Kafka, MongoDB, PyTorch, TensorFlow, Jenkins, …</li>
       </ul>
 
       <hr />
       <h2>Technical focus</h2>
       <ul>
         <li>
-          <strong>Data platforms</strong> — ELT, Kafka, Airflow, dbt, BigQuery, MongoDB; batch/stream
-          patterns and operational reporting.
+          <strong>Credit Scoring &amp; ML</strong> — AutoML pipelines, feature engineering,
+          model training &amp; validation, alternative data (transaction behaviour, app usage),
+          scorecards / boosting, OOT &amp; stability monitoring.
         </li>
         <li>
-          <strong>ML &amp; MLOps</strong> — Feast feature store, reproducible training configs,
-          production scoring, AutoML in credit-risk contexts (Cake).
+          <strong>Data platforms</strong> — ELT, Kafka, Airflow, dbt, BigQuery, Doris,
+          MongoDB; batch/stream patterns and operational reporting.
         </li>
         <li>
-          <strong>GenAI &amp; agents</strong> — hybrid RAG, multi-agent systems, function calling,
-          eval and tracing; Vertex AI / GCP.
+          <strong>ML Platform &amp; MLOps</strong> — FeatureStore (Feast), DAG orchestration,
+          production scoring, model CI/CD.
         </li>
         <li>
-          <strong>Classical ML / NLP</strong> — PhoBERT, recommender systems, graph embeddings
-          (Hahalolo era).
+          <strong>GenAI &amp; agents</strong> — hybrid RAG, multi-agent systems (supervisor),
+          function calling, eval &amp; tracing; Vertex AI / GCP.
         </li>
         <li>
-          <strong>Cloud &amp; BI</strong> — GCP, Looker Studio, Superset; Doris for relevant
-          analytics workloads.
+          <strong>Cloud &amp; BI</strong> — GCP, Looker Studio, Superset.
         </li>
       </ul>
 
       <hr />
       <h2>Education &amp; recognition</h2>
       <p>
-        <strong>FPT University</strong> — Bachelor&apos;s in <strong>Artificial Intelligence</strong>{" "}
-        (Oct 2019 — Oct 2023), <strong>Very Good</strong>. <strong>100% scholarship</strong> at FPT
-        University; <strong>100%++ FPT Corporation scholarship</strong> for Binh Dinh province;{" "}
-        <strong>Top 10 scholarships of Binh Dinh province</strong> (secondary level — per public
-        profile).
+        <strong>FPT University</strong> — Bachelor&apos;s in{" "}
+        <strong>Artificial Intelligence</strong> (Oct 2019 — Oct 2023),{" "}
+        <strong>Very Good</strong>. <strong>100% scholarship</strong> at FPT University;{" "}
+        <strong>100%++ FPT Corporation scholarship</strong> for Binh Dinh province;{" "}
+        <strong>Top 10 scholarships of Binh Dinh province</strong> (secondary level — per
+        public profile).
       </p>
 
       <hr />
