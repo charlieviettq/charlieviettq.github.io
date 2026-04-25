@@ -171,6 +171,35 @@ export function getPostsByCategory(category: BlogCategory): Post[] {
   );
 }
 
+export function getRelatedPosts(
+  slug: string,
+  currentPost: PostMeta,
+  limit = 3,
+): PostMeta[] {
+  const candidates = getAllPosts().filter(
+    (p) => isListedPost(p) && p.slug !== slug,
+  );
+  const currentText =
+    `${currentPost.title} ${currentPost.excerpt ?? ""}`.toLowerCase();
+  const currentWords = new Set(
+    currentText.split(/\W+/).filter((w) => w.length > 4),
+  );
+  const scored = candidates.map((p) => {
+    const pText = `${p.title} ${p.excerpt ?? ""}`.toLowerCase();
+    const pWords = new Set(pText.split(/\W+/).filter((w) => w.length > 4));
+    const overlap = [...currentWords].filter((w) => pWords.has(w)).length;
+    const sameCat = p.category === currentPost.category ? 3 : 0;
+    return { post: p, score: overlap + sameCat };
+  });
+  return scored
+    .sort(
+      (a, b) =>
+        b.score - a.score || b.post.date.localeCompare(a.post.date),
+    )
+    .slice(0, limit)
+    .map((s) => s.post);
+}
+
 export function getAdjacentPosts(slug: string): {
   prev: PostMeta | null;
   next: PostMeta | null;
