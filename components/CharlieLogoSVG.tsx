@@ -4,10 +4,10 @@ export function CharlieLogoSVG({ size = 160 }: { size?: number }) {
   // Lines: [x1, y1, x2, y2, stroke-color, animation-delay]
   const lines: [number, number, number, number, string, string][] = [
     // Gold cluster — hub to gold dots + inter-connections
-    [118, 110,  72, 148, "#C9A84C", "0.5s"],
-    [118, 110,  62, 108, "#C9A84C", "0.6s"],
-    [ 72, 148,  62, 108, "#C9A84C", "0.7s"],
-    [ 72, 148,  86, 162, "#C9A84C", "0.8s"],
+    [118, 110,  72, 148, "#E2B34B", "0.5s"],
+    [118, 110,  62, 108, "#E2B34B", "0.6s"],
+    [ 72, 148,  62, 108, "#E2B34B", "0.7s"],
+    [ 72, 148,  86, 162, "#E2B34B", "0.8s"],
     // Silver cluster — hub to silver dots + inter-connections
     [118, 110, 148,  72, "#B8B8B8", "0.9s"],
     [118, 110, 162, 114, "#B8B8B8", "1.0s"],
@@ -17,9 +17,9 @@ export function CharlieLogoSVG({ size = 160 }: { size?: number }) {
 
   // Outer dots: [cx, cy, r, fill, delay]
   const dots: [number, number, number, string, string][] = [
-    [ 72, 148, 4.5, "#C9A84C", "1.20s"], // G1 gold
-    [ 62, 108, 4.5, "#C9A84C", "1.30s"], // G2 gold
-    [ 86, 162, 4.5, "#C9A84C", "1.35s"], // G3 gold
+    [ 72, 148, 4.5, "#E2B34B", "1.20s"], // G1 gold
+    [ 62, 108, 4.5, "#E2B34B", "1.30s"], // G2 gold
+    [ 86, 162, 4.5, "#E2B34B", "1.35s"], // G3 gold
     [148,  72, 4.5, "#D0D0D0", "1.40s"], // S1 silver
     [168,  90, 4.5, "#D0D0D0", "1.45s"], // S2 silver
     [162, 114, 4.5, "#C8C8C8", "1.50s"], // S3 silver
@@ -128,7 +128,7 @@ export function CharlieLogoSVG({ size = 160 }: { size?: number }) {
         cx="118"
         cy="110"
         r="6"
-        fill="#D4AF37"
+        fill="#E2B34B"
         filter="url(#hub-glow)"
         style={{
           opacity: 0,

@@ -14,14 +14,14 @@
   --foreground: #26251e;
   --foreground-secondary: rgba(38, 37, 30, 0.55);
 
-  /* Brand — full bronze-gold palette (matches constellation logo, slightly more "đồng") */
-  --brand-from:  #C28530;   /* warm bronze-gold — primary accent (UI + CTA) */
-  --brand-to:    #D4A040;   /* amber-gold — secondary accent */
+  /* Brand — Chainpage gold */
+  --brand-from:  #E2B34B;   /* Chainpage gold — primary accent (UI + CTA) */
+  --brand-to:    #C4912A;   /* darker gold — secondary accent */
 
   /* sugar-high syntax highlighting — warm Cursor palette
-     Keywords=orange, Strings=sage, Comments=muted, Classes=lavender,
-     Properties=blue, Entities=peach (mirrors Cursor AI timeline colors) */
-  --sh-keyword:     #f87840;
+     Keywords=gold, Strings=sage, Comments=muted, Classes=lavender,
+     Properties=blue, Entities=peach */
+  --sh-keyword:     #E2B34B;
   --sh-string:      #9fc9a2;
   --sh-comment:     rgba(232, 230, 222, 0.38);
   --sh-class:       #c0a8dd;
@@ -69,8 +69,8 @@
   --foreground: #e8e6de;
   --foreground-secondary: rgba(232, 230, 222, 0.55);
 
-  --brand-from:  #D4A040;   /* amber bronze-gold — brighter on dark bg */
-  --brand-to:    #C28530;   /* warm bronze — secondary */
+  --brand-from:  #E2B34B;   /* Chainpage gold — same hue, pops on dark bg */
+  --brand-to:    #C4912A;   /* darker gold — secondary */
 
   --border-warm:        rgba(232, 230, 222, 0.10);
   --border-warm-md:     rgba(232, 230, 222, 0.20);
@@ -99,18 +99,18 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  /* Remap amber → Cursor orange scale so all amber-* Tailwind classes shift */
-  --color-amber-50:  #fff5f0;
-  --color-amber-100: #ffe6d8;
-  --color-amber-200: #ffcdb0;
-  --color-amber-300: #ffaa75;
-  --color-amber-400: #f87840;
-  --color-amber-500: #f54e00;
-  --color-amber-600: #d43d00;
-  --color-amber-700: #b23300;
-  --color-amber-800: #872600;
-  --color-amber-900: #5e1a00;
-  --color-amber-950: #3a1000;
+  /* Remap amber → Chainpage gold scale so all amber-* Tailwind classes use gold */
+  --color-amber-50:  #fdf8eb;
+  --color-amber-100: #faeeb9;
+  --color-amber-200: #f4da7a;
+  --color-amber-300: #ebc85a;
+  --color-amber-400: #e6be50;
+  --color-amber-500: #E2B34B;
+  --color-amber-600: #C4912A;
+  --color-amber-700: #9E7120;
+  --color-amber-800: #785516;
+  --color-amber-900: #533A0E;
+  --color-amber-950: #322207;
 
   /* Keep surface tokens accessible */
   --color-surface-100: var(--surface-100);
