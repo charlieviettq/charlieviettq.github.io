@@ -56,7 +56,7 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <SiteNav />
-          <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
+          <main>{children}</main>
           <ScrollToTop />
           <footer
             className="mx-auto max-w-6xl px-4 py-8 text-center text-sm"
