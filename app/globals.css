@@ -187,22 +187,24 @@ h4, h5      { letter-spacing: -0.01em; }
   background-color: color-mix(in srgb, var(--foreground) 4%, transparent);
 }
 
-/* ── Code blocks: dark warm bg in BOTH modes (editor aesthetic) ─────────────
-   Override prose-zinc's --tw-prose-pre-bg with higher specificity.
-   Light mode: warm dark #2a2620 → code pops against cream page.
-   Dark mode: even deeper warm black → code stays readable.              */
+/* ── Code blocks ─────────────────────────────────────────────────────────────
+   Light mode: dark warm editor bg — pops against cream page, editor feel.
+   Dark mode: elevated warm surface — clearly lighter than page bg #1a1814,
+              so code blocks have identity in both themes.                  */
 .beguru-docs.prose pre {
-  background-color: #2a2620;
-  border: 1px solid rgba(232, 230, 222, 0.12);
+  background-color: #2a2620;   /* warm dark editor — light mode */
+  border: 1px solid rgba(232, 230, 222, 0.14);
+  border-left: 3px solid rgba(245, 78, 0, 0.5); /* orange accent stripe */
   color: #e8e6de;
   font-family: var(--font-mono), ui-monospace, monospace;
   border-radius: 0.5rem;
 }
 .dark .beguru-docs.prose pre {
-  background-color: #15130e;
+  background-color: #302b22;   /* elevated warm surface — lighter than #1a1814 page */
   border-color: rgba(232, 230, 222, 0.10);
+  border-left-color: rgba(245, 78, 0, 0.45);
 }
-/* Text inside <pre> — ensure light regardless of prose-invert */
+/* Text inside <pre> — pinned light color in both modes */
 .beguru-docs.prose pre code {
   background: transparent !important;
   border: none !important;
@@ -299,6 +301,18 @@ h4, h5      { letter-spacing: -0.01em; }
 }
 .search-dialog-enter {
   animation: search-in 150ms ease-out both;
+}
+
+/* ── Warm card hover (used by PostNav, RelatedPosts — server components) ─────── */
+.warm-card {
+  background-color: var(--surface-300);
+  border: 1px solid var(--border-warm);
+  border-radius: 0.75rem;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.warm-card:hover {
+  border-color: var(--border-warm-md);
+  box-shadow: var(--shadow-ambient);
 }
 
 /* ── Focus ring — Cursor orange ─────────────────────────────────────────────── */

@@ -17,7 +17,23 @@ export function ScrollToTop() {
     <button
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-zinc-200/60 bg-white/90 text-zinc-500 shadow-md backdrop-blur-sm transition hover:border-amber-300/60 hover:text-amber-600 dark:border-zinc-700/40 dark:bg-zinc-900/80 dark:text-zinc-400 dark:hover:border-amber-500/40 dark:hover:text-amber-400"
+      className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-150"
+      style={{
+        backgroundColor: "color-mix(in srgb, var(--surface-300) 90%, transparent)",
+        border: "1px solid var(--border-warm-md)",
+        color: "var(--foreground-secondary)",
+        boxShadow: "var(--shadow-ambient)",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.color = "var(--brand-from)";
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--border-warm-md)";
+        (e.currentTarget as HTMLElement).style.backgroundColor = "var(--surface-300)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.color = "var(--foreground-secondary)";
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--border-warm-md)";
+        (e.currentTarget as HTMLElement).style.backgroundColor = "color-mix(in srgb, var(--surface-300) 90%, transparent)";
+      }}
       aria-label="Scroll to top"
     >
       ↑
