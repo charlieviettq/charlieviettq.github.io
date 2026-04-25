@@ -42,6 +42,11 @@ export const metadata: Metadata = {
     url: siteUrl,
     siteName: "Charlie Viet",
   },
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
