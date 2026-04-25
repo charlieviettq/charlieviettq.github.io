@@ -285,7 +285,8 @@ function ContentVi() {
                   Xây dựng <strong>CakeAutoML</strong> — tự động hoá toàn bộ pipeline credit scoring:{" "}
                   <span style={{ color: "var(--foreground-secondary)" }}>
                     Label Preparation → Data Preparation → Feature Selection → Training → Validator
-                  </span>.
+                  </span>{" "}— đưa thời gian training end-to-end xuống{" "}
+                  <strong>dưới 60 phút</strong>.
                 </li>
                 <li className="leading-relaxed">
                   Đóng góp vào <strong>ML workflow</strong>: orchestration DAG, chuẩn hoá quy trình training
@@ -310,11 +311,22 @@ function ContentVi() {
                   T7/2023 — T11/2025
                 </span>
               </div>
+              <p className="text-xs mb-2 italic" style={{ color: "var(--foreground-secondary)" }}>
+                PIC cho phần lớn các sản phẩm AI trong giai đoạn này — điều phối trực tiếp với
+                PM, Backend Engineers, CS &amp; Ops teams từ discovery đến production.
+              </p>
               <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
                 <li className="leading-relaxed">
                   Dẫn triển khai end-to-end <strong>hệ chat agent</strong> kiến trúc{" "}
                   <strong>multi-agent</strong> (supervisor) với <strong>hybrid RAG</strong>, function
-                  calling và GenAI — eval, tracing, logging, orchestration; ~<strong>80% tự động hoá</strong>.
+                  calling và GenAI — automate <strong>70–80% lượt chat</strong> đến với{" "}
+                  <strong>90% chính xác</strong> (validated trên manual-labelled CS sample);
+                  kèm eval, tracing, logging và action orchestration.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>CMS (Case Management System)</strong>: tự động phân loại case và triage
+                  email hỗ trợ — toàn bộ workflow từ nhận request → phân loại → assign cho
+                  downstream teams; giảm <strong>~70% thao tác thủ công</strong> cho CS &amp; Ops teams.
                 </li>
                 <li className="leading-relaxed">
                   <strong>Data Modeling</strong>: BigQuery &amp; Doris (Conversation Insight, Callbot,
@@ -329,8 +341,7 @@ function ContentVi() {
                   engineering, scoring production (NTB/ETB).
                 </li>
                 <li className="leading-relaxed">
-                  <strong>Auto EDA</strong> agent (MCP/DataHub style); <strong>CMS</strong> tự động phân
-                  tích case (~70%).
+                  <strong>Auto EDA</strong> agent (MCP/DataHub style) — rút ngắn vòng lặp khám phá dữ liệu.
                 </li>
               </ul>
             </div>
@@ -480,7 +491,8 @@ function ContentEn() {
                   Building <strong>CakeAutoML</strong> — end-to-end automated credit scoring pipeline:{" "}
                   <span style={{ color: "var(--foreground-secondary)" }}>
                     Label Preparation → Data Preparation → Feature Selection → Training → Validator
-                  </span>.
+                  </span>{" "}— bringing training time down to{" "}
+                  <strong>under 60 minutes</strong> end-to-end.
                 </li>
                 <li className="leading-relaxed">
                   Contributing to the <strong>ML workflow</strong>: DAG orchestration, standardising
@@ -505,11 +517,23 @@ function ContentEn() {
                   Jul 2023 — Nov 2025
                 </span>
               </div>
+              <p className="text-xs mb-2 italic" style={{ color: "var(--foreground-secondary)" }}>
+                PIC for most AI products in this period — coordinating directly with PMs,
+                Backend Engineers, CS &amp; Ops teams from discovery through production.
+              </p>
               <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
                 <li className="leading-relaxed">
                   Led end-to-end <strong>multi-agent chat system</strong> (supervisor architecture)
-                  with <strong>hybrid RAG</strong>, function calling, GenAI — eval, tracing, logging,
-                  action orchestration; ~<strong>80% automated support</strong>.
+                  with <strong>hybrid RAG</strong>, function calling, and GenAI — automating{" "}
+                  <strong>70–80% of incoming customer chats</strong> at{" "}
+                  <strong>90% accuracy</strong> (validated on manually-labelled CS samples);
+                  with eval, tracing, logging, and action orchestration.
+                </li>
+                <li className="leading-relaxed">
+                  <strong>CMS (Case Management System)</strong>: automated case classification
+                  and email support triage — full workflow from incoming request → classification
+                  → assignment to downstream teams; reduced <strong>~70% of manual effort</strong>{" "}
+                  for CS &amp; Ops teams.
                 </li>
                 <li className="leading-relaxed">
                   <strong>Data Modeling</strong>: BigQuery &amp; Doris (Conversation Insight, Callbot,
@@ -524,8 +548,7 @@ function ContentEn() {
                   engineering, production scoring (NTB/ETB).
                 </li>
                 <li className="leading-relaxed">
-                  <strong>Auto EDA</strong> agent (MCP/DataHub-style); <strong>CMS</strong> automation
-                  with ~70% automated case parsing.
+                  <strong>Auto EDA</strong> agent (MCP/DataHub-style) for faster exploratory analytics.
                 </li>
               </ul>
             </div>
