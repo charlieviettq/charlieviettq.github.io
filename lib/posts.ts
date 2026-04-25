@@ -29,6 +29,8 @@ export type PostKpi = {
 export type PostMeta = {
   slug: string;
   title: string;
+  /** Short label shown in BlogNav sidebar (falls back to title if absent). */
+  navTitle?: string;
   date: string;
   excerpt?: string;
   category: BlogCategory;
@@ -148,6 +150,10 @@ export function getPostBySlug(slug: string): Post | null {
   return {
     slug,
     title: String(data.title ?? slug),
+    navTitle:
+      data.navTitle != null
+        ? String(data.navTitle).trim() || undefined
+        : undefined,
     date: String(data.date ?? ""),
     excerpt: data.excerpt != null ? String(data.excerpt) : undefined,
     category,
