@@ -187,30 +187,47 @@ h4, h5      { letter-spacing: -0.01em; }
   background-color: color-mix(in srgb, var(--foreground) 4%, transparent);
 }
 
-/* Code blocks — warm surface contrast */
+/* ── Code blocks: dark warm bg in BOTH modes (editor aesthetic) ─────────────
+   Override prose-zinc's --tw-prose-pre-bg with higher specificity.
+   Light mode: warm dark #2a2620 → code pops against cream page.
+   Dark mode: even deeper warm black → code stays readable.              */
 .beguru-docs.prose pre {
-  background-color: var(--surface-400);
-  border: 1px solid var(--border-warm-md);
+  background-color: #2a2620;
+  border: 1px solid rgba(232, 230, 222, 0.12);
+  color: #e8e6de;
   font-family: var(--font-mono), ui-monospace, monospace;
+  border-radius: 0.5rem;
 }
 .dark .beguru-docs.prose pre {
-  background-color: #12100b;
-  border-color: var(--border-warm);
+  background-color: #15130e;
+  border-color: rgba(232, 230, 222, 0.10);
+}
+/* Text inside <pre> — ensure light regardless of prose-invert */
+.beguru-docs.prose pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  color: #e8e6de !important;
+  font-size: inherit;
+}
+.dark .beguru-docs.prose pre code {
+  color: #ede9df !important;
 }
 
-/* Inline code */
+/* ── Inline code: warm tinted surface, clearly distinct from bg ─────────── */
 .beguru-docs.prose :not(pre) > code {
-  background-color: var(--surface-500);
-  border: 1px solid var(--border-warm);
+  background-color: #dcd9d2;
+  border: 1px solid rgba(38, 37, 30, 0.15);
   border-radius: 0.3em;
-  padding: 0.1em 0.35em;
+  padding: 0.1em 0.4em;
   font-size: 0.875em;
   font-family: var(--font-mono), ui-monospace, monospace;
-  color: var(--foreground);
+  color: #26251e;
 }
 .dark .beguru-docs.prose :not(pre) > code {
-  background-color: color-mix(in srgb, var(--foreground) 10%, transparent);
-  border-color: var(--border-warm);
+  background-color: #302c22;
+  border-color: rgba(232, 230, 222, 0.15);
+  color: #e8e6de;
 }
 
 /* ── Chart (BeGuru flow / Mermaid) ──────────────────────────────────────────── */
