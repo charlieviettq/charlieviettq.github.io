@@ -77,6 +77,17 @@ export function getCategoryPillClasses(cat: BlogCategory): string {
   return map[cat];
 }
 
+/** Tinted background classes for category section banners (blog index). */
+export function getCategoryBannerClasses(cat: BlogCategory): string {
+  const map: Record<BlogCategory, string> = {
+    "data-science":    "bg-sky-100/70 dark:bg-sky-950/30",
+    "data-engineering":"bg-indigo-100/70 dark:bg-indigo-950/30",
+    "gen-ai":          "bg-purple-100/70 dark:bg-purple-950/30",
+    "banking":         "bg-amber-100/70 dark:bg-amber-950/30",
+  };
+  return map[cat] ?? "";
+}
+
 function parseCategory(raw: unknown, slug: string): BlogCategory {
   const s = String(raw ?? "").trim();
   if (!CATEGORY_SET.has(s)) {

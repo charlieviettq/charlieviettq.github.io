@@ -3,6 +3,7 @@ import Link from "next/link";
 import { GradientCard } from "@/components/GradientCard";
 import {
   BLOG_CATEGORY_ORDER,
+  getCategoryBannerClasses,
   getCategoryLabel,
   getCategoryPillClasses,
   getCategorySubtitleVi,
@@ -73,29 +74,33 @@ export default function BlogIndexPage() {
           <section key={cat} id={cat} className="scroll-mt-24">
             <GradientCard className="space-y-0 overflow-hidden !p-0">
 
-              {/* Section header */}
+              {/* ── Category banner — tinted bg, clearly distinct from post rows ── */}
               <header
-                className="flex items-center gap-4 px-6 py-5"
+                className={`flex items-center justify-between px-6 py-4 ${getCategoryBannerClasses(cat)}`}
                 style={{ borderBottom: "1px solid var(--border-warm)" }}
               >
-                {/* Colour accent bar matching the category */}
-                <span
-                  className={`h-10 w-1 shrink-0 rounded-full ${getCategoryPillClasses(cat).split(" ")[0]}`}
-                />
                 <div>
                   <h2
-                    className="font-heading text-xl font-bold tracking-tight"
+                    className="font-heading text-sm font-bold uppercase tracking-widest"
                     style={{ color: "var(--foreground)" }}
                   >
                     {getCategoryLabel(cat)}
                   </h2>
-                  <p className="mt-0.5 text-sm" style={{ color: "var(--foreground-secondary)" }}>
+                  <p className="mt-0.5 text-xs" style={{ color: "var(--foreground-secondary)" }}>
                     {getCategorySubtitleVi(cat)}
                   </p>
                 </div>
+                {/* Post count badge */}
+                {posts.length > 0 && (
+                  <span
+                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${getCategoryPillClasses(cat)}`}
+                  >
+                    {posts.length} bài
+                  </span>
+                )}
               </header>
 
-              {/* Post list */}
+              {/* ── Post list ────────────────────────────────────────────────── */}
               {posts.length === 0 ? (
                 <p className="px-6 py-5 text-sm" style={{ color: "var(--foreground-secondary)" }}>
                   No posts yet.
@@ -105,48 +110,45 @@ export default function BlogIndexPage() {
                   {posts.map((post) => (
                     <li key={post.slug} className="post-item relative">
 
-                      {/* Orange left accent — appears on hover via CSS */}
+                      {/* Left accent bar — appears on hover via CSS */}
                       <span
                         className="post-accent absolute left-0 top-0 h-full w-[3px]"
                         style={{ backgroundColor: "var(--brand-from)" }}
                       />
 
-                      <div className="px-6 py-5">
-                        {/* Category pill + date — pill is prominent */}
-                        <div className="mb-3 flex flex-wrap items-center gap-2.5">
-                          <span
-                            className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-bold tracking-wide ${getCategoryPillClasses(post.category)}`}
-                          >
-                            {getCategoryLabel(post.category)}
-                          </span>
-                          <span
-                            className="font-mono text-xs tabular-nums"
-                            style={{ color: "var(--foreground-secondary)" }}
-                          >
-                            {post.date}
-                          </span>
+                      {/* Full-row link: date col | title+excerpt | arrow */}
+                      <Link
+                        href={`/blog/${post.slug}/`}
+                        className="flex items-start gap-4 px-6 py-4"
+                      >
+                        {/* Date column — fixed width, mono, muted */}
+                        <span className="post-date-col w-20 shrink-0">
+                          {post.date}
+                        </span>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-heading text-base font-semibold leading-snug post-title-link">
+                            {post.title}
+                          </h3>
+                          {post.excerpt && (
+                            <p
+                              className="mt-1 line-clamp-1 text-xs leading-relaxed"
+                              style={{ color: "var(--foreground-secondary)" }}
+                            >
+                              {post.excerpt}
+                            </p>
+                          )}
                         </div>
 
-                        {/* Title — large, bold, brand-color on hover via CSS */}
-                        <h3 className="font-heading text-xl font-bold leading-snug">
-                          <Link
-                            href={`/blog/${post.slug}/`}
-                            className="post-title-link"
-                          >
-                            {post.title}
-                          </Link>
-                        </h3>
-
-                        {/* Excerpt */}
-                        {post.excerpt && (
-                          <p
-                            className="mt-1.5 line-clamp-2 text-sm leading-relaxed"
-                            style={{ color: "var(--foreground-secondary)" }}
-                          >
-                            {post.excerpt}
-                          </p>
-                        )}
-                      </div>
+                        {/* Animated arrow — slides in on hover via CSS */}
+                        <span
+                          className="post-arrow shrink-0 mt-0.5 text-sm font-bold"
+                          style={{ color: "var(--brand-from)" }}
+                        >
+                          →
+                        </span>
+                      </Link>
                     </li>
                   ))}
                 </ul>
