@@ -10,17 +10,17 @@
 
 import { useEffect, useRef } from "react";
 
-// Same palette as CharlieLogoSVG — weighted toward gold so it reads on cream bg
+// Same palette as CharlieLogoSVG — weighted toward Chainpage gold
 const PALETTE = [
-  "#C9A84C", // gold — dominant
-  "#C9A84C",
-  "#C9A84C",
-  "#D4AF37", // amber (hub color)
-  "#D4AF37",
+  "#E2B34B", // Chainpage gold — dominant
+  "#E2B34B",
+  "#E2B34B",
+  "#E2B34B",
+  "#C4912A", // darker gold
   "#B8B8B8", // silver
   "#B8B8B8",
   "#D0D0D0", // light silver
-  "#C08532", // warm gold (brand-to)
+  "#e6be50", // lighter gold
 ];
 
 interface Particle {
