@@ -225,7 +225,7 @@ export function BlogPostBody({
 
   // Shared prose class string
   const proseClass =
-    "beguru-docs prose max-w-none prose-headings:scroll-mt-28 prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-amber-400";
+    "beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-amber-400";
 
   // Render a markdown block — reuses the same (unchanged) plugin arrays
   const renderMd = (markdown: string, key: string) => (
@@ -320,60 +320,41 @@ export function BlogPostBody({
             {/* Mobile-only language toggle (sidebar hidden on mobile) */}
             {bilingual ? (
               <div
-                className={
-                  caseStudy
-                    ? "mt-8 flex flex-wrap items-center gap-2 border-t border-white/10 pt-6 lg:hidden"
-                    : "mt-6 flex flex-wrap items-center gap-2 lg:hidden"
-                }
+                className="mt-6 flex flex-wrap items-center gap-3 lg:hidden"
+                style={caseStudy ? { borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "1.5rem", marginTop: "2rem" } : {}}
                 role="group"
                 aria-label="Chọn ngôn ngữ / Language"
               >
                 <span
-                  className={
-                    caseStudy
-                      ? "text-xs font-medium uppercase tracking-wide text-zinc-400"
-                      : "text-xs font-medium uppercase tracking-wide text-zinc-500"
-                  }
+                  className="text-[10px] font-semibold uppercase tracking-widest"
+                  style={{ color: caseStudy ? "rgba(255,255,255,0.5)" : "var(--foreground-secondary)" }}
                 >
-                  Language / Ngôn ngữ:
+                  Language
                 </span>
                 <div
-                  className={
-                    caseStudy
-                      ? "inline-flex rounded-lg border border-white/15 bg-black/20 p-0.5"
-                      : "inline-flex rounded-lg border border-zinc-200 bg-white p-0.5 shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
-                  }
+                  className="inline-flex rounded-full p-0.5"
+                  style={{
+                    backgroundColor: caseStudy ? "rgba(0,0,0,0.25)" : "var(--surface-300)",
+                    border: `1px solid ${caseStudy ? "rgba(255,255,255,0.12)" : "var(--border-warm)"}`,
+                  }}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setLanguage("vi")}
-                    className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
-                      lang === "vi"
-                        ? caseStudy
-                          ? "bg-white text-slate-900 shadow-sm"
-                          : "bg-amber-600 text-white shadow-sm"
-                        : caseStudy
-                          ? "text-zinc-300 hover:text-white"
-                          : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                    }`}
-                  >
-                    Tiếng Việt
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLanguage("en")}
-                    className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
-                      lang === "en"
-                        ? caseStudy
-                          ? "bg-white text-slate-900 shadow-sm"
-                          : "bg-amber-600 text-white shadow-sm"
-                        : caseStudy
-                          ? "text-zinc-300 hover:text-white"
-                          : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                    }`}
-                  >
-                    English
-                  </button>
+                  {(["vi", "en"] as Lang[]).map((l) => (
+                    <button
+                      key={l}
+                      type="button"
+                      onClick={() => setLanguage(l)}
+                      className="rounded-full px-3 py-1.5 text-sm font-semibold transition-all duration-150"
+                      style={
+                        lang === l
+                          ? caseStudy
+                            ? { backgroundColor: "#ffffff", color: "#1a1814" }
+                            : { backgroundColor: "var(--brand-from)", color: "#ffffff", boxShadow: "0 1px 4px rgba(245,78,0,0.3)" }
+                          : { backgroundColor: "transparent", color: caseStudy ? "rgba(255,255,255,0.6)" : "var(--foreground-secondary)" }
+                      }
+                    >
+                      {l === "vi" ? "Tiếng Việt" : "English"}
+                    </button>
+                  ))}
                 </div>
               </div>
             ) : null}
