@@ -82,7 +82,7 @@ export default function BlogIndexPage() {
                   {posts.map((post) => (
                     <li
                       key={post.slug}
-                      className="group border-b border-zinc-200/60 pb-5 last:border-0 last:pb-0 dark:border-zinc-700/40"
+                      className="group -mx-4 rounded-lg border-b border-zinc-200/60 px-4 pb-5 last:border-0 last:pb-0 transition-colors hover:bg-zinc-50/60 dark:border-zinc-700/40 dark:hover:bg-zinc-800/20"
                     >
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-mono text-xs font-medium tabular-nums text-zinc-400 dark:text-zinc-500">

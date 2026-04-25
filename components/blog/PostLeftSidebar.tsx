@@ -1,14 +1,15 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
+import type { TocItem } from "@/lib/bilingual-post";
 
 type Lang = "vi" | "en";
 
 type Props = {
   open: boolean;
   onToggle: () => void;
-  /** Rendered <TocNav> passed from parent — avoids re-exporting TocNav */
-  tocNode: ReactNode;
+  /** TocItem[] for IntersectionObserver (not rendered ReactNode) */
+  toc: TocItem[];
   bilingual: boolean;
   splitView: boolean;
   onSplitToggle: () => void;
@@ -19,13 +20,41 @@ type Props = {
 export function PostLeftSidebar({
   open,
   onToggle,
-  tocNode,
+  toc,
   bilingual,
   splitView,
   onSplitToggle,
   lang,
   onLangChange,
 }: Props) {
+  const [activeId, setActiveId] = useState<string>("");
+
+  // ── IntersectionObserver: track active heading while scrolling ────────────
+  useEffect(() => {
+    if (toc.length === 0) return;
+    const headingIds = toc.map((t) => t.id);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Pick the topmost visible heading
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible.length > 0) {
+          setActiveId(visible[0].target.id);
+        }
+      },
+      { rootMargin: "-10% 0px -75% 0px", threshold: 0 },
+    );
+
+    const els = headingIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[];
+    els.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, [toc]);
+
   return (
     <aside
       className={`hidden lg:flex lg:flex-col shrink-0 border-r border-zinc-200/50 dark:border-zinc-700/40 transition-[width] duration-200 ease-in-out ${
@@ -48,20 +77,46 @@ export function PostLeftSidebar({
           {open ? (
             <span className="text-[11px] font-medium">← Thu</span>
           ) : (
-            <span
-              className="text-[9px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500"
-              style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-            >
-              Mục lục
-            </span>
+            <span className="text-base">☰</span>
           )}
         </button>
 
         {/* Sidebar content — only when open */}
         {open && (
           <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8">
-            {/* TOC */}
-            {tocNode}
+            {/* TOC with active highlighting */}
+            {toc.length > 0 && (
+              <nav aria-label="Mục lục / Table of contents">
+                <p className="mb-3 font-heading text-xs font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+                  On this page
+                </p>
+                <ul className="space-y-2 text-sm">
+                  {toc.map((item, index) => {
+                    const isActive = item.id === activeId;
+                    return (
+                      <li
+                        key={`${item.id}-${index}`}
+                        className={item.depth === 3 ? "pl-3" : undefined}
+                      >
+                        <a
+                          href={`#${item.id}`}
+                          className={`block underline-offset-2 transition-colors hover:underline ${
+                            isActive
+                              ? "font-semibold text-amber-600 dark:text-amber-400"
+                              : "text-zinc-600 hover:text-amber-600 dark:text-zinc-400 dark:hover:text-amber-400"
+                          }`}
+                        >
+                          {isActive && (
+                            <span className="mr-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-500 align-middle" />
+                          )}
+                          {item.text}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </nav>
+            )}
 
             {/* View + language controls — only for bilingual posts */}
             {bilingual && (

@@ -40,7 +40,7 @@
   --color-gold: #F59E0B;
   --color-navy: #0F172A;
   --font-heading: var(--font-exo);
-  --font-sans: var(--font-roboto-mono);
+  --font-sans: var(--font-exo);
   --font-mono: var(--font-roboto-mono);
 }
 
