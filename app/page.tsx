@@ -8,6 +8,7 @@ import {
 
 export default function Home() {
   return (
+    <div className="mx-auto max-w-6xl px-4 py-10">
     <div className="space-y-10">
       {/* ── Hero card ──────────────────────────────────────────────────────── */}
       <GradientCard className="space-y-6">
@@ -114,6 +115,7 @@ export default function Home() {
           ))}
         </div>
       </section>
+    </div>
     </div>
   );
 }

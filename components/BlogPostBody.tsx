@@ -22,8 +22,6 @@ import {
 } from "@/components/blog/BeguruFlowDiagram";
 import { MermaidBlock } from "@/components/MermaidBlock";
 import { CodeBlock } from "@/components/blog/CodeBlock";
-import { PostLeftSidebar } from "@/components/blog/PostLeftSidebar";
-import { extractToc } from "@/lib/bilingual-post";
 import remarkDocDirectives from "@/lib/remark-doc-directives";
 import { blogSanitizeSchema } from "@/lib/rehype-blog-sanitize";
 import type { PostKpi, PostLayout } from "@/lib/posts";
@@ -116,6 +114,48 @@ function PaneHeader({
   );
 }
 
+// ─── PillBtn ──────────────────────────────────────────────────────────────────
+function PillBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-full px-3 py-1 text-xs font-semibold transition-all duration-150"
+      style={
+        active
+          ? {
+              backgroundColor: "var(--brand-from)",
+              color: "#ffffff",
+              boxShadow: "0 1px 4px rgba(245,78,0,0.35)",
+            }
+          : {
+              backgroundColor: "transparent",
+              color: "var(--foreground-secondary)",
+            }
+      }
+      onMouseEnter={(e) => {
+        if (!active)
+          (e.currentTarget as HTMLElement).style.color = "var(--brand-from)";
+      }}
+      onMouseLeave={(e) => {
+        if (!active)
+          (e.currentTarget as HTMLElement).style.color =
+            "var(--foreground-secondary)";
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 // ─── BlogPostBody ─────────────────────────────────────────────────────────────
 export function BlogPostBody({
   title,
@@ -130,7 +170,6 @@ export function BlogPostBody({
   kpis,
 }: Props) {
   const [lang, setLang] = useState<Lang>("vi");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [splitView, setSplitView] = useState(false);
   const [viPaneOpen, setViPaneOpen] = useState(true);
   const [enPaneOpen, setEnPaneOpen] = useState(true);
@@ -151,10 +190,6 @@ export function BlogPostBody({
     : viMarkdown;
 
   const caseStudy = layout === "case-study";
-
-  // In split mode TOC follows viMarkdown; in single mode follows activeMarkdown
-  const tocSource = bilingual && splitView ? viMarkdown : activeMarkdown;
-  const toc = useMemo(() => extractToc(tocSource), [tocSource]);
 
   // ── markdownComponents — DO NOT MODIFY THIS BLOCK ─────────────────────────
   const markdownComponents = useMemo(
@@ -268,172 +303,204 @@ export function BlogPostBody({
   );
 
   return (
-    <div className="flex min-h-0 items-start">
-      {/* ── LEFT SIDEBAR (desktop only) ────────────────────────────────────── */}
-      <PostLeftSidebar
-        open={sidebarOpen}
-        onToggle={() => setSidebarOpen((o) => !o)}
-        toc={toc}
-        bilingual={bilingual}
-        splitView={splitView}
-        onSplitToggle={() => setSplitView((s) => !s)}
-        lang={lang}
-        onLangChange={setLanguage}
-      />
-
-      {/* ── MAIN CONTENT ───────────────────────────────────────────────────── */}
-      <div className="min-w-0 flex-1 pl-0 lg:pl-6">
-        <article className="space-y-8">
-          {/* ── Post header ───────────────────────────────────────────────── */}
-          <header
+    <article className="space-y-8">
+      {/* ── Post header ─────────────────────────────────────────────────────── */}
+      <header
+        className={
+          caseStudy
+            ? "overflow-hidden rounded-2xl border border-zinc-200/80 border-t-2 border-t-amber-400/60 bg-gradient-to-br from-[#0F172A] via-slate-900 to-purple-950 p-6 text-zinc-100 shadow-xl ring-1 ring-white/10 dark:border-zinc-700/80"
+            : undefined
+        }
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <p
             className={
               caseStudy
-                ? "overflow-hidden rounded-2xl border border-zinc-200/80 border-t-2 border-t-amber-400/60 bg-gradient-to-br from-[#0F172A] via-slate-900 to-purple-950 p-6 text-zinc-100 shadow-xl ring-1 ring-white/10 dark:border-zinc-700/80"
-                : undefined
+                ? "text-xs font-medium uppercase tracking-wide text-zinc-400"
+                : "text-xs font-medium uppercase tracking-wide text-zinc-500"
             }
           >
-            <div className="flex flex-wrap items-center gap-2">
-              <p
-                className={
-                  caseStudy
-                    ? "text-xs font-medium uppercase tracking-wide text-zinc-400"
-                    : "text-xs font-medium uppercase tracking-wide text-zinc-500"
-                }
-              >
-                {date}
-              </p>
-              <span
-                className={
-                  caseStudy
-                    ? "inline-flex rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-100 ring-1 ring-white/15"
-                    : `inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryPillClass}`
-                }
-              >
-                {categoryLabel}
-              </span>
+            {date}
+          </p>
+          <span
+            className={
+              caseStudy
+                ? "inline-flex rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-100 ring-1 ring-white/15"
+                : `inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryPillClass}`
+            }
+          >
+            {categoryLabel}
+          </span>
+        </div>
+
+        <h1
+          className={
+            caseStudy
+              ? "mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl"
+              : "mt-2 text-3xl font-bold tracking-tight"
+          }
+        >
+          {title}
+        </h1>
+
+        {excerpt ? (
+          <p
+            className={
+              caseStudy
+                ? "mt-3 max-w-3xl text-base leading-relaxed text-zinc-300 md:text-lg"
+                : "mt-3 text-lg text-zinc-600 dark:text-zinc-400"
+            }
+          >
+            {excerpt}
+          </p>
+        ) : null}
+
+        {caseStudy && kpis.length > 0 ? (
+          <CaseStudyKpiGrid kpis={kpis} lang={lang} />
+        ) : null}
+
+        {/* ── Bilingual controls (always visible when bilingual) ─────────── */}
+        {bilingual ? (
+          <div
+            className="mt-5 flex flex-wrap items-center gap-3"
+            style={
+              caseStudy
+                ? {
+                    borderTop: "1px solid rgba(255,255,255,0.1)",
+                    paddingTop: "1.25rem",
+                    marginTop: "1.5rem",
+                  }
+                : {}
+            }
+            role="group"
+            aria-label="Chọn ngôn ngữ / Language"
+          >
+            <span
+              className="text-[10px] font-semibold uppercase tracking-widest"
+              style={{
+                color: caseStudy
+                  ? "rgba(255,255,255,0.5)"
+                  : "var(--foreground-secondary)",
+              }}
+            >
+              View
+            </span>
+
+            {/* Single / Split toggle */}
+            <div
+              className="inline-flex rounded-full p-0.5"
+              style={{
+                backgroundColor: caseStudy
+                  ? "rgba(0,0,0,0.25)"
+                  : "var(--surface-300)",
+                border: `1px solid ${
+                  caseStudy ? "rgba(255,255,255,0.12)" : "var(--border-warm)"
+                }`,
+              }}
+            >
+              <PillBtn active={!splitView} onClick={() => setSplitView(false)}>
+                Single
+              </PillBtn>
+              <PillBtn active={splitView} onClick={() => setSplitView(true)}>
+                Split
+              </PillBtn>
             </div>
 
-            <h1
-              className={
-                caseStudy
-                  ? "mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl"
-                  : "mt-2 text-3xl font-bold tracking-tight"
-              }
-            >
-              {title}
-            </h1>
-
-            {excerpt ? (
-              <p
-                className={
-                  caseStudy
-                    ? "mt-3 max-w-3xl text-base leading-relaxed text-zinc-300 md:text-lg"
-                    : "mt-3 text-lg text-zinc-600 dark:text-zinc-400"
-                }
-              >
-                {excerpt}
-              </p>
-            ) : null}
-
-            {caseStudy && kpis.length > 0 ? (
-              <CaseStudyKpiGrid kpis={kpis} lang={lang} />
-            ) : null}
-
-            {/* Mobile-only language toggle (sidebar hidden on mobile) */}
-            {bilingual ? (
-              <div
-                className="mt-6 flex flex-wrap items-center gap-3 lg:hidden"
-                style={caseStudy ? { borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "1.5rem", marginTop: "2rem" } : {}}
-                role="group"
-                aria-label="Chọn ngôn ngữ / Language"
-              >
+            {/* Language toggle — only in single mode */}
+            {!splitView && (
+              <>
                 <span
                   className="text-[10px] font-semibold uppercase tracking-widest"
-                  style={{ color: caseStudy ? "rgba(255,255,255,0.5)" : "var(--foreground-secondary)" }}
+                  style={{
+                    color: caseStudy
+                      ? "rgba(255,255,255,0.5)"
+                      : "var(--foreground-secondary)",
+                  }}
                 >
-                  Language
+                  Lang
                 </span>
                 <div
                   className="inline-flex rounded-full p-0.5"
                   style={{
-                    backgroundColor: caseStudy ? "rgba(0,0,0,0.25)" : "var(--surface-300)",
-                    border: `1px solid ${caseStudy ? "rgba(255,255,255,0.12)" : "var(--border-warm)"}`,
+                    backgroundColor: caseStudy
+                      ? "rgba(0,0,0,0.25)"
+                      : "var(--surface-300)",
+                    border: `1px solid ${
+                      caseStudy
+                        ? "rgba(255,255,255,0.12)"
+                        : "var(--border-warm)"
+                    }`,
                   }}
                 >
-                  {(["vi", "en"] as Lang[]).map((l) => (
-                    <button
-                      key={l}
-                      type="button"
-                      onClick={() => setLanguage(l)}
-                      className="rounded-full px-3 py-1.5 text-sm font-semibold transition-all duration-150"
-                      style={
-                        lang === l
-                          ? caseStudy
-                            ? { backgroundColor: "#ffffff", color: "#1a1814" }
-                            : { backgroundColor: "var(--brand-from)", color: "#ffffff", boxShadow: "0 1px 4px rgba(245,78,0,0.3)" }
-                          : { backgroundColor: "transparent", color: caseStudy ? "rgba(255,255,255,0.6)" : "var(--foreground-secondary)" }
-                      }
-                    >
-                      {l === "vi" ? "Tiếng Việt" : "English"}
-                    </button>
-                  ))}
+                  <PillBtn
+                    active={lang === "vi"}
+                    onClick={() => setLanguage("vi")}
+                  >
+                    🇻🇳 VI
+                  </PillBtn>
+                  <PillBtn
+                    active={lang === "en"}
+                    onClick={() => setLanguage("en")}
+                  >
+                    🇬🇧 EN
+                  </PillBtn>
                 </div>
-              </div>
-            ) : null}
-          </header>
+              </>
+            )}
+          </div>
+        ) : null}
+      </header>
 
-          {/* ── Content area ──────────────────────────────────────────────── */}
-          {splitView && bilingual ? (
-            /* ── SPLIT VIEW: VI | EN side by side (desktop) ──────────────── */
-            <div className="flex items-start gap-0 lg:gap-2">
-              {/* VI pane */}
-              <div
-                className={
-                  viPaneOpen
-                    ? "min-w-0 flex-1 overflow-x-auto"
-                    : "w-auto shrink-0"
-                }
-              >
-                <PaneHeader
-                  lang="vi"
-                  open={viPaneOpen}
-                  onToggle={handleViToggle}
-                />
-                {viPaneOpen && renderMd(viMarkdown, "vi")}
-              </div>
+      {/* ── Content area ────────────────────────────────────────────────────── */}
+      {splitView && bilingual ? (
+        /* ── SPLIT VIEW: VI | EN side by side ─────────────────────────────── */
+        <div className="flex items-start gap-0 lg:gap-2">
+          {/* VI pane */}
+          <div
+            className={
+              viPaneOpen
+                ? "min-w-0 flex-1 overflow-x-auto"
+                : "w-auto shrink-0"
+            }
+          >
+            <PaneHeader
+              lang="vi"
+              open={viPaneOpen}
+              onToggle={handleViToggle}
+            />
+            {viPaneOpen && renderMd(viMarkdown, "vi")}
+          </div>
 
-              {/* Vertical divider between panes */}
-              {viPaneOpen && enPaneOpen && (
-                <div className="mx-3 hidden w-px self-stretch shrink-0 bg-zinc-200/70 dark:bg-zinc-700/50 lg:block" />
-              )}
-
-              {/* EN pane */}
-              <div
-                className={
-                  enPaneOpen
-                    ? "min-w-0 flex-1 overflow-x-auto"
-                    : "w-auto shrink-0"
-                }
-              >
-                <PaneHeader
-                  lang="en"
-                  open={enPaneOpen}
-                  onToggle={handleEnToggle}
-                />
-                {enPaneOpen && renderMd(enMarkdown, "en")}
-              </div>
-            </div>
-          ) : caseStudy ? (
-            /* ── SINGLE VIEW — case-study card wrapper ────────────────────── */
-            <div className="rounded-2xl border border-zinc-200/90 bg-white/90 p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 md:p-8">
-              {renderMd(activeMarkdown, lang + (bilingual ? "" : "single"))}
-            </div>
-          ) : (
-            /* ── SINGLE VIEW — default prose ──────────────────────────────── */
-            renderMd(activeMarkdown, lang + (bilingual ? "" : "single"))
+          {/* Vertical divider between panes */}
+          {viPaneOpen && enPaneOpen && (
+            <div className="mx-3 hidden w-px self-stretch shrink-0 bg-zinc-200/70 dark:bg-zinc-700/50 lg:block" />
           )}
-        </article>
-      </div>
-    </div>
+
+          {/* EN pane */}
+          <div
+            className={
+              enPaneOpen
+                ? "min-w-0 flex-1 overflow-x-auto"
+                : "w-auto shrink-0"
+            }
+          >
+            <PaneHeader
+              lang="en"
+              open={enPaneOpen}
+              onToggle={handleEnToggle}
+            />
+            {enPaneOpen && renderMd(enMarkdown, "en")}
+          </div>
+        </div>
+      ) : caseStudy ? (
+        /* ── SINGLE VIEW — case-study card wrapper ─────────────────────────── */
+        <div className="rounded-2xl border border-zinc-200/90 bg-white/90 p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 md:p-8">
+          {renderMd(activeMarkdown, lang + (bilingual ? "" : "single"))}
+        </div>
+      ) : (
+        /* ── SINGLE VIEW — default prose ────────────────────────────────────── */
+        renderMd(activeMarkdown, lang + (bilingual ? "" : "single"))
+      )}
+    </article>
   );
 }
