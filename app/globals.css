@@ -14,9 +14,12 @@
   --foreground: #26251e;
   --foreground-secondary: rgba(38, 37, 30, 0.55);
 
-  /* Brand */
-  --brand-from: #f54e00;    /* Cursor orange — primary accent */
-  --brand-to:   #c08532;    /* warm gold — secondary */
+  /* Brand — Hybrid palette
+     --brand-from / --brand-to  = champagne gold / amber gold (matches constellation logo)
+     --cta-action               = signal orange — ONLY for primary action buttons         */
+  --brand-from:  #C9A84C;   /* champagne gold — logo node color, UI accent */
+  --brand-to:    #D4AF37;   /* amber gold — logo hub color, secondary accent */
+  --cta-action:  #f54e00;   /* Cursor orange — reserved for primary CTA button only */
 
   /* sugar-high syntax highlighting — warm Cursor palette
      Keywords=orange, Strings=sage, Comments=muted, Classes=lavender,
@@ -69,8 +72,9 @@
   --foreground: #e8e6de;
   --foreground-secondary: rgba(232, 230, 222, 0.55);
 
-  --brand-from: #f76a2a;    /* slightly lighter for dark bg readability */
-  --brand-to:   #d4973a;
+  --brand-from:  #D4AF37;   /* amber gold — brighter on dark bg */
+  --brand-to:    #C9A84C;   /* champagne gold */
+  --cta-action:  #f76a2a;   /* slightly lighter orange for dark bg readability */
 
   --border-warm:        rgba(232, 230, 222, 0.10);
   --border-warm-md:     rgba(232, 230, 222, 0.20);
@@ -207,7 +211,7 @@ h4, h5      { letter-spacing: -0.01em; }
 .beguru-docs.prose pre {
   background-color: #2a2620;   /* warm dark editor — light mode */
   border: 1px solid rgba(232, 230, 222, 0.14);
-  border-left: 3px solid rgba(245, 78, 0, 0.5); /* orange accent stripe */
+  border-left: 3px solid rgba(201, 168, 76, 0.55); /* gold accent stripe */
   color: #e8e6de;
   font-family: var(--font-mono), ui-monospace, monospace;
   border-radius: 0.5rem;
@@ -215,7 +219,7 @@ h4, h5      { letter-spacing: -0.01em; }
 .dark .beguru-docs.prose pre {
   background-color: #302b22;   /* elevated warm surface — lighter than #1a1814 page */
   border-color: rgba(232, 230, 222, 0.10);
-  border-left-color: rgba(245, 78, 0, 0.45);
+  border-left-color: rgba(212, 175, 55, 0.50);
 }
 /* Text inside <pre> — pinned light color in both modes */
 .beguru-docs.prose pre code {
@@ -415,9 +419,9 @@ h4, h5      { letter-spacing: -0.01em; }
   }
 }
 
-/* ── Focus ring — Cursor orange ─────────────────────────────────────────────── */
+/* ── Focus ring — gold (matches brand-from), high-contrast orange fallback ───── */
 :focus-visible {
-  outline: 2px solid #f54e00;
+  outline: 2px solid var(--brand-from, #C9A84C);
   outline-offset: 2px;
   border-radius: 4px;
 }
