@@ -14,12 +14,9 @@
   --foreground: #26251e;
   --foreground-secondary: rgba(38, 37, 30, 0.55);
 
-  /* Brand — Hybrid palette
-     --brand-from / --brand-to  = champagne gold / amber gold (matches constellation logo)
-     --cta-action               = signal orange — ONLY for primary action buttons         */
-  --brand-from:  #C9A84C;   /* champagne gold — logo node color, UI accent */
-  --brand-to:    #D4AF37;   /* amber gold — logo hub color, secondary accent */
-  --cta-action:  #f54e00;   /* Cursor orange — reserved for primary CTA button only */
+  /* Brand — full bronze-gold palette (matches constellation logo, slightly more "đồng") */
+  --brand-from:  #C28530;   /* warm bronze-gold — primary accent (UI + CTA) */
+  --brand-to:    #D4A040;   /* amber-gold — secondary accent */
 
   /* sugar-high syntax highlighting — warm Cursor palette
      Keywords=orange, Strings=sage, Comments=muted, Classes=lavender,
@@ -72,9 +69,8 @@
   --foreground: #e8e6de;
   --foreground-secondary: rgba(232, 230, 222, 0.55);
 
-  --brand-from:  #D4AF37;   /* amber gold — brighter on dark bg */
-  --brand-to:    #C9A84C;   /* champagne gold */
-  --cta-action:  #f76a2a;   /* slightly lighter orange for dark bg readability */
+  --brand-from:  #D4A040;   /* amber bronze-gold — brighter on dark bg */
+  --brand-to:    #C28530;   /* warm bronze — secondary */
 
   --border-warm:        rgba(232, 230, 222, 0.10);
   --border-warm-md:     rgba(232, 230, 222, 0.20);
@@ -380,8 +376,30 @@ h4, h5      { letter-spacing: -0.01em; }
   color: var(--foreground);
   transition: color 150ms;
 }
+.post-item:hover .post-title-link,
 .post-title-link:hover {
   color: var(--brand-from);
+}
+
+/* Blog post row — date column */
+.post-date-col {
+  color: var(--foreground-secondary);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  padding-top: 0.15rem; /* optical alignment with title */
+}
+
+/* Blog post row — animated arrow indicator */
+.post-arrow {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.post-item:hover .post-arrow {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* ── Homepage entrance animations ───────────────────────────────────────────── */
