@@ -4,6 +4,7 @@ import "./globals.css";
 import { SiteNav } from "@/components/SiteNav";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { TopProgressBar } from "@/components/TopProgressBar";
 
 const exo2 = Exo_2({
   variable: "--font-exo",
@@ -60,6 +61,7 @@ export default function RootLayout({
         className={`${exo2.variable} ${lora.variable} ${robotoMono.variable} min-h-screen font-sans antialiased`}
       >
         <ThemeProvider>
+          <TopProgressBar />
           <SiteNav />
           <main>{children}</main>
           <ScrollToTop />
