@@ -6,6 +6,23 @@ import Link from "next/link";
 const LANG_KEY = "about-lang";
 type Lang = "vi" | "en";
 
+/* ── Per-role tech stacks ─────────────────────────────────────────────────── */
+
+const TECH = {
+  dataScientist: {
+    key: ["Python", "LightGBM", "XGBoost", "BigQuery"],
+    all: ["Python", "LightGBM", "XGBoost", "scikit-learn", "BigQuery", "Airflow", "dbt", "GCP"],
+  },
+  dataAIEngineer: {
+    key: ["Python", "LangChain", "Vertex AI", "Airflow", "Feast"],
+    all: ["Python", "LangChain", "Gemini / OpenAI", "Airflow", "dbt", "BigQuery", "Doris", "Kafka", "Feast", "GCP", "Vertex AI", "Looker Studio"],
+  },
+  hahalolo: {
+    key: ["Python", "PyTorch", "PhoBERT"],
+    all: ["Python", "PyTorch", "TensorFlow", "PhoBERT", "MongoDB", "Airflow", "Kafka", "Jenkins"],
+  },
+};
+
 /* ── Shared data (language-agnostic) ──────────────────────────────────────── */
 
 const SKILL_GROUPS_VI = [
@@ -157,6 +174,18 @@ function StatsStrip({ vi }: { vi: boolean }) {
   );
 }
 
+function TechChips({ chips, keyChips }: { chips: string[]; keyChips: string[] }) {
+  return (
+    <div className="cv-tech-strip">
+      {chips.map((chip) => (
+        <span key={chip} className={`cv-tech-chip${keyChips.includes(chip) ? " key" : ""}`}>
+          {chip}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function SkillsSection({ vi }: { vi: boolean }) {
   const groups = vi ? SKILL_GROUPS_VI : SKILL_GROUPS_EN;
   return (
@@ -263,87 +292,89 @@ function ContentVi() {
         <p className="about-section-title">Kinh nghiệm</p>
 
         {/* Cake */}
-        <div className="mb-6">
-          <p className="text-sm font-bold mb-3" style={{ color: "var(--foreground)" }}>
-            Cake by VPBank — Digital Bank
-          </p>
+        <div className="mb-5">
+          <div className="cv-company">
+            <span className="cv-company-name">Cake by VPBank — Digital Bank</span>
+            <span className="cv-company-line" />
+          </div>
           <div className="cv-timeline">
 
-            {/* Data Scientist */}
+            {/* Data Scientist — current */}
             <div className="cv-role">
-              <span className="cv-dot current" style={{ left: "-1.25rem" }} />
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
-                <span className="text-sm font-semibold" style={{ color: "var(--brand-from)" }}>
-                  Data Scientist
-                </span>
-                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
-                  T12/2025 — nay
-                </span>
+              <span className="cv-dot current" />
+              <div className="cv-role-card current">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2.5">
+                  <span className="text-sm font-semibold" style={{ color: "var(--brand-from)" }}>
+                    Data Scientist
+                  </span>
+                  <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                    T12/2025 — nay
+                  </span>
+                </div>
+                <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                  <li className="leading-relaxed">
+                    Xây dựng <strong>CakeAutoML</strong> — tự động hoá toàn bộ pipeline credit scoring:{" "}
+                    <span style={{ color: "var(--foreground-secondary)" }}>
+                      Label Preparation → Data Preparation → Feature Selection → Training → Validator
+                    </span>{" "}— đưa thời gian training end-to-end xuống <strong>dưới 60 phút</strong>.
+                  </li>
+                  <li className="leading-relaxed">
+                    Đóng góp vào <strong>ML workflow</strong>: orchestration DAG, chuẩn hoá quy trình
+                    training và deployment cho nhóm Data Science.
+                  </li>
+                  <li className="leading-relaxed">
+                    Nghiên cứu &amp; triển khai <strong>Alternative Credit Scoring</strong> từ tín hiệu{" "}
+                    <em>transaction behaviour</em> + <em>app usage</em> — phục vụ chấm điểm tín dụng
+                    cho sản phẩm <strong>Embedded Finance</strong>.
+                  </li>
+                </ul>
+                <TechChips chips={TECH.dataScientist.all} keyChips={TECH.dataScientist.key} />
               </div>
-              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
-                <li className="leading-relaxed">
-                  Xây dựng <strong>CakeAutoML</strong> — tự động hoá toàn bộ pipeline credit scoring:{" "}
-                  <span style={{ color: "var(--foreground-secondary)" }}>
-                    Label Preparation → Data Preparation → Feature Selection → Training → Validator
-                  </span>{" "}— đưa thời gian training end-to-end xuống{" "}
-                  <strong>dưới 60 phút</strong>.
-                </li>
-                <li className="leading-relaxed">
-                  Đóng góp vào <strong>ML workflow</strong>: orchestration DAG, chuẩn hoá quy trình training
-                  và deployment cho nhóm Data Science.
-                </li>
-                <li className="leading-relaxed">
-                  Nghiên cứu &amp; triển khai <strong>Alternative Credit Scoring</strong> từ tín hiệu{" "}
-                  <em>transaction behaviour</em> + <em>app usage</em> — phục vụ chấm điểm tín dụng cho
-                  sản phẩm <strong>Embedded Finance</strong>.
-                </li>
-              </ul>
             </div>
 
             {/* Data AI Engineer */}
             <div className="cv-role">
-              <span className="cv-dot" style={{ left: "-1.25rem" }} />
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
-                <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                  Data AI Engineer
-                </span>
-                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
-                  T7/2023 — T11/2025
-                </span>
+              <span className="cv-dot" />
+              <div className="cv-role-card">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-1.5">
+                  <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Data AI Engineer
+                  </span>
+                  <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                    T7/2023 — T11/2025
+                  </span>
+                </div>
+                <p className="text-xs mb-2.5 italic" style={{ color: "var(--foreground-secondary)" }}>
+                  PIC cho phần lớn các sản phẩm AI — điều phối trực tiếp với PM, Backend Engineers,
+                  CS &amp; Ops teams từ discovery đến production.
+                </p>
+                <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                  <li className="leading-relaxed">
+                    Dẫn triển khai end-to-end <strong>hệ chat agent</strong> kiến trúc{" "}
+                    <strong>multi-agent</strong> (supervisor) với <strong>hybrid RAG</strong>, function
+                    calling và GenAI — automate <strong>70–80% lượt chat</strong> với{" "}
+                    <strong>90% chính xác</strong> (validated trên manual-labelled CS sample).
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>CMS</strong>: tự động phân loại case &amp; triage email — workflow từ nhận
+                    request → phân loại → assign downstream; giảm <strong>~70% thao tác thủ công</strong>.
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>Data Modeling</strong>: BigQuery &amp; Doris (Conversation Insight, Callbot,
+                    Feature Store); BI qua Looker Studio &amp; Superset.
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>Data Pipeline</strong> batch &amp; streaming: Airflow, dbt (SQL/Python), Kafka.
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>ML Platform</strong>: FeatureStore (Feast), MLOps, scoring production (NTB/ETB).
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>Auto EDA</strong> agent (MCP/DataHub style).
+                  </li>
+                </ul>
+                <TechChips chips={TECH.dataAIEngineer.all} keyChips={TECH.dataAIEngineer.key} />
               </div>
-              <p className="text-xs mb-2 italic" style={{ color: "var(--foreground-secondary)" }}>
-                PIC cho phần lớn các sản phẩm AI trong giai đoạn này — điều phối trực tiếp với
-                PM, Backend Engineers, CS &amp; Ops teams từ discovery đến production.
-              </p>
-              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
-                <li className="leading-relaxed">
-                  Dẫn triển khai end-to-end <strong>hệ chat agent</strong> kiến trúc{" "}
-                  <strong>multi-agent</strong> (supervisor) với <strong>hybrid RAG</strong>, function
-                  calling và GenAI — automate <strong>70–80% lượt chat</strong> đến với{" "}
-                  <strong>90% chính xác</strong> (validated trên manual-labelled CS sample);
-                  kèm eval, tracing, logging và action orchestration.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>CMS (Case Management System)</strong>: tự động phân loại case và triage
-                  email hỗ trợ — toàn bộ workflow từ nhận request → phân loại → assign cho
-                  downstream teams; giảm <strong>~70% thao tác thủ công</strong> cho CS &amp; Ops teams.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>Data Modeling</strong>: BigQuery &amp; Doris (Conversation Insight, Callbot,
-                  Feature Store); BI qua Looker Studio &amp; Superset.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>Data Pipeline</strong> batch &amp; streaming: Airflow, dbt (SQL/Python), Kafka;
-                  dashboard giám sát vận hành &amp; chi phí.
-                </li>
-                <li className="leading-relaxed">
-                  Build nền tảng <strong>ML Platform</strong>: FeatureStore (Feast), MLOps, feature
-                  engineering, scoring production (NTB/ETB).
-                </li>
-                <li className="leading-relaxed">
-                  <strong>Auto EDA</strong> agent (MCP/DataHub style) — rút ngắn vòng lặp khám phá dữ liệu.
-                </li>
-              </ul>
             </div>
 
           </div>
@@ -351,43 +382,42 @@ function ContentVi() {
 
         {/* Hahalolo */}
         <div>
-          <p className="text-sm font-bold mb-3" style={{ color: "var(--foreground)" }}>
-            Hahalolo Travel Social Network
-          </p>
+          <div className="cv-company">
+            <span className="cv-company-name">Hahalolo Travel Social Network</span>
+            <span className="cv-company-line" />
+          </div>
           <div className="cv-timeline">
             <div className="cv-role">
-              <span className="cv-dot" style={{ left: "-1.25rem" }} />
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
-                <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                  AI Engineer
-                </span>
-                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
-                  T3/2022 — T7/2023
-                </span>
+              <span className="cv-dot" />
+              <div className="cv-role-card">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-1.5">
+                  <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    AI Engineer
+                  </span>
+                  <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                    T3/2022 — T7/2023
+                  </span>
+                </div>
+                <p className="text-xs mb-2.5 italic" style={{ color: "var(--foreground-secondary)" }}>
+                  Làm việc trực tiếp với CTO — xây dựng toàn bộ hệ thống Data &amp; AI từ raw log
+                  đến các sản phẩm AI production.
+                </p>
+                <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                  <li className="leading-relaxed">
+                    Xây dựng <strong>data warehouse từ raw log</strong>: thiết kế mô hình dữ liệu
+                    (user, post, hashtag, tương tác, quan hệ), pipeline batch, real-time &amp; lambda.
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>Hệ thống kiểm duyệt nội dung</strong>: fine-tune PhoBERT, bán tự động
+                    phát hiện vi phạm &amp; xếp hạng mức độ cho reviewer.
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>Hệ thống gợi ý &amp; ranking</strong>: gợi ý kết bạn, ranking user &amp;
+                    hashtag dùng graph embedding; tích hợp API với backend &amp; QC.
+                  </li>
+                </ul>
+                <TechChips chips={TECH.hahalolo.all} keyChips={TECH.hahalolo.key} />
               </div>
-              <p className="text-xs mb-2 italic" style={{ color: "var(--foreground-secondary)" }}>
-                Làm việc trực tiếp với CTO để xây dựng toàn bộ hệ thống Data &amp; AI từ raw log —
-                từ thu thập, transform, đến triển khai các sản phẩm AI production.
-              </p>
-              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
-                <li className="leading-relaxed">
-                  Xây dựng <strong>data warehouse</strong> từ raw log: thiết kế mô hình dữ liệu
-                  (user, post, hashtag, tương tác, quan hệ), pipeline batch, real-time &amp; lambda
-                  trên MongoDB.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>Hệ thống kiểm duyệt nội dung</strong>: fine-tune PhoBERT, bán tự động
-                  phát hiện vi phạm &amp; xếp hạng mức độ nghiêm trọng cho reviewer.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>Hệ thống gợi ý &amp; ranking</strong>: gợi ý kết bạn, ranking user &amp;
-                  hashtag dùng graph embedding — phối hợp trực tiếp với backend &amp; QC để tích
-                  hợp API và release.
-                </li>
-                <li className="leading-relaxed text-xs" style={{ color: "var(--foreground-secondary)" }}>
-                  Stack: Python · Airflow · Kafka · MongoDB · PyTorch · TensorFlow · Jenkins
-                </li>
-              </ul>
             </div>
           </div>
         </div>
@@ -477,88 +507,90 @@ function ContentEn() {
         <p className="about-section-title">Experience</p>
 
         {/* Cake */}
-        <div className="mb-6">
-          <p className="text-sm font-bold mb-3" style={{ color: "var(--foreground)" }}>
-            Cake by VPBank — Digital Bank
-          </p>
+        <div className="mb-5">
+          <div className="cv-company">
+            <span className="cv-company-name">Cake by VPBank — Digital Bank</span>
+            <span className="cv-company-line" />
+          </div>
           <div className="cv-timeline">
 
-            {/* Data Scientist */}
+            {/* Data Scientist — current */}
             <div className="cv-role">
-              <span className="cv-dot current" style={{ left: "-1.25rem" }} />
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
-                <span className="text-sm font-semibold" style={{ color: "var(--brand-from)" }}>
-                  Data Scientist
-                </span>
-                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
-                  Dec 2025 — present
-                </span>
+              <span className="cv-dot current" />
+              <div className="cv-role-card current">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2.5">
+                  <span className="text-sm font-semibold" style={{ color: "var(--brand-from)" }}>
+                    Data Scientist
+                  </span>
+                  <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                    Dec 2025 — present
+                  </span>
+                </div>
+                <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                  <li className="leading-relaxed">
+                    Building <strong>CakeAutoML</strong> — end-to-end automated credit scoring pipeline:{" "}
+                    <span style={{ color: "var(--foreground-secondary)" }}>
+                      Label Preparation → Data Preparation → Feature Selection → Training → Validator
+                    </span>{" "}— bringing training time down to <strong>under 60 minutes</strong>.
+                  </li>
+                  <li className="leading-relaxed">
+                    Contributing to the <strong>ML workflow</strong>: DAG orchestration, standardising
+                    training and deployment processes for the Data Science team.
+                  </li>
+                  <li className="leading-relaxed">
+                    Researching <strong>Alternative Credit Scoring</strong> using{" "}
+                    <em>transaction behaviour</em> + <em>app-usage</em> signals for{" "}
+                    <strong>Embedded Finance</strong> products.
+                  </li>
+                </ul>
+                <TechChips chips={TECH.dataScientist.all} keyChips={TECH.dataScientist.key} />
               </div>
-              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
-                <li className="leading-relaxed">
-                  Building <strong>CakeAutoML</strong> — end-to-end automated credit scoring pipeline:{" "}
-                  <span style={{ color: "var(--foreground-secondary)" }}>
-                    Label Preparation → Data Preparation → Feature Selection → Training → Validator
-                  </span>{" "}— bringing training time down to{" "}
-                  <strong>under 60 minutes</strong> end-to-end.
-                </li>
-                <li className="leading-relaxed">
-                  Contributing to the <strong>ML workflow</strong>: DAG orchestration, standardising
-                  training and deployment processes for the Data Science team.
-                </li>
-                <li className="leading-relaxed">
-                  Researching &amp; implementing <strong>Alternative Credit Scoring</strong> using{" "}
-                  <em>transaction behaviour</em> + <em>app-usage</em> signals — enabling credit
-                  assessment for <strong>Embedded Finance</strong> products.
-                </li>
-              </ul>
             </div>
 
             {/* Data AI Engineer */}
             <div className="cv-role">
-              <span className="cv-dot" style={{ left: "-1.25rem" }} />
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
-                <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                  Data AI Engineer
-                </span>
-                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
-                  Jul 2023 — Nov 2025
-                </span>
+              <span className="cv-dot" />
+              <div className="cv-role-card">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-1.5">
+                  <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    Data AI Engineer
+                  </span>
+                  <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                    Jul 2023 — Nov 2025
+                  </span>
+                </div>
+                <p className="text-xs mb-2.5 italic" style={{ color: "var(--foreground-secondary)" }}>
+                  PIC for most AI products — coordinating directly with PMs, Backend Engineers,
+                  CS &amp; Ops teams from discovery through production.
+                </p>
+                <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                  <li className="leading-relaxed">
+                    Led end-to-end <strong>multi-agent chat system</strong> (supervisor architecture)
+                    with <strong>hybrid RAG</strong>, function calling, and GenAI — automating{" "}
+                    <strong>70–80% of incoming chats</strong> at{" "}
+                    <strong>90% accuracy</strong> (validated on manually-labelled CS samples).
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>CMS</strong>: automated case classification &amp; email triage — full
+                    workflow request → classify → assign to downstream teams; reduced{" "}
+                    <strong>~70% manual effort</strong> for CS &amp; Ops.
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>Data Modeling</strong>: BigQuery &amp; Doris (Conversation Insight,
+                    Callbot, Feature Store); BI via Looker Studio &amp; Superset.
+                  </li>
+                  <li className="leading-relaxed">
+                    Batch &amp; streaming <strong>Data Pipelines</strong>: Airflow, dbt, Kafka.
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>ML Platform</strong>: FeatureStore (Feast), MLOps, production scoring (NTB/ETB).
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>Auto EDA</strong> agent (MCP/DataHub-style).
+                  </li>
+                </ul>
+                <TechChips chips={TECH.dataAIEngineer.all} keyChips={TECH.dataAIEngineer.key} />
               </div>
-              <p className="text-xs mb-2 italic" style={{ color: "var(--foreground-secondary)" }}>
-                PIC for most AI products in this period — coordinating directly with PMs,
-                Backend Engineers, CS &amp; Ops teams from discovery through production.
-              </p>
-              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
-                <li className="leading-relaxed">
-                  Led end-to-end <strong>multi-agent chat system</strong> (supervisor architecture)
-                  with <strong>hybrid RAG</strong>, function calling, and GenAI — automating{" "}
-                  <strong>70–80% of incoming customer chats</strong> at{" "}
-                  <strong>90% accuracy</strong> (validated on manually-labelled CS samples);
-                  with eval, tracing, logging, and action orchestration.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>CMS (Case Management System)</strong>: automated case classification
-                  and email support triage — full workflow from incoming request → classification
-                  → assignment to downstream teams; reduced <strong>~70% of manual effort</strong>{" "}
-                  for CS &amp; Ops teams.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>Data Modeling</strong>: BigQuery &amp; Doris (Conversation Insight, Callbot,
-                  Feature Store); BI via Looker Studio &amp; Superset.
-                </li>
-                <li className="leading-relaxed">
-                  Batch &amp; streaming <strong>Data Pipelines</strong>: Airflow, dbt (SQL/Python),
-                  Kafka; operational and cost monitoring dashboards.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>ML Platform</strong> foundations: FeatureStore (Feast), MLOps, feature
-                  engineering, production scoring (NTB/ETB).
-                </li>
-                <li className="leading-relaxed">
-                  <strong>Auto EDA</strong> agent (MCP/DataHub-style) for faster exploratory analytics.
-                </li>
-              </ul>
             </div>
 
           </div>
@@ -566,43 +598,42 @@ function ContentEn() {
 
         {/* Hahalolo */}
         <div>
-          <p className="text-sm font-bold mb-3" style={{ color: "var(--foreground)" }}>
-            Hahalolo Travel Social Network
-          </p>
+          <div className="cv-company">
+            <span className="cv-company-name">Hahalolo Travel Social Network</span>
+            <span className="cv-company-line" />
+          </div>
           <div className="cv-timeline">
             <div className="cv-role">
-              <span className="cv-dot" style={{ left: "-1.25rem" }} />
-              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-2">
-                <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-                  AI Engineer
-                </span>
-                <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
-                  Mar 2022 — Jul 2023
-                </span>
+              <span className="cv-dot" />
+              <div className="cv-role-card">
+                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 mb-1.5">
+                  <span className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+                    AI Engineer
+                  </span>
+                  <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>
+                    Mar 2022 — Jul 2023
+                  </span>
+                </div>
+                <p className="text-xs mb-2.5 italic" style={{ color: "var(--foreground-secondary)" }}>
+                  Worked directly with the CTO — built the entire Data &amp; AI stack from raw
+                  logs through to production AI products.
+                </p>
+                <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
+                  <li className="leading-relaxed">
+                    Built the <strong>data warehouse from raw logs</strong>: dimensional modelling
+                    (users, posts, hashtags, activity, relationships), batch, real-time &amp; lambda pipelines.
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>Content moderation system</strong>: PhoBERT fine-tuning for semi-automated
+                    violation detection and severity ranking.
+                  </li>
+                  <li className="leading-relaxed">
+                    <strong>Recommendation &amp; ranking systems</strong>: friend suggestions, user &amp;
+                    hashtag ranking via graph embedding; API integration with backend &amp; QC.
+                  </li>
+                </ul>
+                <TechChips chips={TECH.hahalolo.all} keyChips={TECH.hahalolo.key} />
               </div>
-              <p className="text-xs mb-2 italic" style={{ color: "var(--foreground-secondary)" }}>
-                Worked directly with the CTO to build the entire Data &amp; AI stack from raw
-                logs — from ingestion and transformation through to production AI products.
-              </p>
-              <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
-                <li className="leading-relaxed">
-                  Built the <strong>data warehouse from raw logs</strong>: dimensional modelling
-                  (users, posts, hashtags, activity, relationships), batch, real-time &amp; lambda
-                  pipelines on MongoDB.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>Content moderation system</strong>: PhoBERT fine-tuning for semi-automated
-                  violation detection and severity ranking for human reviewers.
-                </li>
-                <li className="leading-relaxed">
-                  <strong>Recommendation &amp; ranking systems</strong>: friend suggestions, user &amp;
-                  hashtag ranking via graph embedding — collaborated directly with backend &amp; QC
-                  on API integration and releases.
-                </li>
-                <li className="leading-relaxed text-xs" style={{ color: "var(--foreground-secondary)" }}>
-                  Stack: Python · Airflow · Kafka · MongoDB · PyTorch · TensorFlow · Jenkins
-                </li>
-              </ul>
             </div>
           </div>
         </div>

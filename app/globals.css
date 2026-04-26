@@ -425,17 +425,35 @@ h4, h5      { letter-spacing: -0.01em; }
   border-bottom: 1px solid var(--border-warm);
 }
 
+/* Company label above timeline */
+.cv-company {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.cv-company-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+.cv-company-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-warm);
+}
+
 /* Timeline container */
 .cv-timeline {
   position: relative;
-  padding-left: 1.5rem;
+  padding-left: 1.25rem;
 }
 .cv-timeline::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0.35rem;
-  bottom: 0.5rem;
+  top: 0.65rem;
+  bottom: 1rem;
   width: 1.5px;
   background: var(--border-warm-md);
 }
@@ -443,30 +461,78 @@ h4, h5      { letter-spacing: -0.01em; }
 /* Timeline dot */
 .cv-dot {
   position: absolute;
-  left: -1.5rem;
-  top: 0.3rem;
-  width: 0.625rem;
-  height: 0.625rem;
+  left: -1.25rem;
+  top: 0.65rem;
+  width: 0.55rem;
+  height: 0.55rem;
   border-radius: 50%;
   border: 2px solid var(--border-warm-md);
   background: var(--surface-300);
+  transform: translateX(-50%);
+}
+
+/* Pulsing glow for current role dot */
+@keyframes cv-dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 0   color-mix(in srgb, var(--brand-from) 40%, transparent); }
+  50%       { box-shadow: 0 0 0 5px color-mix(in srgb, var(--brand-from) 0%,  transparent); }
 }
 .cv-dot.current {
   background: var(--brand-from);
   border-color: var(--brand-from);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-from) 20%, transparent);
+  animation: cv-dot-pulse 2s ease-in-out infinite;
 }
 
 /* Timeline role entry */
 .cv-role {
   position: relative;
-  padding-bottom: 1.75rem;
+  padding-bottom: 0.75rem;
 }
-.cv-role:last-child {
-  padding-bottom: 0;
+.cv-role:last-child { padding-bottom: 0; }
+
+/* Role card — bordered, tinted for current */
+.cv-role-card {
+  border: 1px solid var(--border-warm);
+  border-radius: 0.75rem;
+  padding: 1rem 1.125rem;
+  background: var(--surface-100);
+  margin-bottom: 0.75rem;
+  transition: border-color 150ms;
+}
+.cv-role-card.current {
+  border-color: color-mix(in srgb, var(--brand-from) 28%, transparent);
+  background: color-mix(in srgb, var(--brand-from) 4%, var(--surface-100));
 }
 
-/* Skill badges */
+/* Tech chip strip inside each role card */
+.cv-tech-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border-warm);
+}
+.cv-tech-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  border: 1px solid var(--border-warm);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  color: var(--foreground-secondary);
+  white-space: nowrap;
+}
+.cv-tech-chip.key {
+  border-color: color-mix(in srgb, var(--brand-from) 30%, transparent);
+  background: color-mix(in srgb, var(--brand-from) 8%, transparent);
+  color: var(--brand-from);
+  font-weight: 600;
+}
+
+/* Overall skills grid */
 .cv-skill-row {
   display: grid;
   grid-template-columns: 9rem 1fr;
