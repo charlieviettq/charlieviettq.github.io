@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteNav } from "@/components/SiteNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { TopProgressBar } from "@/components/TopProgressBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen font-sans text-zinc-900 antialiased dark:text-zinc-100`}
       >
         <ThemeProvider>
+          <TopProgressBar />
           <SiteNav />
           <main className="mx-auto max-w-6xl px-4 py-10">{children}</main>
           <footer className="mx-auto max-w-6xl border-t border-sky-200/60 px-4 py-8 text-center text-sm text-zinc-600 dark:border-sky-500/20 dark:text-zinc-400">
