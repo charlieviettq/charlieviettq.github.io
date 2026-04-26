@@ -6,6 +6,74 @@ const LANG_KEY = "about-lang";
 
 type Lang = "vi" | "en";
 
+/* ── Tech icon map — cdn.simpleicons.org slugs ───────────────────────────── */
+
+const ICON_MAP: Record<string, string> = {
+  "Python":          "python",
+  "PyTorch":         "pytorch",
+  "TensorFlow":      "tensorflow",
+  "PhoBERT":         "pytorch",        // no dedicated icon, use PyTorch
+  "MongoDB":         "mongodb",
+  "Airflow":         "apacheairflow",
+  "Kafka":           "apachekafka",
+  "dbt":             "dbt",
+  "GCP":             "googlecloud",
+  "BigQuery":        "googlebigquery",
+  "Vertex AI":       "googlecloud",
+  "Looker Studio":   "looker",
+  "LangChain":       "langchain",
+  "Feast":           "python",         // no dedicated icon
+  "Doris":           "apachedoris",
+  "Superset":        "apachesuperset",
+  "Kafka / Stream":  "apachekafka",
+  "Jenkins":         "jenkins",
+  "Gemini / OpenAI": "openai",
+};
+
+/* ── Per-role tech stacks ─────────────────────────────────────────────────── */
+
+const TECH = {
+  cake: ["Python", "LangChain", "Gemini / OpenAI", "Airflow", "dbt", "BigQuery", "Doris", "Kafka", "Feast", "GCP", "Vertex AI", "Looker Studio", "Superset"],
+  hahalolo: ["Python", "PyTorch", "TensorFlow", "PhoBERT", "MongoDB", "Airflow", "Kafka", "Jenkins"],
+};
+
+/* ── TechChips ───────────────────────────────────────────────────────────── */
+
+function TechChips({ chips }: { chips: string[] }) {
+  return (
+    <div className="mt-3 flex flex-wrap gap-1.5 not-prose">
+      {chips.map((chip) => {
+        const slug = ICON_MAP[chip];
+        return (
+          <span
+            key={chip}
+            className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 font-mono text-[11px] text-zinc-600 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-400"
+          >
+            {slug && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`https://cdn.simpleicons.org/${slug}`}
+                alt=""
+                aria-hidden="true"
+                width={11}
+                height={11}
+                style={{
+                  display: "inline-block",
+                  verticalAlign: "middle",
+                  filter: "grayscale(0.3) opacity(0.7)",
+                }}
+              />
+            )}
+            {chip}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ── Main toggle ─────────────────────────────────────────────────────────── */
+
 export function AboutBody() {
   const [lang, setLang] = useState<Lang>("vi");
 
@@ -120,6 +188,7 @@ function AboutVi() {
           ngắn vòng lặp khám phá dữ liệu.
         </li>
       </ul>
+      <TechChips chips={TECH.cake} />
 
       <h3 className="!mt-6 !mb-2 text-base font-semibold">
         Hahalolo Travel Social Network · <span className="font-normal">AI Engineer</span>
@@ -141,10 +210,8 @@ function AboutVi() {
           <strong>Gợi ý tour</strong> và <strong>gợi ý bạn bè</strong> dùng graph embedding; phối hợp
           backend/QC, API và triển khai.
         </li>
-        <li>
-          Stack tiêu biểu: Python, Airflow, Kafka, MongoDB, PyTorch, TensorFlow, Jenkins, …
-        </li>
       </ul>
+      <TechChips chips={TECH.hahalolo} />
 
       <h2>Trọng tâm kỹ thuật</h2>
       <ul>
@@ -157,7 +224,7 @@ function AboutVi() {
           scoring production, AutoML trong bối cảnh rủi ro tín dụng (theo dự án Cake).
         </li>
         <li>
-          <strong>GenAI &amp; agent</strong> — RAG hybrid, multi-agent, function calling, đánh giá &
+          <strong>GenAI &amp; agent</strong> — RAG hybrid, multi-agent, function calling, đánh giá &amp;
           tracing; Vertex AI / GCP.
         </li>
         <li>
@@ -255,6 +322,7 @@ function AboutEn() {
           techniques for faster exploratory analytics.
         </li>
       </ul>
+      <TechChips chips={TECH.cake} />
 
       <h3 className="!mt-6 !mb-2 text-base font-semibold">
         Hahalolo Travel Social Network · <span className="font-normal">AI Engineer</span>
@@ -277,10 +345,8 @@ function AboutEn() {
           <strong>Recommendation</strong> for tours and friend suggestions using graph embedding;
           collaboration with backend/QC on APIs and releases.
         </li>
-        <li>
-          Stack highlights: Python, Airflow, Kafka, MongoDB, PyTorch, TensorFlow, Jenkins, …
-        </li>
       </ul>
+      <TechChips chips={TECH.hahalolo} />
 
       <h2>Technical focus</h2>
       <ul>
