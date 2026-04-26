@@ -6,6 +6,32 @@ import Link from "next/link";
 const LANG_KEY = "about-lang";
 type Lang = "vi" | "en";
 
+/* ── Tech icon map — cdn.simpleicons.org slugs ───────────────────────────── */
+
+const ICON_MAP: Record<string, string> = {
+  "Python":          "python",
+  "PyTorch":         "pytorch",
+  "TensorFlow":      "tensorflow",
+  "PhoBERT":         "pytorch",
+  "MongoDB":         "mongodb",
+  "Airflow":         "apacheairflow",
+  "Kafka":           "apachekafka",
+  "dbt":             "dbt",
+  "GCP":             "googlecloud",
+  "BigQuery":        "googlebigquery",
+  "Vertex AI":       "googlecloud",
+  "Looker Studio":   "looker",
+  "LangChain":       "langchain",
+  "scikit-learn":    "scikitlearn",
+  "Jenkins":         "jenkins",
+  "Gemini / OpenAI": "openai",
+  "Superset":        "apachesuperset",
+  "Doris":           "apachedoris",
+  "LightGBM":        "python",
+  "XGBoost":         "python",
+  "Feast":           "python",
+};
+
 /* ── Per-role tech stacks ─────────────────────────────────────────────────── */
 
 const TECH = {
@@ -177,11 +203,31 @@ function StatsStrip({ vi }: { vi: boolean }) {
 function TechChips({ chips, keyChips }: { chips: string[]; keyChips: string[] }) {
   return (
     <div className="cv-tech-strip">
-      {chips.map((chip) => (
-        <span key={chip} className={`cv-tech-chip${keyChips.includes(chip) ? " key" : ""}`}>
-          {chip}
-        </span>
-      ))}
+      {chips.map((chip) => {
+        const isKey = keyChips.includes(chip);
+        const slug = ICON_MAP[chip];
+        return (
+          <span key={chip} className={`cv-tech-chip${isKey ? " key" : ""}`}>
+            {slug && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`https://cdn.simpleicons.org/${slug}`}
+                alt=""
+                aria-hidden="true"
+                width={11}
+                height={11}
+                style={{
+                  display: "inline-block",
+                  verticalAlign: "middle",
+                  marginRight: "0.3rem",
+                  filter: isKey ? "none" : "grayscale(0.6) opacity(0.55)",
+                }}
+              />
+            )}
+            {chip}
+          </span>
+        );
+      })}
     </div>
   );
 }
