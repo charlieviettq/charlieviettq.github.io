@@ -7,8 +7,8 @@ function SunIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      width="18"
-      height="18"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -27,8 +27,8 @@ function MoonIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
-      width="18"
-      height="18"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -56,7 +56,20 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-sky-200/80 bg-white/90 text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:bg-white hover:text-zinc-900 dark:border-sky-500/30 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:border-indigo-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-100"
+      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-150"
+      style={{
+        backgroundColor: "var(--surface-300)",
+        border: "1px solid var(--border-warm)",
+        color: "var(--foreground-secondary)",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.color = "var(--brand-from)";
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--border-warm-md)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.color = "var(--foreground-secondary)";
+        (e.currentTarget as HTMLElement).style.borderColor = "var(--border-warm)";
+      }}
       aria-label={
         isDark
           ? "Chuyển giao diện sáng / Switch to light mode"
@@ -64,11 +77,11 @@ export function ThemeToggle() {
       }
     >
       {!mounted ? (
-        <span className="h-[18px] w-[18px]" aria-hidden />
+        <span className="h-4 w-4" aria-hidden />
       ) : isDark ? (
-        <SunIcon className="text-amber-500" />
+        <SunIcon />
       ) : (
-        <MoonIcon className="text-sky-600 dark:text-sky-400" />
+        <MoonIcon />
       )}
     </button>
   );

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import {
   Children,
   isValidElement,
@@ -22,7 +21,7 @@ import {
   parseBeguruFlowSpec,
 } from "@/components/blog/BeguruFlowDiagram";
 import { MermaidBlock } from "@/components/MermaidBlock";
-import { extractToc, type TocItem } from "@/lib/bilingual-post";
+import { CodeBlock } from "@/components/blog/CodeBlock";
 import remarkDocDirectives from "@/lib/remark-doc-directives";
 import { blogSanitizeSchema } from "@/lib/rehype-blog-sanitize";
 import type { PostKpi, PostLayout } from "@/lib/posts";
@@ -44,32 +43,7 @@ type Props = {
   kpis: PostKpi[];
 };
 
-function TocNav({ items }: { items: TocItem[] }) {
-  if (items.length === 0) return null;
-  return (
-    <nav aria-label="Mục lục / Table of contents">
-      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-        On this page
-      </p>
-      <ul className="space-y-2 text-sm">
-        {items.map((item, index) => (
-          <li
-            key={`${item.id}-${index}`}
-            className={item.depth === 3 ? "pl-3" : undefined}
-          >
-            <a
-              href={`#${item.id}`}
-              className="text-zinc-600 underline-offset-2 hover:text-sky-600 hover:underline dark:text-zinc-400 dark:hover:text-sky-400"
-            >
-              {item.text}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}
-
+// ─── CaseStudyKpiGrid ─────────────────────────────────────────────────────────
 function CaseStudyKpiGrid({
   kpis,
   lang,
@@ -83,12 +57,12 @@ function CaseStudyKpiGrid({
       {kpis.map((kpi, i) => (
         <div
           key={`${kpi.value}-${i}`}
-          className="rounded-xl border border-white/10 bg-white/5 px-3 py-3 backdrop-blur-sm md:px-4 md:py-4"
+          className="rounded-lg border border-white/10 border-l-2 border-l-amber-400/80 bg-white/5 px-3 py-3 backdrop-blur-sm md:px-4 md:py-4"
         >
           <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-zinc-400">
             {lang === "vi" ? kpi.labelVi : kpi.labelEn}
           </p>
-          <p className="mt-1 text-sm font-semibold leading-snug text-white md:text-base">
+          <p className="mt-1 font-heading text-sm font-bold leading-snug text-white md:text-base">
             {kpi.value}
           </p>
         </div>
@@ -97,6 +71,92 @@ function CaseStudyKpiGrid({
   );
 }
 
+// ─── PaneHeader ───────────────────────────────────────────────────────────────
+function PaneHeader({
+  lang,
+  open,
+  onToggle,
+}: {
+  lang: "vi" | "en";
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <div
+      className="mb-4 flex items-center justify-between rounded-lg px-3 py-2"
+      style={{
+        backgroundColor: "var(--surface-300)",
+        border: "1px solid var(--border-warm)",
+      }}
+    >
+      <span
+        className="font-heading text-xs font-semibold uppercase tracking-wider"
+        style={{ color: "var(--foreground-secondary)" }}
+      >
+        {lang === "vi" ? "🇻🇳 Tiếng Việt" : "🇬🇧 English"}
+      </span>
+      <button
+        type="button"
+        onClick={onToggle}
+        title={open ? "Thu gọn / Collapse" : "Mở rộng / Expand"}
+        className="rounded-full px-2.5 py-0.5 text-xs font-medium transition-all duration-150"
+        style={{ color: "var(--foreground-secondary)" }}
+        onMouseEnter={(e) =>
+          ((e.currentTarget as HTMLElement).style.color = "var(--brand-from)")
+        }
+        onMouseLeave={(e) =>
+          ((e.currentTarget as HTMLElement).style.color = "var(--foreground-secondary)")
+        }
+      >
+        {open ? "← Thu" : "Mở →"}
+      </button>
+    </div>
+  );
+}
+
+// ─── PillBtn ──────────────────────────────────────────────────────────────────
+function PillBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-full px-3 py-1 text-xs font-semibold transition-all duration-150"
+      style={
+        active
+          ? {
+              backgroundColor: "var(--brand-from)",
+              color: "#ffffff",
+              boxShadow: "0 1px 4px rgba(245,78,0,0.35)",
+            }
+          : {
+              backgroundColor: "transparent",
+              color: "var(--foreground-secondary)",
+            }
+      }
+      onMouseEnter={(e) => {
+        if (!active)
+          (e.currentTarget as HTMLElement).style.color = "var(--brand-from)";
+      }}
+      onMouseLeave={(e) => {
+        if (!active)
+          (e.currentTarget as HTMLElement).style.color =
+            "var(--foreground-secondary)";
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ─── BlogPostBody ─────────────────────────────────────────────────────────────
 export function BlogPostBody({
   title,
   date,
@@ -110,6 +170,9 @@ export function BlogPostBody({
   kpis,
 }: Props) {
   const [lang, setLang] = useState<Lang>("vi");
+  const [splitView, setSplitView] = useState(false);
+  const [viPaneOpen, setViPaneOpen] = useState(true);
+  const [enPaneOpen, setEnPaneOpen] = useState(true);
 
   useEffect(() => {
     try {
@@ -128,8 +191,7 @@ export function BlogPostBody({
 
   const caseStudy = layout === "case-study";
 
-  const toc = useMemo(() => extractToc(activeMarkdown), [activeMarkdown]);
-
+  // ── markdownComponents — DO NOT MODIFY THIS BLOCK ─────────────────────────
   const markdownComponents = useMemo(
     () => ({
       pre({ children }: { children?: ReactNode }) {
@@ -158,6 +220,11 @@ export function BlogPostBody({
                 <pre className="mt-2 overflow-x-auto text-xs">{text}</pre>
               </div>
             );
+          }
+          // Any other language-* → syntax-highlighted CodeBlock with copy button
+          const langMatch = cls.match(/language-(\w[\w-]*)/);
+          if (langMatch) {
+            return <CodeBlock lang={langMatch[1]} code={text} />;
           }
         }
         return <pre>{children}</pre>;
@@ -188,6 +255,21 @@ export function BlogPostBody({
     }),
     [lang],
   );
+  // ── end markdownComponents ─────────────────────────────────────────────────
+
+  // ── Panel safety: prevent both panes from being collapsed simultaneously ──
+  const handleViToggle = () =>
+    setViPaneOpen((o) => {
+      const next = !o;
+      if (!next && !enPaneOpen) setEnPaneOpen(true);
+      return next;
+    });
+  const handleEnToggle = () =>
+    setEnPaneOpen((o) => {
+      const next = !o;
+      if (!next && !viPaneOpen) setViPaneOpen(true);
+      return next;
+    });
 
   const setLanguage = (next: Lang) => {
     setLang(next);
@@ -198,176 +280,227 @@ export function BlogPostBody({
     }
   };
 
+  // Shared prose class string
+  const proseClass =
+    "beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-amber-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-amber-400";
+
+  // Render a markdown block — reuses the same (unchanged) plugin arrays
+  const renderMd = (markdown: string, key: string) => (
+    <div className={proseClass}>
+      <ReactMarkdown
+        key={key}
+        remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
+        rehypePlugins={[
+          rehypeRaw,
+          [rehypeSanitize, blogSanitizeSchema],
+          rehypeSlug,
+        ]}
+        components={markdownComponents}
+      >
+        {markdown}
+      </ReactMarkdown>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-10">
-      <div className="order-1 min-w-0 flex-1 lg:order-2">
-        <article className="space-y-8">
-          <header
+    <article className="space-y-8">
+      {/* ── Post header ─────────────────────────────────────────────────────── */}
+      <header
+        className={
+          caseStudy
+            ? "overflow-hidden rounded-2xl border border-zinc-200/80 border-t-2 border-t-amber-400/60 bg-gradient-to-br from-[#0F172A] via-slate-900 to-purple-950 p-6 text-zinc-100 shadow-xl ring-1 ring-white/10 dark:border-zinc-700/80"
+            : undefined
+        }
+      >
+        <div className="flex flex-wrap items-center gap-2">
+          <p
             className={
               caseStudy
-                ? "overflow-hidden rounded-2xl border border-zinc-200/80 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 p-6 text-zinc-100 shadow-xl ring-1 ring-white/10 dark:border-zinc-700/80"
-                : undefined
+                ? "text-xs font-medium uppercase tracking-wide text-zinc-400"
+                : "text-xs font-medium uppercase tracking-wide text-zinc-500"
             }
           >
-            <div
-              className={
-                caseStudy
-                  ? "flex flex-wrap items-center gap-2"
-                  : "flex flex-wrap items-center gap-2"
-              }
-            >
-              <p
-                className={
-                  caseStudy
-                    ? "text-xs font-medium uppercase tracking-wide text-zinc-400"
-                    : "text-xs font-medium uppercase tracking-wide text-zinc-500"
-                }
-              >
-                {date}
-              </p>
-              <span
-                className={
-                  caseStudy
-                    ? "inline-flex rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-100 ring-1 ring-white/15"
-                    : `inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryPillClass}`
-                }
-              >
-                {categoryLabel}
-              </span>
-            </div>
-            <h1
-              className={
-                caseStudy
-                  ? "mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl"
-                  : "mt-2 text-3xl font-bold tracking-tight"
-              }
-            >
-              {title}
-            </h1>
-            {excerpt ? (
-              <p
-                className={
-                  caseStudy
-                    ? "mt-3 max-w-3xl text-base leading-relaxed text-zinc-300 md:text-lg"
-                    : "mt-3 text-lg text-zinc-600 dark:text-zinc-400"
-                }
-              >
-                {excerpt}
-              </p>
-            ) : null}
+            {date}
+          </p>
+          <span
+            className={
+              caseStudy
+                ? "inline-flex rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-indigo-100 ring-1 ring-white/15"
+                : `inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${categoryPillClass}`
+            }
+          >
+            {categoryLabel}
+          </span>
+        </div>
 
-            {caseStudy && kpis.length > 0 ? (
-              <CaseStudyKpiGrid kpis={kpis} lang={lang} />
-            ) : null}
+        <h1
+          className={
+            caseStudy
+              ? "mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl md:text-4xl"
+              : "mt-2 text-3xl font-bold tracking-tight"
+          }
+        >
+          {title}
+        </h1>
 
-            {bilingual ? (
-              <div
-                className={
-                  caseStudy
-                    ? "mt-8 flex flex-wrap items-center gap-2 border-t border-white/10 pt-6"
-                    : "mt-6 flex flex-wrap items-center gap-2"
-                }
-                role="group"
-                aria-label="Chọn ngôn ngữ / Language"
-              >
-                <span
-                  className={
-                    caseStudy
-                      ? "text-xs font-medium uppercase tracking-wide text-zinc-400"
-                      : "text-xs font-medium uppercase tracking-wide text-zinc-500"
+        {excerpt ? (
+          <p
+            className={
+              caseStudy
+                ? "mt-3 max-w-3xl text-base leading-relaxed text-zinc-300 md:text-lg"
+                : "mt-3 text-lg text-zinc-600 dark:text-zinc-400"
+            }
+          >
+            {excerpt}
+          </p>
+        ) : null}
+
+        {caseStudy && kpis.length > 0 ? (
+          <CaseStudyKpiGrid kpis={kpis} lang={lang} />
+        ) : null}
+
+        {/* ── Bilingual controls (always visible when bilingual) ─────────── */}
+        {bilingual ? (
+          <div
+            className="mt-5 flex flex-wrap items-center gap-3"
+            style={
+              caseStudy
+                ? {
+                    borderTop: "1px solid rgba(255,255,255,0.1)",
+                    paddingTop: "1.25rem",
+                    marginTop: "1.5rem",
                   }
+                : {}
+            }
+            role="group"
+            aria-label="Chọn ngôn ngữ / Language"
+          >
+            <span
+              className="text-[10px] font-semibold uppercase tracking-widest"
+              style={{
+                color: caseStudy
+                  ? "rgba(255,255,255,0.5)"
+                  : "var(--foreground-secondary)",
+              }}
+            >
+              View
+            </span>
+
+            {/* Single / Split toggle */}
+            <div
+              className="inline-flex rounded-full p-0.5"
+              style={{
+                backgroundColor: caseStudy
+                  ? "rgba(0,0,0,0.25)"
+                  : "var(--surface-300)",
+                border: `1px solid ${
+                  caseStudy ? "rgba(255,255,255,0.12)" : "var(--border-warm)"
+                }`,
+              }}
+            >
+              <PillBtn active={!splitView} onClick={() => setSplitView(false)}>
+                Single
+              </PillBtn>
+              <PillBtn active={splitView} onClick={() => setSplitView(true)}>
+                Split
+              </PillBtn>
+            </div>
+
+            {/* Language toggle — only in single mode */}
+            {!splitView && (
+              <>
+                <span
+                  className="text-[10px] font-semibold uppercase tracking-widest"
+                  style={{
+                    color: caseStudy
+                      ? "rgba(255,255,255,0.5)"
+                      : "var(--foreground-secondary)",
+                  }}
                 >
-                  Language / Ngôn ngữ:
+                  Lang
                 </span>
                 <div
-                  className={
-                    caseStudy
-                      ? "inline-flex rounded-lg border border-white/15 bg-black/20 p-0.5"
-                      : "inline-flex rounded-lg border border-zinc-200 bg-white p-0.5 shadow-sm dark:border-zinc-600 dark:bg-zinc-900"
-                  }
+                  className="inline-flex rounded-full p-0.5"
+                  style={{
+                    backgroundColor: caseStudy
+                      ? "rgba(0,0,0,0.25)"
+                      : "var(--surface-300)",
+                    border: `1px solid ${
+                      caseStudy
+                        ? "rgba(255,255,255,0.12)"
+                        : "var(--border-warm)"
+                    }`,
+                  }}
                 >
-                  <button
-                    type="button"
+                  <PillBtn
+                    active={lang === "vi"}
                     onClick={() => setLanguage("vi")}
-                    className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
-                      lang === "vi"
-                        ? caseStudy
-                          ? "bg-white text-slate-900 shadow-sm"
-                          : "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm"
-                        : caseStudy
-                          ? "text-zinc-300 hover:text-white"
-                          : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                    }`}
                   >
-                    Tiếng Việt
-                  </button>
-                  <button
-                    type="button"
+                    🇻🇳 VI
+                  </PillBtn>
+                  <PillBtn
+                    active={lang === "en"}
                     onClick={() => setLanguage("en")}
-                    className={`rounded-md px-3 py-1.5 text-sm font-semibold transition ${
-                      lang === "en"
-                        ? caseStudy
-                          ? "bg-white text-slate-900 shadow-sm"
-                          : "bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-sm"
-                        : caseStudy
-                          ? "text-zinc-300 hover:text-white"
-                          : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
-                    }`}
                   >
-                    English
-                  </button>
+                    🇬🇧 EN
+                  </PillBtn>
                 </div>
-              </div>
-            ) : null}
-          </header>
+              </>
+            )}
+          </div>
+        ) : null}
+      </header>
 
-          {caseStudy ? (
-            <div className="rounded-2xl border border-zinc-200/90 bg-white/90 p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 md:p-8">
-              <div className="beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
-                <ReactMarkdown
-                  key={lang + (bilingual ? "" : "single")}
-                  remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
-                  rehypePlugins={[
-                    rehypeRaw,
-                    [rehypeSanitize, blogSanitizeSchema],
-                    rehypeSlug,
-                  ]}
-                  components={markdownComponents}
-                >
-                  {activeMarkdown}
-                </ReactMarkdown>
-              </div>
-            </div>
-          ) : (
-            <div className="beguru-docs prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-28 prose-a:text-sky-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-sky-400 prose-pre:bg-zinc-100 dark:prose-pre:bg-zinc-900">
-              <ReactMarkdown
-                key={lang + (bilingual ? "" : "single")}
-                remarkPlugins={[remarkGfm, remarkDirective, remarkDocDirectives]}
-                rehypePlugins={[
-                  rehypeRaw,
-                  [rehypeSanitize, blogSanitizeSchema],
-                  rehypeSlug,
-                ]}
-                components={markdownComponents}
-              >
-                {activeMarkdown}
-              </ReactMarkdown>
-            </div>
+      {/* ── Content area ────────────────────────────────────────────────────── */}
+      {splitView && bilingual ? (
+        /* ── SPLIT VIEW: VI | EN side by side ─────────────────────────────── */
+        <div className="flex items-start gap-0 lg:gap-2">
+          {/* VI pane */}
+          <div
+            className={
+              viPaneOpen
+                ? "min-w-0 flex-1 overflow-x-auto"
+                : "w-auto shrink-0"
+            }
+          >
+            <PaneHeader
+              lang="vi"
+              open={viPaneOpen}
+              onToggle={handleViToggle}
+            />
+            {viPaneOpen && renderMd(viMarkdown, "vi")}
+          </div>
+
+          {/* Vertical divider between panes */}
+          {viPaneOpen && enPaneOpen && (
+            <div className="mx-3 hidden w-px self-stretch shrink-0 bg-zinc-200/70 dark:bg-zinc-700/50 lg:block" />
           )}
-        </article>
 
-        <p className="mt-10 text-sm">
-          <Link href="/blog/" className="text-sky-600 hover:underline dark:text-sky-400">
-            ← Blog
-          </Link>
-        </p>
-      </div>
-
-      <aside className="order-2 w-full shrink-0 border-t border-zinc-200 pt-6 lg:order-1 lg:w-56 lg:border-r lg:border-t-0 lg:pr-6 dark:border-zinc-700">
-        <div className="lg:sticky lg:top-24">
-          <TocNav items={toc} />
+          {/* EN pane */}
+          <div
+            className={
+              enPaneOpen
+                ? "min-w-0 flex-1 overflow-x-auto"
+                : "w-auto shrink-0"
+            }
+          >
+            <PaneHeader
+              lang="en"
+              open={enPaneOpen}
+              onToggle={handleEnToggle}
+            />
+            {enPaneOpen && renderMd(enMarkdown, "en")}
+          </div>
         </div>
-      </aside>
-    </div>
+      ) : caseStudy ? (
+        /* ── SINGLE VIEW — case-study card wrapper ─────────────────────────── */
+        <div className="rounded-2xl border border-zinc-200/90 bg-white/90 p-5 shadow-sm dark:border-zinc-700 dark:bg-zinc-950/50 md:p-8">
+          {renderMd(activeMarkdown, lang + (bilingual ? "" : "single"))}
+        </div>
+      ) : (
+        /* ── SINGLE VIEW — default prose ────────────────────────────────────── */
+        renderMd(activeMarkdown, lang + (bilingual ? "" : "single"))
+      )}
+    </article>
   );
 }

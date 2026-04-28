@@ -1,67 +1,183 @@
 import Link from "next/link";
-import { GradientCard } from "@/components/GradientCard";
-import { BLOG_CATEGORY_ORDER, getCategoryLabel } from "@/lib/posts";
+import { CharlieLogoSVG } from "@/components/CharlieLogoSVG";
+import { AnimatedPills } from "@/components/AnimatedPills";
+import { ConstellationBg } from "@/components/ConstellationBg";
+import { HeroTiltCard } from "@/components/HeroTiltCard";
+import {
+  BLOG_CATEGORY_ORDER,
+  getCategoryLabel,
+  getCategoryPillClasses,
+} from "@/lib/posts";
+
+const FU = (delay: string) =>
+  `page-fade-up 0.58s cubic-bezier(0.22,1,0.36,1) ${delay} both`;
+
+// Glassmorphism style — semi-transparent so constellation shows through
+const GLASS: React.CSSProperties = {
+  backgroundColor: "color-mix(in srgb, var(--surface-400) 76%, transparent)",
+  backdropFilter: "blur(20px)",
+  WebkitBackdropFilter: "blur(20px)",
+  border: "1px solid var(--border-warm)",
+  boxShadow: "var(--shadow-card)",
+};
 
 export default function Home() {
   return (
-    <div className="space-y-10">
-      <GradientCard className="space-y-6">
-        <div className="space-y-4">
-          <p className="text-sm font-medium uppercase tracking-wide text-sky-600 dark:text-sky-400">
-            Xin chào / Hello · TP. HCM
-          </p>
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Analytics · Data platform · Credit-risk ML · GenAI
-          </h1>
-          <p className="max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
-            <strong className="text-zinc-800 dark:text-zinc-200">VI:</strong> Mình là{" "}
-            <strong>Trần Quốc Việt</strong> — làm nền dữ liệu (Airflow, dbt, BigQuery,
-            GCP), mô hình rủi ro tín dụng bán lẻ (OOT, drift, scorecard / boosting), và
-            GenAI có thể vận hành (RAG, agent, observability). Trang này tổng hợp giới
-            thiệu và blog ghi chép kỹ thuật theo bốn chuyên mục.
-          </p>
-          <p className="max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
-            <strong className="text-zinc-800 dark:text-zinc-200">EN:</strong> I&apos;m{" "}
-            <strong>Tran Quoc Viet (Charlie)</strong> — I work on data platforms (Airflow,
-            dbt, BigQuery, GCP), retail credit-risk ML (OOT, drift, scorecards /
-            boosting), and production-minded GenAI (RAG, agents, observability). This site
-            is my bio plus technical notes organized in four topics.
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          <Link
-            href="/about/"
-            className="rounded-xl bg-gradient-to-r from-sky-600 to-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-sky-500/25 transition hover:from-sky-500 hover:to-indigo-500 dark:shadow-indigo-500/20"
-          >
-            About / Giới thiệu
-          </Link>
-          <Link
-            href="/blog/"
-            className="rounded-xl border-2 border-transparent bg-gradient-to-r from-sky-500 to-indigo-500 p-[2px] text-sm font-semibold text-zinc-900 dark:text-zinc-100"
-          >
-            <span className="flex h-full w-full items-center justify-center rounded-[10px] bg-white px-4 py-2 dark:bg-zinc-950">
-              Blog
-            </span>
-          </Link>
-        </div>
-      </GradientCard>
+    // Full-viewport positioning context so the fixed canvas covers the whole screen
+    <div className="relative">
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-          Blog theo mục / Topics
-        </h2>
-        <div className="flex flex-wrap gap-2">
-          {BLOG_CATEGORY_ORDER.map((cat) => (
-            <Link
-              key={cat}
-              href={`/blog/#${cat}`}
-              className="rounded-full border border-sky-200/80 bg-white/80 px-3 py-1.5 text-xs font-medium text-sky-800 shadow-sm transition hover:border-indigo-300 hover:text-indigo-700 dark:border-sky-500/30 dark:bg-zinc-900/60 dark:text-sky-300 dark:hover:border-indigo-400 dark:hover:text-indigo-300"
+      {/* ── Constellation canvas — fixed, covers full viewport ────────────── */}
+      <div
+        aria-hidden
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      >
+        <ConstellationBg />
+      </div>
+
+      {/* ── Page content — above canvas ──────────────────────────────────── */}
+      <div className="relative mx-auto max-w-6xl px-4 py-10" style={{ zIndex: 1 }}>
+        <div className="space-y-10">
+
+          {/* ── Hero card — glassmorphism + 3D tilt ─────────────────────────── */}
+          <HeroTiltCard className="relative overflow-hidden rounded-2xl" style={GLASS}>
+
+            {/* ── Hero body ──────────────────────────────────────────────────── */}
+            <div className="space-y-8 p-6 sm:p-8">
+
+              {/* Logo + text — text left, logo right on desktop */}
+              <div className="flex flex-col-reverse gap-8 md:flex-row md:items-center md:gap-10">
+
+                {/* Left: text + CTAs */}
+                <div className="flex-1 space-y-5 min-w-0">
+                  <p
+                    className="text-xs font-semibold uppercase tracking-widest"
+                    style={{ color: "var(--brand-from)", animation: FU("0.05s") }}
+                  >
+                    Xin chào / Hello · TP. HCM
+                  </p>
+
+                  <h1
+                    className="font-heading text-4xl font-bold sm:text-5xl"
+                    style={{ letterSpacing: "-0.035em", lineHeight: 1.1, animation: FU("0.18s") }}
+                  >
+                    Analytics · Data platform · Credit-risk ML · GenAI
+                  </h1>
+
+                  <p
+                    className="max-w-2xl text-base leading-relaxed"
+                    style={{ color: "var(--foreground-secondary)", animation: FU("0.32s") }}
+                  >
+                    <strong style={{ color: "var(--foreground)" }}>VI:</strong> Mình là{" "}
+                    <strong style={{ color: "var(--foreground)" }}>Trần Quốc Việt</strong>{" "}
+                    — làm nền dữ liệu (Airflow, dbt, BigQuery, GCP), mô hình rủi ro tín
+                    dụng bán lẻ (OOT, drift, scorecard / boosting), và GenAI có thể vận
+                    hành (RAG, agent, observability). Trang này tổng hợp giới thiệu và
+                    blog ghi chép kỹ thuật theo bốn chuyên mục.
+                  </p>
+
+                  <p
+                    className="max-w-2xl text-base leading-relaxed"
+                    style={{ color: "var(--foreground-secondary)", animation: FU("0.46s") }}
+                  >
+                    <strong style={{ color: "var(--foreground)" }}>EN:</strong> I&apos;m{" "}
+                    <strong style={{ color: "var(--foreground)" }}>Tran Quoc Viet (Charlie)</strong>{" "}
+                    — I work on data platforms (Airflow, dbt, BigQuery, GCP), retail
+                    credit-risk ML (OOT, drift, scorecards / boosting), and
+                    production-minded GenAI (RAG, agents, observability). This site is my
+                    bio plus technical notes organized in four topics.
+                  </p>
+
+                  <div className="flex flex-wrap gap-3" style={{ animation: FU("0.60s") }}>
+                    <Link
+                      href="/about/"
+                      className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
+                      style={{ backgroundColor: "var(--brand-from)" }}
+                    >
+                      About / Giới thiệu
+                    </Link>
+                    <Link
+                      href="/blog/"
+                      className="rounded-lg px-5 py-2.5 text-sm font-semibold transition hover:opacity-80"
+                      style={{
+                        backgroundColor: "color-mix(in srgb, var(--surface-300) 80%, transparent)",
+                        border: "1px solid var(--border-warm)",
+                        color: "var(--foreground)",
+                      }}
+                    >
+                      Blog →
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Right: logo */}
+                <div className="flex shrink-0 justify-center">
+                  <CharlieLogoSVG size={240} />
+                </div>
+              </div>
+
+              {/* Stat strip */}
+              <div
+                className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-4"
+                style={{ borderTop: "1px solid var(--border-warm)" }}
+              >
+                {[
+                  { label: "Focus Domain", value: "Credit Risk ML" },
+                  { label: "Platform",     value: "GCP · BigQuery" },
+                  { label: "Stack",        value: "Airflow · dbt · RAG" },
+                  { label: "Location",     value: "HCMC, Vietnam" },
+                ].map((s, i) => (
+                  <div
+                    key={s.label}
+                    className="stat-card pl-3"
+                    style={{ animation: FU(`${0.70 + i * 0.10}s`) }}
+                  >
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-wider"
+                      style={{ color: "var(--foreground-secondary)" }}>
+                      {s.label}
+                    </p>
+                    <p className="mt-0.5 font-heading text-sm font-semibold"
+                      style={{ color: "var(--foreground)" }}>
+                      {s.value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </HeroTiltCard>
+
+          {/* ── Category pills — glass panel + spring animation ──────────────── */}
+          <section
+            className="rounded-2xl p-5"
+            style={GLASS}
+          >
+            <h2
+              className="mb-3 font-heading text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "var(--foreground-secondary)" }}
             >
-              {getCategoryLabel(cat)}
-            </Link>
-          ))}
+              Blog theo mục / Topics
+            </h2>
+            <AnimatedPills>
+              <div className="flex flex-wrap gap-2">
+                {BLOG_CATEGORY_ORDER.map((cat) => (
+                  <Link
+                    key={cat}
+                    href={`/blog/#${cat}`}
+                    className={`pill-item rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm transition hover:opacity-90 ${getCategoryPillClasses(cat)}`}
+                  >
+                    {getCategoryLabel(cat)}
+                  </Link>
+                ))}
+              </div>
+            </AnimatedPills>
+          </section>
+
         </div>
-      </section>
+      </div>
     </div>
   );
 }

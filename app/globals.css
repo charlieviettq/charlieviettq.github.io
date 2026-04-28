@@ -2,33 +2,94 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @plugin "@tailwindcss/typography";
 
+/* ── Cursor-inspired warm design system ────────────────────────────────────── */
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --brand-from: #0ea5e9;
-  --brand-to: #6366f1;
-  --surface-mid: #f1f5f9;
-  /* Sơ đồ kiến trúc / diagram shell */
-  --diagram-surface: color-mix(in srgb, #ffffff 88%, var(--surface-mid));
-  --diagram-surface-deep: color-mix(in srgb, var(--surface-mid) 70%, #ffffff);
-  --diagram-border: color-mix(in srgb, var(--foreground) 8%, transparent);
+  /* Warm cream surface scale */
+  --background: #f2f1ed;
+  --surface-100: #f7f7f4;
+  --surface-200: #f2f1ed;
+  --surface-300: #ebeae5;
+  --surface-400: #e6e5e0;
+  --surface-500: #e1e0db;
+  --foreground: #26251e;
+  --foreground-secondary: rgba(38, 37, 30, 0.55);
+
+  /* Brand — Chainpage gold */
+  --brand-from:  #E2B34B;   /* Chainpage gold — primary accent (UI + CTA) */
+  --brand-to:    #C4912A;   /* darker gold — secondary accent */
+
+  /* sugar-high syntax highlighting — warm Cursor palette
+     Keywords=gold, Strings=sage, Comments=muted, Classes=lavender,
+     Properties=blue, Entities=peach */
+  --sh-keyword:     #E2B34B;
+  --sh-string:      #9fc9a2;
+  --sh-comment:     rgba(232, 230, 222, 0.38);
+  --sh-class:       #c0a8dd;
+  --sh-identifier:  #e8e6de;
+  --sh-sign:        rgba(232, 230, 222, 0.55);
+  --sh-property:    #9fbbe0;
+  --sh-entity:      #dfa88f;
+  --sh-jsxliterals: #dfa88f;
+
+  /* Borders: warm brown at varying opacity */
+  --border-warm:        rgba(38, 37, 30, 0.1);
+  --border-warm-md:     rgba(38, 37, 30, 0.2);
+  --border-warm-strong: rgba(38, 37, 30, 0.55);
+
+  /* Shadows: atmospheric large-blur (Cursor style) */
+  --shadow-card:
+    rgba(0, 0, 0, 0.14) 0px 28px 70px,
+    rgba(0, 0, 0, 0.10) 0px 14px 32px,
+    rgba(38, 37, 30, 0.10) 0px 0px 0px 1px;
+  --shadow-ambient:
+    rgba(0, 0, 0, 0.03) 0px 0px 16px,
+    rgba(0, 0, 0, 0.01) 0px 0px 8px;
+
+  /* Diagram tokens */
+  --diagram-surface: color-mix(in srgb, var(--surface-100) 90%, var(--surface-300));
+  --diagram-surface-deep: var(--surface-300);
+  --diagram-border: var(--border-warm);
   --diagram-border-strong: color-mix(in srgb, var(--brand-from) 22%, transparent);
-  --diagram-shadow: 0 1px 0 color-mix(in srgb, var(--foreground) 6%, transparent),
-    0 24px 48px -28px color-mix(in srgb, var(--brand-to) 18%, transparent),
-    0 12px 32px -20px color-mix(in srgb, var(--foreground) 12%, transparent);
+  --diagram-shadow:
+    0 1px 0 color-mix(in srgb, var(--foreground) 5%, transparent),
+    0 24px 48px -28px color-mix(in srgb, var(--brand-from) 14%, transparent),
+    0 12px 32px -20px color-mix(in srgb, var(--foreground) 10%, transparent);
   --diagram-radius: 1rem;
-  --diagram-grid-dot: color-mix(in srgb, var(--foreground) 14%, transparent);
+  --diagram-grid-dot: color-mix(in srgb, var(--foreground) 12%, transparent);
 }
 
 .dark {
-  --background: #0a0f1a;
-  --foreground: #e2e8f0;
-  --surface-mid: #0c1324;
-  --diagram-surface: color-mix(in srgb, #0f172a 55%, #020617);
-  --diagram-surface-deep: color-mix(in srgb, #020617 40%, #0f172a);
-  --diagram-border: color-mix(in srgb, var(--foreground) 12%, transparent);
+  /* Warm dark — brown-black, not cold navy */
+  --background: #1a1814;
+  --surface-100: #201e18;
+  --surface-200: #1a1814;
+  --surface-300: #242019;
+  --surface-400: #2a261e;
+  --surface-500: #302c22;
+  --foreground: #e8e6de;
+  --foreground-secondary: rgba(232, 230, 222, 0.55);
+
+  --brand-from:  #E2B34B;   /* Chainpage gold — same hue, pops on dark bg */
+  --brand-to:    #C4912A;   /* darker gold — secondary */
+
+  --border-warm:        rgba(232, 230, 222, 0.10);
+  --border-warm-md:     rgba(232, 230, 222, 0.20);
+  --border-warm-strong: rgba(232, 230, 222, 0.50);
+
+  --shadow-card:
+    rgba(0, 0, 0, 0.50) 0px 28px 70px,
+    rgba(0, 0, 0, 0.35) 0px 14px 32px,
+    rgba(232, 230, 222, 0.08) 0px 0px 0px 1px;
+  --shadow-ambient:
+    rgba(0, 0, 0, 0.15) 0px 0px 16px,
+    rgba(0, 0, 0, 0.08) 0px 0px 8px;
+
+  --diagram-surface: color-mix(in srgb, #1e1b14 55%, #12100b);
+  --diagram-surface-deep: color-mix(in srgb, #12100b 40%, #1e1b14);
+  --diagram-border: var(--border-warm);
   --diagram-border-strong: color-mix(in srgb, var(--brand-from) 28%, transparent);
-  --diagram-shadow: 0 1px 0 color-mix(in srgb, var(--foreground) 10%, transparent),
+  --diagram-shadow:
+    0 1px 0 color-mix(in srgb, var(--foreground) 10%, transparent),
     0 28px 56px -24px color-mix(in srgb, var(--brand-from) 14%, transparent),
     0 16px 40px -22px color-mix(in srgb, #000000 55%, transparent);
   --diagram-grid-dot: color-mix(in srgb, var(--foreground) 22%, transparent);
@@ -37,29 +98,90 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+  /* Remap amber → Chainpage gold scale so all amber-* Tailwind classes use gold */
+  --color-amber-50:  #fdf8eb;
+  --color-amber-100: #faeeb9;
+  --color-amber-200: #f4da7a;
+  --color-amber-300: #ebc85a;
+  --color-amber-400: #e6be50;
+  --color-amber-500: #E2B34B;
+  --color-amber-600: #C4912A;
+  --color-amber-700: #9E7120;
+  --color-amber-800: #785516;
+  --color-amber-900: #533A0E;
+  --color-amber-950: #322207;
+
+  /* Keep surface tokens accessible */
+  --color-surface-100: var(--surface-100);
+  --color-surface-300: var(--surface-300);
+  --color-surface-400: var(--surface-400);
+
+  --color-gold: var(--brand-to);
+  --color-navy: #26251e;
+
+  --font-heading: var(--font-exo);
+  --font-sans:    var(--font-exo);
+  --font-serif:   var(--font-lora);
+  --font-mono:    var(--font-roboto-mono);
 }
 
+/* ── Body background ────────────────────────────────────────────────────────── */
 body {
   min-height: 100vh;
   color: var(--foreground);
   background-color: var(--background);
+  /* Subtle warm orange halo at top — Cursor-style soft glow */
   background-image:
     radial-gradient(
-      ellipse 120% 80% at 50% -30%,
-      color-mix(in srgb, var(--brand-from) 22%, transparent),
+      ellipse 110% 60% at 50% -20%,
+      color-mix(in srgb, var(--brand-from) 10%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 90% 10%,
+      color-mix(in srgb, var(--brand-to) 8%, transparent),
+      transparent 50%
+    );
+}
+
+.dark body {
+  background-image:
+    radial-gradient(
+      ellipse 110% 60% at 50% -20%,
+      color-mix(in srgb, var(--brand-from) 14%, transparent),
       transparent 55%
     ),
     radial-gradient(
-      ellipse 80% 50% at 100% 0%,
-      color-mix(in srgb, var(--brand-to) 15%, transparent),
+      ellipse 60% 35% at 90% 8%,
+      color-mix(in srgb, var(--brand-to) 10%, transparent),
       transparent 45%
     ),
-    linear-gradient(180deg, var(--background) 0%, var(--surface-mid) 100%);
+    linear-gradient(180deg, var(--background) 0%, var(--surface-300) 100%);
 }
 
-/* Blog BeGuru: bảng component rõ hơn trong bài Technical Docs */
+/* ── Compressed headings (Cursor-style negative letter-spacing) ────────────── */
+h1, h2, h3 { letter-spacing: -0.022em; }
+h1          { letter-spacing: -0.03em; }
+h4, h5      { letter-spacing: -0.01em; }
+
+/* ── Blog prose: serif body, warm headings ──────────────────────────────────── */
+.beguru-docs.prose p,
+.beguru-docs.prose li,
+.beguru-docs.prose blockquote p {
+  font-family: var(--font-serif), "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-size: 1.05rem;
+  line-height: 1.78;
+  color: var(--foreground);
+}
+
+.dark .beguru-docs.prose p,
+.dark .beguru-docs.prose li,
+.dark .beguru-docs.prose blockquote p {
+  color: var(--foreground);
+}
+
+/* Tables */
 .beguru-docs.prose table {
   font-size: 0.875rem;
   line-height: 1.45;
@@ -78,32 +200,75 @@ body {
   background-color: color-mix(in srgb, var(--foreground) 4%, transparent);
 }
 
-/* Chart (BeGuru flow / Mermaid): viền gradient tinh chỉnh, halo nhẹ hơn — editorial / modern */
+/* ── Code blocks ─────────────────────────────────────────────────────────────
+   Light mode: dark warm editor bg — pops against cream page, editor feel.
+   Dark mode: elevated warm surface — clearly lighter than page bg #1a1814,
+              so code blocks have identity in both themes.                  */
+.beguru-docs.prose pre {
+  background-color: #2a2620;   /* warm dark editor — light mode */
+  border: 1px solid rgba(232, 230, 222, 0.14);
+  border-left: 3px solid rgba(201, 168, 76, 0.55); /* gold accent stripe */
+  color: #e8e6de;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  border-radius: 0.5rem;
+}
+.dark .beguru-docs.prose pre {
+  background-color: #302b22;   /* elevated warm surface — lighter than #1a1814 page */
+  border-color: rgba(232, 230, 222, 0.10);
+  border-left-color: rgba(212, 175, 55, 0.50);
+}
+/* Text inside <pre> — pinned light color in both modes */
+.beguru-docs.prose pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  color: #e8e6de !important;
+  font-size: inherit;
+}
+.dark .beguru-docs.prose pre code {
+  color: #ede9df !important;
+}
+
+/* ── Inline code: warm tinted surface, clearly distinct from bg ─────────── */
+.beguru-docs.prose :not(pre) > code {
+  background-color: #dcd9d2;
+  border: 1px solid rgba(38, 37, 30, 0.15);
+  border-radius: 0.3em;
+  padding: 0.1em 0.4em;
+  font-size: 0.875em;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  color: #26251e;
+}
+.dark .beguru-docs.prose :not(pre) > code {
+  background-color: #302c22;
+  border-color: rgba(232, 230, 222, 0.15);
+  color: #e8e6de;
+}
+
+/* ── Chart (BeGuru flow / Mermaid) ──────────────────────────────────────────── */
 .chart-glow-frame {
   background: linear-gradient(
     145deg,
-    color-mix(in srgb, var(--brand-from) 38%, transparent) 0%,
-    color-mix(in srgb, var(--brand-to) 32%, transparent) 42%,
-    color-mix(in srgb, #a855f7 22%, transparent) 100%
+    color-mix(in srgb, var(--brand-from) 30%, transparent) 0%,
+    color-mix(in srgb, var(--brand-to)   22%, transparent) 50%,
+    color-mix(in srgb, var(--brand-from) 14%, transparent) 100%
   );
   box-shadow:
     0 0 0 1px var(--diagram-border-strong),
     0 0 36px -10px color-mix(in srgb, var(--brand-from) 22%, transparent),
-    0 0 52px -16px color-mix(in srgb, var(--brand-to) 14%, transparent);
+    0 0 52px -16px color-mix(in srgb, var(--brand-to)   14%, transparent);
 }
-
 .dark .chart-glow-frame {
   box-shadow:
     0 0 0 1px var(--diagram-border-strong),
     0 0 44px -12px color-mix(in srgb, var(--brand-from) 18%, transparent),
-    0 0 64px -18px color-mix(in srgb, var(--brand-to) 12%, transparent);
+    0 0 64px -18px color-mix(in srgb, var(--brand-to)   12%, transparent);
 }
 
-/* Nội dung sơ đồ: surface + đổ trong suốt */
+/* ── Architecture figure ────────────────────────────────────────────────────── */
 .architecture-figure {
   border-radius: var(--diagram-radius);
 }
-
 .architecture-figure__surface {
   background: linear-gradient(
     165deg,
@@ -113,42 +278,337 @@ body {
   box-shadow: var(--diagram-shadow);
   border: 1px solid var(--diagram-border);
 }
-
 .architecture-figure__scroll {
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--foreground) 25%, transparent)
-    transparent;
+  scrollbar-color: color-mix(in srgb, var(--foreground) 25%, transparent) transparent;
 }
-
-.architecture-figure__scroll::-webkit-scrollbar {
-  height: 6px;
-}
-
+.architecture-figure__scroll::-webkit-scrollbar        { height: 6px; }
 .architecture-figure__scroll::-webkit-scrollbar-thumb {
   border-radius: 999px;
   background: color-mix(in srgb, var(--foreground) 22%, transparent);
 }
-
 .dark .architecture-figure__scroll::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--foreground) 35%, transparent);
 }
 
-/* React Flow (beguru-flow): lưới nền dùng token */
+/* React Flow grid */
 .beguru-flow-rf .react-flow__background circle {
   fill: var(--diagram-grid-dot);
 }
 
-.dark body {
-  background-image:
-    radial-gradient(
-      ellipse 120% 70% at 50% -25%,
-      color-mix(in srgb, var(--brand-from) 18%, transparent),
-      transparent 50%
-    ),
-    radial-gradient(
-      ellipse 70% 40% at 100% 5%,
-      color-mix(in srgb, var(--brand-to) 12%, transparent),
-      transparent 40%
-    ),
-    linear-gradient(180deg, var(--background) 0%, var(--surface-mid) 100%);
+/* ── Stat card left-bar accent ──────────────────────────────────────────────── */
+.stat-card {
+  border-left: 3px solid var(--brand-from);
+}
+
+/* ── TOC active ─────────────────────────────────────────────────────────────── */
+.toc-link-active {
+  color: var(--brand-from);
+  font-weight: 600;
+}
+
+/* ── GlobalSearch dialog entrance ───────────────────────────────────────────── */
+@keyframes search-in {
+  from { opacity: 0; transform: scale(0.97) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+.search-dialog-enter {
+  animation: search-in 150ms ease-out both;
+}
+
+/* ── Warm card hover (used by PostNav, RelatedPosts — server components) ─────── */
+.warm-card {
+  background-color: var(--surface-300);
+  border: 1px solid var(--border-warm);
+  border-radius: 0.75rem;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+.warm-card:hover {
+  border-color: var(--border-warm-md);
+  box-shadow: var(--shadow-ambient);
+}
+
+/* ── Charlie Logo SVG animations ────────────────────────────────────────────── */
+@keyframes charlie-arc-draw {
+  from { stroke-dashoffset: 488; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes charlie-line-draw {
+  from { stroke-dashoffset: 220; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes charlie-dot-in {
+  from { opacity: 0; transform: scale(0); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes charlie-glow-bloom {
+  from { opacity: 0; }
+  to   { opacity: 0.2; }
+}
+@keyframes charlie-text-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes charlie-float {
+  from { transform: translateY(0px); }
+  to   { transform: translateY(-8px); }
+}
+@keyframes charlie-pulse {
+  0%, 100% { opacity: 0.18; }
+  50%       { opacity: 0.38; }
+}
+
+/* ── Blog post list item hover (server-component-safe CSS) ──────────────────── */
+.post-item {
+  transition: background-color 150ms;
+}
+.post-item:hover {
+  background-color: color-mix(in srgb, var(--brand-from) 4%, transparent);
+}
+.post-accent {
+  opacity: 0;
+  transition: opacity 150ms;
+}
+.post-item:hover .post-accent {
+  opacity: 1;
+}
+.post-title-link {
+  color: var(--foreground);
+  transition: color 150ms;
+}
+.post-item:hover .post-title-link,
+.post-title-link:hover {
+  color: var(--brand-from);
+}
+
+/* Blog post row — date column */
+.post-date-col {
+  color: var(--foreground-secondary);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  padding-top: 0.15rem; /* optical alignment with title */
+}
+
+/* Blog post row — animated arrow indicator */
+.post-arrow {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.post-item:hover .post-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ── About / CV page ────────────────────────────────────────────────────────── */
+
+/* "Currently building" callout card */
+.about-now-card {
+  border-left: 3px solid var(--brand-from);
+  background: color-mix(in srgb, var(--brand-from) 5%, transparent);
+  border-radius: 0 0.75rem 0.75rem 0;
+  padding: 1rem 1.25rem;
+}
+
+/* Section headings */
+.about-section-title {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--foreground-secondary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-warm);
+}
+
+/* Company label above timeline */
+.cv-company {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.cv-company-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+.cv-company-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-warm);
+}
+
+/* Timeline container */
+.cv-timeline {
+  position: relative;
+  padding-left: 1.25rem;
+}
+.cv-timeline::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.65rem;
+  bottom: 1rem;
+  width: 1.5px;
+  background: var(--border-warm-md);
+}
+
+/* Timeline dot */
+.cv-dot {
+  position: absolute;
+  left: -1.25rem;
+  top: 0.65rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  border: 2px solid var(--border-warm-md);
+  background: var(--surface-300);
+  transform: translateX(-50%);
+}
+
+/* Pulsing glow for current role dot */
+@keyframes cv-dot-pulse {
+  0%, 100% { box-shadow: 0 0 0 0   color-mix(in srgb, var(--brand-from) 40%, transparent); }
+  50%       { box-shadow: 0 0 0 5px color-mix(in srgb, var(--brand-from) 0%,  transparent); }
+}
+.cv-dot.current {
+  background: var(--brand-from);
+  border-color: var(--brand-from);
+  animation: cv-dot-pulse 2s ease-in-out infinite;
+}
+
+/* Timeline role entry */
+.cv-role {
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+.cv-role:last-child { padding-bottom: 0; }
+
+/* Role card — bordered, tinted for current */
+.cv-role-card {
+  border: 1px solid var(--border-warm);
+  border-radius: 0.75rem;
+  padding: 1rem 1.125rem;
+  background: var(--surface-100);
+  margin-bottom: 0.75rem;
+  transition: border-color 150ms;
+}
+.cv-role-card.current {
+  border-color: color-mix(in srgb, var(--brand-from) 28%, transparent);
+  background: color-mix(in srgb, var(--brand-from) 4%, var(--surface-100));
+}
+
+/* Tech chip strip inside each role card */
+.cv-tech-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border-warm);
+}
+.cv-tech-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  border: 1px solid var(--border-warm);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  color: var(--foreground-secondary);
+  white-space: nowrap;
+}
+.cv-tech-chip.key {
+  border-color: color-mix(in srgb, var(--brand-from) 30%, transparent);
+  background: color-mix(in srgb, var(--brand-from) 8%, transparent);
+  color: var(--brand-from);
+  font-weight: 600;
+}
+
+/* Overall skills grid */
+.cv-skill-row {
+  display: grid;
+  grid-template-columns: 9rem 1fr;
+  gap: 0.5rem 1rem;
+  align-items: start;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-warm);
+}
+.cv-skill-row:last-child { border-bottom: none; }
+.cv-skill-cat {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--foreground-secondary);
+  padding-top: 0.2rem;
+}
+.cv-skill-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.cv-skill-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.375rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  color: var(--foreground);
+  border: 1px solid var(--border-warm);
+}
+
+@media (max-width: 480px) {
+  .cv-skill-row { grid-template-columns: 1fr; }
+}
+
+/* ── Homepage entrance animations ───────────────────────────────────────────── */
+@keyframes page-fade-up {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pill-pop {
+  from { opacity: 0; transform: scale(0.85) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Category pills — triggered by IntersectionObserver adding .pills-visible */
+.pills-visible .pill-item {
+  animation: pill-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.pills-visible .pill-item:nth-child(1) { animation-delay: 0s; }
+.pills-visible .pill-item:nth-child(2) { animation-delay: 0.07s; }
+.pills-visible .pill-item:nth-child(3) { animation-delay: 0.14s; }
+.pills-visible .pill-item:nth-child(4) { animation-delay: 0.21s; }
+
+/* ── Accessibility: honour prefers-reduced-motion ───────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .pills-visible .pill-item {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  /* Hero stagger & logo animations */
+  *[style*="page-fade-up"],
+  *[style*="charlie-"] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── Focus ring — gold (matches brand-from), high-contrast orange fallback ───── */
+:focus-visible {
+  outline: 2px solid var(--brand-from, #C9A84C);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

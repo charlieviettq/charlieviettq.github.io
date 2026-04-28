@@ -42,15 +42,79 @@ IV = Σ (%Good_i − %Bad_i) × WOE_i
 - WOE < 0: bin này có tỷ lệ Bad cao hơn trung bình → **high risk**
 - WOE ≈ 0: bin này không phân biệt được Good/Bad
 
+**Ví dụ tính WOE và IV với số cụ thể:**
+
+Giả sử biến `thu nhập hàng tháng` với tổng 5,000 khách hàng (1,000 bad, 4,000 good):
+
+| Bin | Bad trong bin | Good trong bin | % Bad | % Good | WOE | IV contribution |
+|---|---|---|---|---|---|---|
+| 0 – 5 triệu | 400 | 600 | 40% | 15% | ln(40%/15%) = **+0.98** | (0.40−0.15)×0.98 = **0.245** |
+| 5 – 15 triệu | 450 | 2,100 | 45% | 52.5% | ln(45%/52.5%) = **−0.15** | (0.45−0.525)×(−0.15) = **0.011** |
+| > 15 triệu | 150 | 1,300 | 15% | 32.5% | ln(15%/32.5%) = **−0.77** | (0.15−0.325)×(−0.77) = **0.135** |
+| **Tổng IV** | | | | | | **0.391** |
+
+**Đọc kết quả:**
+- Bin 0–5tr có WOE = **+0.98** → nhóm này có tỷ lệ bad cao hơn trung bình 2.7 lần (e^0.98 ≈ 2.7)
+- Bin >15tr có WOE = **−0.77** → nhóm này bad ít hơn trung bình đáng kể
+- IV tổng = **0.391** → biến mạnh, đáng đưa vào model (nhưng cần check leakage)
+- WOE giảm dần từ bin thấp đến cao → **monotone** ✅ — hợp logic nghiệp vụ
+
 ### Ngưỡng IV cụ thể
 
-| IV | Ý nghĩa | Hành động |
-|----|---------|-----------|
-| < 0.02 | Vô nghĩa | Loại bỏ feature |
-| 0.02 – 0.1 | Yếu | Có thể giữ nếu stable, kết hợp với feature khác |
-| 0.1 – 0.3 | Trung bình | Feature tốt, giữ lại |
-| 0.3 – 0.5 | Mạnh | Feature rất tốt |
-| > 0.5 | Nghi ngờ | Kiểm tra leakage ngay! |
+| Chỉ số IV | Ý nghĩa thực sự | Hành động |
+|---|---|---|
+| < 0.02 | Biến mờ nhạt, ít giá trị | Loại bỏ |
+| 0.02 – 0.10 | Yếu — có thể đưa vào pool | Xem xét kỹ |
+| 0.10 – 0.30 | Trung bình — có triển vọng | Kiểm tra monotonicity và stability |
+| 0.30 – 0.50 | Mạnh — candidate tốt | Kiểm tra leakage |
+| > 0.50 | Rất mạnh — **đáng nghi** | **Kiểm tra nguồn data ngay** |
+
+### Code thực tế: Tính WOE/IV với Python
+
+Hai thư viện phổ biến nhất trong ngành: `scorecardpy` (đơn giản, phổ biến tại châu Á) và `optbinning` (nghiêm ngặt hơn, hỗ trợ monotonicity constraint).
+
+```python
+import numpy as np
+import pandas as pd
+import scorecardpy as sc
+
+# --- Cách 1: scorecardpy — chuẩn production ---
+# Tự động binning + enforce monotonicity
+bins = sc.woebin(
+    df, y='bad_flag',
+    x=['monthly_income', 'dpd_max_6m', 'job_tenure_months'],
+    bin_num_limit=6,
+    # monotonic_binning=True  # bật nếu muốn enforce
+)
+
+# Tóm tắt IV của tất cả biến
+iv_table = pd.DataFrame({
+    col: {'IV': bins[col]['total_iv'].iloc[0]}
+    for col in bins
+}).T.sort_values('IV', ascending=False)
+print(iv_table)
+# monthly_income    0.391
+# dpd_max_6m        0.312
+# job_tenure_months 0.087
+
+# Transform sang WOE values để đưa vào Logistic Regression
+train_woe = sc.woebin_ply(train_df, bins)
+# ⚠️  QUAN TRỌNG: lock bảng bins này khi deploy
+# Không recalculate lại trên data mới — WOE map phải được freeze
+
+# --- Cách 2: optbinning — mạnh hơn, hỗ trợ nhiều constraint ---
+from optbinning import BinningProcess
+
+binning_process = BinningProcess(
+    variable_names=['monthly_income', 'dpd_max_6m'],
+    categorical_variables=[],
+    max_n_bins=6,
+    min_bin_size=0.05,   # mỗi bin tối thiểu 5% population
+    monotonic_trend='auto'
+)
+binning_process.fit(X_train, y_train)
+print(binning_process.summary()[['name', 'iv', 'js']].sort_values('iv', ascending=False))
+```
 
 ### Python Implementation
 
@@ -225,43 +289,78 @@ IV = Σ (%Good_i − %Bad_i) × WOE_i
 - WOE < 0: bin has more Bads than average → higher risk
 - WOE ≈ 0: bin provides no discriminatory power
 
-### IV Thresholds
+### A Worked Example With Real Numbers
 
-| IV Range | Interpretation | Action |
-|----------|----------------|--------|
-| < 0.02 | Useless | Drop the feature |
-| 0.02 – 0.1 | Weak predictor | Keep if stable; combine with others |
-| 0.1 – 0.3 | Medium predictor | Good feature, keep |
-| 0.3 – 0.5 | Strong predictor | Excellent feature |
-| > 0.5 | Suspicious | Check for data leakage immediately |
+Suppose you have `monthly_income` as a variable, with 5,000 total customers (1,000 bad, 4,000 good):
 
-### Python Implementation
+| Bin | Bad | Good | % Bad | % Good | WOE | IV contribution |
+|---|---|---|---|---|---|---|
+| 0 – 5M VND | 400 | 600 | 40% | 15% | ln(0.40/0.15) = **+0.98** | (0.40−0.15)×0.98 = **0.245** |
+| 5 – 15M VND | 450 | 2,100 | 45% | 52.5% | ln(0.45/0.525) = **−0.15** | (0.45−0.525)×(−0.15) = **0.011** |
+| > 15M VND | 150 | 1,300 | 15% | 32.5% | ln(0.15/0.325) = **−0.77** | (0.15−0.325)×(−0.77) = **0.135** |
+| **Total IV** | | | | | | **0.391** |
+
+**Reading the results:**
+- Bin 0–5M: WOE = +0.98 → this group has 2.7× the bad rate of the overall population
+- Bin >15M: WOE = −0.77 → this group has significantly lower bad rates
+- WOE decreases consistently as income rises → **monotone** ✅ — logically consistent
+- Total IV = 0.391 → strong predictor candidate; worth including but check for leakage
+
+**IV Strength Reference:**
+
+| IV Range | Assessment | Action |
+|---|---|---|
+| < 0.02 | Too weak | Drop |
+| 0.02 – 0.10 | Weak | Consider in pool, review PSI |
+| 0.10 – 0.30 | Medium | Check monotonicity and stability |
+| 0.30 – 0.50 | Strong | Good candidate; check for leakage |
+| > 0.50 | Suspiciously strong | **Investigate data source immediately** |
+
+**Practical tip:** A variable like `time_on_book` often shows very high IV — long-tenure customers are inherently lower risk by selection. But it risks encoding approval history bias rather than genuine creditworthiness signal. Always ask: "Does this variable measure the customer, or our previous decisions about the customer?"
+
+### Code Reference — WOE/IV in Python
+
+Two production-grade options: `scorecardpy` (concise, widely adopted across Asian banking teams) and `optbinning` (rigorous monotonicity enforcement, preferred in Basel-governed environments).
 
 ```python
-def woe_iv(df, feature, target, bins=10):
-    df = df[[feature, target]].copy()
-    missing_mask = df[feature].isna()
+import numpy as np
+import pandas as pd
+import scorecardpy as sc
 
-    df_nm = df[~missing_mask].copy()
-    df_nm['bin'] = pd.qcut(df_nm[feature], q=bins, duplicates='drop')
+# --- Option A: scorecardpy (fast iteration) ---
+bins = sc.woebin(
+    df, y='bad_flag',
+    x=['monthly_income', 'dpd_max_6m', 'job_tenure_months'],
+    bin_num_limit=6,
+)
 
-    agg = df_nm.groupby('bin', observed=True)[target].agg(['sum','count'])
-    agg.columns = ['bad', 'total']
-    agg['good'] = agg['total'] - agg['bad']
+# IV summary across all variables
+iv_summary = pd.DataFrame({
+    col: {'IV': bins[col]['total_iv'].iloc[0]}
+    for col in bins
+}).T.sort_values('IV', ascending=False)
+print(iv_summary)
+# monthly_income    0.391   ← strong; check for leakage
+# dpd_max_6m        0.312
+# job_tenure_months 0.087   ← weak; consider dropping
 
-    if missing_mask.any():
-        miss = df[missing_mask]
-        agg.loc['MISSING'] = [miss[target].sum(), len(miss),
-                               len(miss) - miss[target].sum()]
+# Transform to WOE-encoded features for Logistic Regression
+train_woe = sc.woebin_ply(train_df, bins)
+# ⚠️  CRITICAL: save and freeze `bins` at deployment time.
+# Never recalculate WOE bins on production data — the encoding map must be locked.
 
-    total_good = agg['good'].sum()
-    total_bad  = agg['bad'].sum()
-    agg['pct_good'] = (agg['good'] / total_good).clip(lower=1e-4)
-    agg['pct_bad']  = (agg['bad']  / total_bad ).clip(lower=1e-4)
-    agg['woe']      = np.log(agg['pct_good'] / agg['pct_bad'])
-    agg['iv_bin']   = (agg['pct_good'] - agg['pct_bad']) * agg['woe']
+# --- Option B: optbinning (strict monotonicity, Basel-aligned) ---
+from optbinning import BinningProcess
 
-    return agg, round(agg['iv_bin'].sum(), 4)
+binning_process = BinningProcess(
+    variable_names=['monthly_income', 'dpd_max_6m'],
+    categorical_variables=[],
+    max_n_bins=6,
+    min_bin_size=0.05,       # at least 5% of population per bin
+    monotonic_trend='auto'   # auto-detect increasing or decreasing
+)
+binning_process.fit(X_train, y_train)
+print(binning_process.summary()[['name', 'iv', 'js']].sort_values('iv', ascending=False))
 ```
 
 ### Monotonicity Check
@@ -283,16 +382,23 @@ High IV at development time doesn't guarantee the WOE table remains valid 12 mon
 - If a bin's WOE shifts > 0.5 between dev and production → that bin is unreliable
 - Rebuild WOE tables at least annually, or whenever the feature's PSI exceeds 0.20
 
-### Leakage Red Flags
+### Pitfalls and Failure Modes
 
-| Pattern | Example | Why it's wrong |
-|---------|---------|----------------|
-| Post-outcome feature | `days_overdue_at_observation` | Only observable after default occurs |
-| Future feature | `balance_next_month` | Uses future information to predict the past |
-| Direct proxy | `collection_flag` | Directly encodes the outcome |
-
-IV > 0.5 is your strongest hint that something is wrong. Always trace the feature's data lineage before celebrating a "super-predictive" variable.
+- **Leakage:** Accidentally using information known only *after* the outcome (e.g., "number of overdue calls received") to predict the starting state.
+- **Stale Maps:** Reusing last year's WOE encoding tables on this year's population when economic behaviors have shifted. Bins and WOE values must be recomputed when you retrain.
+- **Non-monotone bins accepted silently:** If WOE zigzags (high income → higher bad rate than medium income), the variable encoding is wrong.
 
 ### Takeaways
 
-WOE/IV are powerful lenses — not causal tools. They tell you: "Does this feature have discriminatory power, and does that relationship make business sense?" Pair them with monotonicity checks, missing-value analysis, and stability tracking over time. That combination is the foundation of sound credit feature engineering.
+WOE and IV are the most practical tools for feature screening in credit scoring — not because they're the most sophisticated, but because every number they produce has a direct business interpretation. A WOE of +0.98 for low-income borrowers is something you can explain to a risk officer, a regulator, and a junior analyst in the same sentence.
+
+Pair them with domain knowledge and stability testing. The sieve finds the gold; judgment tells you whether it's actually gold.
+
+---
+
+**References**
+- Kalatzis, A.E.G. et al. (2025). Machine learning powered financial credit scoring: a systematic literature review. *Artificial Intelligence Review*, 58, 144. [link.springer.com](https://link.springer.com/article/10.1007/s10462-025-11416-2) — Reviews 63 papers (2018–2024) on ML credit scoring methods; covers WOE-based feature engineering across approaches.
+- Chen, S., Calabrese, R., & Martin-Barragan, B. (2024). Interpretable machine learning for imbalanced credit scoring datasets. *European Journal of Operational Research*, 312(1), 357–372. [ideas.repec.org](https://ideas.repec.org/a/eee/ejores/v312y2024i1p357-372.html) — Analyses how class imbalance degrades SHAP/LIME stability; reinforces the practical robustness advantage of WOE-based encodings.
+- EBA (November 2025). *AI Act: Implications for the EU Banking and Payments Sector*. [eba.europa.eu](https://www.eba.europa.eu/sites/default/files/2025-11/d8b999ce-a1d9-4964-9606-971bbc2aaf89/AI%20Act%20implications%20for%20the%20EU%20banking%20sector.pdf) — Classifies ML-based credit scoring as high-risk AI; WOE+LogReg scorecards with fixed weights may be exempt.
+- `scorecardpy`: [github.com/ShichenLiu/scorecardpy](https://github.com/ShichenLiu/scorecardpy)
+- `optbinning`: [gnpalencia.org/optbinning](https://gnpalencia.org/optbinning/)

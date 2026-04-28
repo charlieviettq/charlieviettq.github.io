@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { GlobalSearch } from "@/components/GlobalSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -9,35 +12,76 @@ const links = [
 ];
 
 export function SiteNav() {
+  const pathname = usePathname();
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
   return (
-    <header className="border-b border-sky-200/70 bg-white/75 backdrop-blur-md dark:border-sky-500/25 dark:bg-zinc-950/75">
-      <div
-        className="mx-auto h-px max-w-6xl bg-gradient-to-r from-transparent via-sky-400/80 to-transparent dark:via-sky-500/50"
-        aria-hidden
-      />
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4">
+    <header
+      className="sticky top-0 z-40 backdrop-blur-md"
+      style={{
+        backgroundColor: "color-mix(in srgb, var(--background) 85%, transparent)",
+        borderBottom: "1px solid var(--border-warm)",
+      }}
+    >
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3">
+        {/* Logotype */}
         <Link
           href="/"
-          className="bg-gradient-to-r from-sky-600 to-indigo-600 bg-clip-text text-lg font-semibold tracking-tight text-transparent dark:from-sky-400 dark:to-indigo-400"
+          className="font-heading text-base font-bold tracking-tight transition-colors hover:text-amber-600 dark:hover:text-amber-400"
+          style={{ color: "var(--foreground)", letterSpacing: "-0.03em" }}
         >
           Trần Quốc Việt
         </Link>
+
         <div className="flex flex-wrap items-center gap-3 sm:gap-5">
-          <nav className="flex gap-4 text-sm font-medium text-zinc-600 sm:gap-6 dark:text-zinc-400">
-            {links.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="group relative transition-colors hover:text-sky-600 dark:hover:text-sky-400"
-              >
-                {label}
-                <span
-                  className="pointer-events-none absolute -bottom-1 left-0 h-0.5 w-0 rounded-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-200 group-hover:w-full"
-                  aria-hidden
-                />
-              </Link>
-            ))}
+          {/* Nav links */}
+          <nav className="flex gap-4 text-sm font-medium sm:gap-6" aria-label="Main navigation">
+            {links.map(({ href, label }) => {
+              const active = isActive(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className="group relative transition-colors"
+                  style={{
+                    color: active ? "var(--brand-from)" : "var(--foreground-secondary)",
+                    fontWeight: active ? 600 : 400,
+                  }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLElement).style.color = "var(--brand-from)")
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLElement).style.color = active
+                      ? "var(--brand-from)"
+                      : "var(--foreground-secondary)")
+                  }
+                >
+                  {label}
+                  {/* Active underbar */}
+                  <span
+                    className="pointer-events-none absolute -bottom-1 left-0 right-0 h-px rounded-full transition-all duration-200"
+                    style={{
+                      backgroundColor: "var(--brand-from)",
+                      opacity: active ? 1 : 0,
+                      width: active ? "100%" : "0%",
+                    }}
+                    aria-hidden
+                  />
+                  {/* Hover underbar */}
+                  {!active && (
+                    <span
+                      className="pointer-events-none absolute -bottom-1 left-0 h-px w-0 rounded-full transition-all duration-200 group-hover:w-full"
+                      style={{ backgroundColor: "var(--brand-from)", opacity: 0.5 }}
+                      aria-hidden
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
+
           <ThemeToggle />
           <GlobalSearch />
         </div>

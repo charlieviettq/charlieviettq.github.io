@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Dark rounded background -->
+  <rect width="32" height="32" rx="7" fill="#1a1a1a"/>
+  <!-- Open arc (partial circle, gap at top-right) -->
+  <circle cx="15" cy="14" r="10" fill="none" stroke="#888888" stroke-width="1.2"
+    stroke-dasharray="52 11" stroke-linecap="round" transform="rotate(-100 15 14)"/>
+  <!-- Connection lines -->
+  <line x1="15" y1="14" x2="8"  y2="22" stroke="#E2B34B" stroke-width="0.9" stroke-linecap="round"/>
+  <line x1="15" y1="14" x2="6"  y2="13" stroke="#E2B34B" stroke-width="0.9" stroke-linecap="round"/>
+  <line x1="15" y1="14" x2="23" y2="7"  stroke="#B8B8B8" stroke-width="0.9" stroke-linecap="round"/>
+  <line x1="15" y1="14" x2="24" y2="18" stroke="#B8B8B8" stroke-width="0.9" stroke-linecap="round"/>
+  <!-- Gold outer dots -->
+  <circle cx="8"  cy="22" r="2.2" fill="#E2B34B"/>
+  <circle cx="6"  cy="13" r="2.2" fill="#E2B34B"/>
+  <!-- Silver outer dots -->
+  <circle cx="23" cy="7"  r="2.2" fill="#D0D0D0"/>
+  <circle cx="24" cy="18" r="2.2" fill="#C8C8C8"/>
+  <!-- Hub: soft gold glow + center dot -->
+  <circle cx="15" cy="14" r="4.5" fill="#FFF3D0" opacity="0.22"/>
+  <circle cx="15" cy="14" r="2.2" fill="#E2B34B"/>
+</svg>

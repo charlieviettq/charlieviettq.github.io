@@ -165,6 +165,91 @@ weekly_model_monitor_dag
 | OOT AUC drop > 0.03 | 1. Check leakage trong dev data; 2. Retrain với data window gần nhất; 3. C/C testing |
 | Calibration drift > 1.5σ | 1. Platt scaling recalibration; 2. Notify Risk team về limit adjustment |
 
+**Playbook mẫu khi PSI > 0.25:**
+
+```
+Bước 1: Feature-level PSI
+  → Tính PSI cho từng feature riêng lẻ
+  → Xác định biến nào thay đổi nhiều nhất
+
+Bước 2: Kiểm tra nguyên nhân
+  → Có campaign marketing mới không?
+  → Có thay đổi policy trong period đó không?
+  → Có seasonal effect (Tết, mùa mưa) không?
+
+Bước 3: Đánh giá impact
+  → Chạy OOT trên 3 tháng gần nhất
+  → Nếu OOT Gini giảm > 5pt → escalate
+  → Nếu OOT Gini ổn định → document và monitor
+
+Bước 4: Quyết định
+  → Gini ổn + nguyên nhân rõ ràng → document, tiếp tục monitor
+  → Gini giảm + nguyên nhân không rõ → trigger model review
+```
+
+:::note[Lưu ý quan trọng]
+PSI cao ≠ model kém. PSI đo **population shift**, không đo model performance. Một model hoàn hảo vẫn có PSI cao nếu khách hàng thay đổi. Luôn pair PSI với Gini/KS để có bức tranh đầy đủ.
+:::
+
+### Code thực tế: Tính PSI với Python
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.metrics import roc_auc_score
+from scipy.stats import ks_2samp
+
+def calc_psi(expected: pd.Series, actual: pd.Series, n_bins: int = 10) -> float:
+    """
+    PSI theo chuẩn ngành.
+    expected = score distribution lúc training (baseline).
+    actual   = score distribution hiện tại (monitoring window).
+    """
+    # Tính breakpoints từ expected — KHÔNG dùng actual để tránh look-ahead bias
+    breakpoints = np.nanpercentile(expected, np.linspace(0, 100, n_bins + 1))
+    breakpoints = np.unique(breakpoints)
+
+    exp_counts, _ = np.histogram(expected, bins=breakpoints)
+    act_counts, _ = np.histogram(actual,   bins=breakpoints)
+
+    # Thay 0 bằng epsilon nhỏ để tránh log(0)
+    exp_pct = np.where(exp_counts == 0, 1e-4, exp_counts / len(expected))
+    act_pct = np.where(act_counts == 0, 1e-4, act_counts / len(actual))
+
+    psi = float(np.sum((act_pct - exp_pct) * np.log(act_pct / exp_pct)))
+    return psi
+
+def calc_gini(y_true, y_score) -> float:
+    return 2 * roc_auc_score(y_true, y_score) - 1
+
+def calc_ks(y_true, y_score) -> float:
+    bads  = y_score[y_true == 1]
+    goods = y_score[y_true == 0]
+    ks_stat, _ = ks_2samp(bads, goods)
+    return ks_stat
+
+# --- Ví dụ sử dụng trong monitoring pipeline ---
+# train_scores: Series — score của population lúc training
+# live_scores:  Series — score của applicants tuần này
+# y_true, y_pred: arrays với outcome đã materialise (approved customers only)
+
+psi   = calc_psi(train_scores, live_scores, n_bins=10)
+gini  = calc_gini(y_true, y_pred)
+ks    = calc_ks(y_true, y_pred)
+
+print(f"PSI  : {psi:.4f}  {'✅ Stable' if psi < 0.10 else '⚠️ Investigate' if psi < 0.25 else '🔴 Retrain'}")
+print(f"Gini : {gini:.3f}")
+print(f"KS   : {ks:.3f}")
+
+# --- Feature-level PSI khi score PSI cao ---
+feature_psi = {
+    col: calc_psi(train_df[col].dropna(), live_df[col].dropna())
+    for col in model_features
+}
+top_drifters = sorted(feature_psi.items(), key=lambda x: -x[1])[:5]
+print("Top drifting features:", top_drifters)
+```
+
 ### Những rủi ro thường trực
 
 - **Leakage trong OOT:** Nếu buffer window không đủ, OOT AUC sẽ inflated — cho bạn sự tự tin giả.
@@ -280,6 +365,100 @@ weekly_model_monitor_dag
 - **Alert fatigue:** Too many metrics with over-sensitive thresholds → team starts ignoring alerts. Three well-chosen metrics beat thirty noisy ones.
 - **Stale baseline:** Don't use the dev distribution as the PSI baseline indefinitely. Rebenchmark every 6–12 months.
 
+### PSI Thresholds — Industry Standard
+
+| PSI | Signal | Action |
+|---|---|---|
+| < 0.10 | ✅ Stable | Routine monitoring |
+| 0.10 – 0.25 | ⚠️ Investigate | Find root cause before acting |
+| > 0.25 | 🔴 Significant shift | Model review, consider retraining |
+
+### Model Degradation vs Population Shift — A Critical Distinction
+
+When PSI spikes, two very different things could be happening:
+
+**Population shift (PSI's job to detect):** The applicant mix changed — new channel, seasonal effect, marketing campaign. The model may still be perfectly valid for the *original* population. The right response is to understand the shift, not immediately retrain.
+
+**Model degradation (Gini/KS's job to detect):** The model's discriminatory power on *any* population has declined — features lost predictive power, the economic environment changed fundamentally. The right response is model review and potential retraining.
+
+Always diagnose which one you're facing before deciding on action.
+
+### Sample Playbook When PSI > 0.25
+
+```
+Step 1: Feature-level PSI
+  → Calculate PSI for each feature individually
+  → Identify which variables are driving the shift
+
+Step 2: Investigate root cause
+  → Any new marketing campaigns or channels?
+  → Any policy changes during the period?
+  → Seasonal effects (holidays, economic events)?
+
+Step 3: Assess model performance impact
+  → Run OOT on the most recent 3 months
+  → If OOT Gini drops > 5pt → escalate to model review
+  → If OOT Gini holds → document cause and continue monitoring
+
+Step 4: Decision
+  → Gini stable + clear cause identified → document, continue monitoring
+  → Gini declining + unclear cause → trigger formal model review
+```
+
+### Code Reference — PSI, Gini, KS in Python
+
+```python
+import numpy as np
+import pandas as pd
+from sklearn.metrics import roc_auc_score
+from scipy.stats import ks_2samp
+
+def calc_psi(expected: pd.Series, actual: pd.Series, n_bins: int = 10) -> float:
+    """
+    Population Stability Index — industry standard implementation.
+    Breakpoints are derived from `expected` only (training baseline).
+    Never use actual distribution to set breakpoints — that's look-ahead bias.
+    """
+    breakpoints = np.nanpercentile(expected, np.linspace(0, 100, n_bins + 1))
+    breakpoints = np.unique(breakpoints)
+
+    exp_counts, _ = np.histogram(expected, bins=breakpoints)
+    act_counts, _ = np.histogram(actual,   bins=breakpoints)
+
+    exp_pct = np.where(exp_counts == 0, 1e-4, exp_counts / len(expected))
+    act_pct = np.where(act_counts == 0, 1e-4, act_counts / len(actual))
+
+    return float(np.sum((act_pct - exp_pct) * np.log(act_pct / exp_pct)))
+
+# Gini and KS
+gini = 2 * roc_auc_score(y_true, y_score) - 1
+ks, _ = ks_2samp(y_score[y_true == 1], y_score[y_true == 0])
+
+# Weekly monitoring report
+psi = calc_psi(train_scores, live_scores)
+status = "✅ Stable" if psi < 0.10 else ("⚠️ Investigate" if psi < 0.25 else "🔴 Review")
+print(f"PSI={psi:.4f} ({status})  Gini={gini:.3f}  KS={ks:.3f}")
+
+# When PSI > 0.25 — drill down to feature level
+feature_psi = {
+    col: calc_psi(train_df[col].dropna(), live_df[col].dropna())
+    for col in model_features
+}
+top_drifters = sorted(feature_psi, key=lambda c: -feature_psi[c])[:5]
+print("Top drifting features:", [(c, round(feature_psi[c], 4)) for c in top_drifters])
+```
+
 ### Takeaways
 
 OOT and PSI are the audit layer of every risk model. Their real value isn't in computing the formula — it's in having a clear Playbook: when PSI crosses the threshold, the team knows exactly what to do in the next 24 hours. That's the difference between model monitoring and model governance.
+
+The most important discipline: distinguish between "the model got worse" and "the customers changed." PSI tells you the latter. Gini and KS tell you the former. You need both signals before making any decision about retraining.
+
+---
+
+**References**
+- ECB (July 2025). *Revised Guide to Internal Models — Chapter 9: Machine Learning Models*. ECB Banking Supervision. [bankingsupervision.europa.eu](https://www.bankingsupervision.europa.eu/ecb/pub/pdf/ssm.supervisory_guide202507.en.pdf) — Formally requires auditability infrastructure (versioning, logging, replication) and at least annual assessment of explainability tools for ML models.
+- FSB (October 2025). *Monitoring Adoption of Artificial Intelligence and Related Vulnerabilities in the Financial Sector*. Financial Stability Board. [fsb.org](https://www.fsb.org/2025/10/monitoring-adoption-of-artificial-intelligence-and-related-vulnerabilities-in-the-financial-sector/) — Identifies model risk and data quality as key AI vulnerabilities; recommends enhanced monitoring frameworks.
+- Gonçalves, P., et al. (2024). Evolving Strategies in Machine Learning: A Systematic Review of Concept Drift Detection. *Information*, 15(12), 786. MDPI. [mdpi.com](https://www.mdpi.com/2078-2489/15/12/786) — PRISMA-based review of concept drift detection methodologies; provides theoretical grounding for why PSI alone is insufficient.
+- `scipy.stats.ks_2samp`: [docs.scipy.org](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ks_2samp.html)
+- `sklearn.metrics.roc_auc_score`: [scikit-learn.org](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.roc_auc_score.html)

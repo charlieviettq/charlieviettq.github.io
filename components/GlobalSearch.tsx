@@ -134,14 +134,34 @@ export function GlobalSearch() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group flex items-center gap-2 rounded-full border border-sky-200/80 bg-white/90 px-3 py-1.5 text-sm text-zinc-600 shadow-sm transition hover:border-indigo-300 hover:bg-white hover:text-zinc-900 dark:border-sky-500/30 dark:bg-zinc-900/70 dark:text-zinc-300 dark:hover:border-indigo-400 dark:hover:bg-zinc-900"
+        className="group flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-all duration-150"
+        style={{
+          backgroundColor: "var(--surface-300)",
+          border: "1px solid var(--border-warm)",
+          color: "var(--foreground-secondary)",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.borderColor = "var(--border-warm-md)";
+          (e.currentTarget as HTMLElement).style.color = "var(--foreground)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.borderColor = "var(--border-warm)";
+          (e.currentTarget as HTMLElement).style.color = "var(--foreground-secondary)";
+        }}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label="Tìm kiếm blog / Search blog"
       >
-        <SearchIcon className="text-sky-600 dark:text-sky-400" />
-        <span className="hidden font-medium sm:inline">Tìm kiếm</span>
-        <kbd className="hidden rounded border border-zinc-200 bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] text-zinc-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 sm:inline-block">
+        <SearchIcon className="text-amber-500" />
+        <span className="hidden sm:inline">Tìm kiếm</span>
+        <kbd
+          className="hidden rounded-full px-2 py-0.5 font-mono text-[10px] sm:inline-block"
+          style={{
+            backgroundColor: "var(--surface-500)",
+            border: "1px solid var(--border-warm)",
+            color: "var(--foreground-secondary)",
+          }}
+        >
           {shortcutHint}
         </kbd>
       </button>
@@ -159,11 +179,22 @@ export function GlobalSearch() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="global-search-title"
-            className="w-full max-w-lg rounded-2xl border border-sky-200/80 bg-gradient-to-b from-white to-zinc-50/95 p-1 shadow-2xl shadow-sky-900/10 dark:border-sky-500/25 dark:from-zinc-900 dark:to-zinc-950/95 dark:shadow-black/40"
+            className="search-dialog-enter w-full max-w-lg rounded-2xl p-1"
+            style={{
+              backgroundColor: "var(--surface-200)",
+              border: "1px solid var(--border-warm-md)",
+              boxShadow: "var(--shadow-card)",
+            }}
           >
-            <div className="rounded-xl bg-white/80 p-4 dark:bg-zinc-950/80">
-              <div className="flex items-center gap-2 border-b border-zinc-200/80 pb-3 dark:border-zinc-700/80">
-                <SearchIcon className="shrink-0 text-sky-500 dark:text-sky-400" />
+            <div
+              className="rounded-xl p-4"
+              style={{ backgroundColor: "var(--surface-100)" }}
+            >
+              <div
+                className="flex items-center gap-2 pb-3"
+                style={{ borderBottom: "1px solid var(--border-warm)" }}
+              >
+                <SearchIcon className="shrink-0 text-amber-500" />
                 <div className="min-w-0 flex-1">
                   <h2 id="global-search-title" className="sr-only">
                     Tìm kiếm bài blog
@@ -176,19 +207,29 @@ export function GlobalSearch() {
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={onInputKeyDown}
-                    className="w-full border-0 bg-transparent text-base text-zinc-900 placeholder:text-zinc-400 outline-none dark:text-zinc-100 dark:placeholder:text-zinc-500"
+                    className="w-full border-0 bg-transparent text-base outline-none"
+                    style={{
+                      color: "var(--foreground)",
+                    }}
                     aria-describedby="global-search-hint"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={close}
-                  className="rounded-lg px-2 py-1 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+                  className="rounded-full px-2.5 py-1 text-xs font-medium transition-colors duration-150"
+                  style={{ color: "var(--foreground-secondary)", backgroundColor: "var(--surface-300)" }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--brand-from)")}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--foreground-secondary)")}
                 >
                   Esc
                 </button>
               </div>
-              <p id="global-search-hint" className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+              <p
+                id="global-search-hint"
+                className="mt-2 text-xs"
+                style={{ color: "var(--foreground-secondary)" }}
+              >
                 {loadError ??
                   (data === null
                     ? "Đang tải chỉ mục…"
@@ -196,7 +237,9 @@ export function GlobalSearch() {
               </p>
 
               {trimmed.length >= 2 && results.length === 0 && data && data.length > 0 ? (
-                <p className="mt-4 text-center text-sm text-zinc-500">Không có kết quả.</p>
+                <p className="mt-4 text-center text-sm" style={{ color: "var(--foreground-secondary)" }}>
+                  Không có kết quả.
+                </p>
               ) : null}
 
               {results.length > 0 ? (
@@ -207,14 +250,24 @@ export function GlobalSearch() {
                         type="button"
                         onClick={() => openResult(item.slug)}
                         onMouseEnter={() => setHighlighted(index)}
-                        className={`w-full rounded-xl border px-3 py-2.5 text-left transition ${
+                        className="w-full rounded-xl px-3 py-2.5 text-left transition-all duration-150"
+                        style={
                           index === highlighted
-                            ? "border-sky-400/80 bg-sky-50/90 dark:border-sky-500/50 dark:bg-sky-950/40"
-                            : "border-transparent bg-zinc-50/50 hover:border-zinc-200 hover:bg-white dark:bg-zinc-900/30 dark:hover:border-zinc-600 dark:hover:bg-zinc-900/60"
-                        }`}
+                            ? {
+                                backgroundColor: "var(--surface-400)",
+                                border: "1px solid var(--border-warm-md)",
+                              }
+                            : {
+                                backgroundColor: "transparent",
+                                border: "1px solid transparent",
+                              }
+                        }
                       >
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] font-medium uppercase tracking-wide text-zinc-500">
+                          <span
+                            className="text-[10px] font-medium uppercase tracking-wide"
+                            style={{ color: "var(--foreground-secondary)" }}
+                          >
                             {item.date}
                           </span>
                           <span
@@ -223,10 +276,16 @@ export function GlobalSearch() {
                             {CATEGORY_LABELS[item.category] ?? item.category}
                           </span>
                         </div>
-                        <p className="mt-0.5 font-semibold text-sky-800 dark:text-sky-300">
+                        <p
+                          className="mt-0.5 font-semibold"
+                          style={{ color: "var(--brand-from)" }}
+                        >
                           {item.title}
                         </p>
-                        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+                        <p
+                          className="mt-1 line-clamp-2 text-xs leading-relaxed"
+                          style={{ color: "var(--foreground-secondary)" }}
+                        >
                           {snippet}
                         </p>
                       </button>
