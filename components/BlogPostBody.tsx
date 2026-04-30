@@ -7,6 +7,8 @@ import { highlight } from "sugar-high";
 
 import remarkDocDirectives from "@/lib/remark-doc-directives";
 import { MarkdownDocAside } from "@/components/doc/MarkdownDocAside";
+import { PrettyCodeBlock } from "@/components/doc/PrettyCodeBlock";
+import { MermaidBlock } from "@/components/MermaidBlock";
 
 type Props = {
   content: string;
@@ -23,17 +25,22 @@ function CodeBlock({
 }) {
   const raw = String(children ?? "");
   const code = raw.replace(/\n$/, "");
+  const isInline =
+    inline ??
+    // react-markdown v10 can omit `inline` in some cases; infer from shape.
+    (!className && !code.includes("\n"));
 
-  if (inline) {
+  if (isInline) {
     return <code className={className}>{children}</code>;
   }
 
+  const lang = /language-(\w+)/.exec(className ?? "")?.[1];
+  if (lang?.toLowerCase() === "mermaid") {
+    return <MermaidBlock code={code} />;
+  }
+
   const html = highlight(code);
-  return (
-    <pre className={className}>
-      <code dangerouslySetInnerHTML={{ __html: html }} />
-    </pre>
-  );
+  return <PrettyCodeBlock html={html} code={code} language={lang} />;
 }
 
 export function BlogPostBody({ content }: Props) {
