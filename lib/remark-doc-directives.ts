@@ -12,6 +12,11 @@ const CALLOUTS = new Set([
   "todo",
 ]);
 
+type HastDirectiveData = {
+  hName?: string;
+  hProperties?: Record<string, unknown>;
+};
+
 function isDirectiveLabelParagraph(
   node: ContainerDirective["children"][number],
 ): node is Paragraph & { data?: { directiveLabel?: boolean } } {
@@ -57,7 +62,7 @@ export default function remarkDocDirectives() {
 
       if (CALLOUTS.has(name)) {
         const { title, body } = extractTitleAndBody(node.children);
-        const data = node.data ?? (node.data = {});
+        const data = (node.data ?? (node.data = {})) as HastDirectiveData;
         data.hName = "aside";
         data.hProperties = {
           className: ["doc-callout", `doc-callout--${name}`],
@@ -69,7 +74,7 @@ export default function remarkDocDirectives() {
 
       if (name === "expand") {
         const { title, body } = extractTitleAndBody(node.children);
-        const data = node.data ?? (node.data = {});
+        const data = (node.data ?? (node.data = {})) as HastDirectiveData;
         data.hName = "aside";
         data.hProperties = {
           className: ["doc-callout", "doc-expand"],

@@ -4,8 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "predev": "node scripts/generate-search-index.mjs",
-    "prebuild": "node scripts/generate-search-index.mjs",
     "start": "next start",
     "lint": "eslint",
     "build": "next build"
