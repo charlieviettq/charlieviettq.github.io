@@ -1,13 +1,7 @@
 import Link from "next/link";
 import { CharlieLogoSVG } from "@/components/CharlieLogoSVG";
-import { AnimatedPills } from "@/components/AnimatedPills";
 import { ConstellationBg } from "@/components/ConstellationBg";
 import { HeroTiltCard } from "@/components/HeroTiltCard";
-import {
-  BLOG_CATEGORY_ORDER,
-  getCategoryLabel,
-  getCategoryPillClasses,
-} from "@/lib/posts";
 
 const FU = (delay: string) =>
   `page-fade-up 0.58s cubic-bezier(0.22,1,0.36,1) ${delay} both`;
@@ -100,17 +94,6 @@ export default function Home() {
                     >
                       About / Giới thiệu
                     </Link>
-                    <Link
-                      href="/blog/"
-                      className="rounded-lg px-5 py-2.5 text-sm font-semibold transition hover:opacity-80"
-                      style={{
-                        backgroundColor: "color-mix(in srgb, var(--surface-300) 80%, transparent)",
-                        border: "1px solid var(--border-warm)",
-                        color: "var(--foreground)",
-                      }}
-                    >
-                      Blog →
-                    </Link>
                   </div>
                 </div>
 
@@ -149,32 +132,6 @@ export default function Home() {
               </div>
             </div>
           </HeroTiltCard>
-
-          {/* ── Category pills — glass panel + spring animation ──────────────── */}
-          <section
-            className="rounded-2xl p-5"
-            style={GLASS}
-          >
-            <h2
-              className="mb-3 font-heading text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "var(--foreground-secondary)" }}
-            >
-              Blog theo mục / Topics
-            </h2>
-            <AnimatedPills>
-              <div className="flex flex-wrap gap-2">
-                {BLOG_CATEGORY_ORDER.map((cat) => (
-                  <Link
-                    key={cat}
-                    href={`/blog/#${cat}`}
-                    className={`pill-item rounded-md px-3 py-1.5 text-xs font-semibold shadow-sm transition hover:opacity-90 ${getCategoryPillClasses(cat)}`}
-                  >
-                    {getCategoryLabel(cat)}
-                  </Link>
-                ))}
-              </div>
-            </AnimatedPills>
-          </section>
 
         </div>
       </div>

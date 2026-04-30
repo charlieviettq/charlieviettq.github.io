@@ -11,10 +11,10 @@ export default function NotFound() {
         This page may have been moved, or the URL is incorrect.
       </p>
       <Link
-        href="/blog/"
+        href="/"
         className="rounded-lg bg-amber-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-amber-500"
       >
-        Browse all posts
+        Back to home
       </Link>
     </main>
   );

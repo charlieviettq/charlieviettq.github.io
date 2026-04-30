@@ -2,13 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GlobalSearch } from "@/components/GlobalSearch";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const links = [
   { href: "/", label: "Home" },
   { href: "/about/", label: "About" },
-  { href: "/blog/", label: "Blog" },
 ];
 
 export function SiteNav() {
@@ -83,7 +81,6 @@ export function SiteNav() {
           </nav>
 
           <ThemeToggle />
-          <GlobalSearch />
         </div>
       </div>
     </header>
