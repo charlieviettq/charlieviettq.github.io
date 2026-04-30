@@ -5,12 +5,13 @@ import { useEffect, useState } from "react";
 const LANG_KEY = "about-lang";
 type Lang = "vi" | "en";
 
-/* ── Tech icon map — simple-icons CDN slugs ───────────────────────────────── */
+/* ── Tech icon map — cdn.simpleicons.org slugs ───────────────────────────── */
 
 const ICON_MAP: Record<string, string> = {
   "Python":          "python",
   "PyTorch":         "pytorch",
   "TensorFlow":      "tensorflow",
+  "PhoBERT":         "pytorch",
   "MongoDB":         "mongodb",
   "Airflow":         "apacheairflow",
   "Kafka":           "apachekafka",
@@ -25,6 +26,9 @@ const ICON_MAP: Record<string, string> = {
   "Gemini / OpenAI": "openai",
   "Superset":        "apachesuperset",
   "Doris":           "apachedoris",
+  "LightGBM":        "python",
+  "XGBoost":         "python",
+  "Feast":           "python",
 };
 
 /* ── Per-role tech stacks ─────────────────────────────────────────────────── */
