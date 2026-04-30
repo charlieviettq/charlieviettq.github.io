@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { BlogPostBody } from "@/components/BlogPostBody";
+import { BlogToc } from "@/components/blog/BlogToc";
 import { getPostBySlug, getPostSlugs } from "@/lib/posts";
+import { buildTocFromMarkdown } from "@/lib/toc";
 
 export const dynamic = "error";
 
@@ -23,8 +25,13 @@ export default async function BlogPostPage({
     notFound();
   }
 
+  const toc = buildTocFromMarkdown(post.content).filter(
+    // keep page scannable: include most headings, but avoid clutter from small sections
+    (it) => it.title !== "References" && it.title !== "Tham khảo / References",
+  );
+
   return (
-    <article className="mx-auto max-w-3xl">
+    <article className="mx-auto max-w-6xl">
       <header className="mb-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
           {post.frontMatter.category ?? "banking"} ·{" "}
@@ -49,7 +56,14 @@ export default async function BlogPostPage({
         </div>
       </header>
 
-      <BlogPostBody content={post.content} />
+      <div className="mx-auto flex max-w-6xl items-start gap-8">
+        <div className="min-w-0 flex-1">
+          <div className="mx-auto max-w-3xl">
+            <BlogPostBody content={post.content} />
+          </div>
+        </div>
+        <BlogToc items={toc} />
+      </div>
     </article>
   );
 }
