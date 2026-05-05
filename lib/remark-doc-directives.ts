@@ -81,6 +81,18 @@ export default function remarkDocDirectives() {
           ...(title ? { dataDocTitle: title } : {}),
         };
         node.children = body;
+        return;
+      }
+
+      if (name === "diagram") {
+        const { title, body } = extractTitleAndBody(node.children);
+        const data = (node.data ?? (node.data = {})) as HastDirectiveData;
+        data.hName = "aside";
+        data.hProperties = {
+          className: ["doc-diagram"],
+          ...(title ? { dataDocTitle: title } : {}),
+        };
+        node.children = body;
       }
     });
   };

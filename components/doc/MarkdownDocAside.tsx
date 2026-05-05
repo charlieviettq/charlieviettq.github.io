@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 
+import { DiagramFigure } from "@/components/blog/DiagramFigure";
+
 const variantStyles: Record<string, string> = {
   note: "border-sky-400/80 bg-sky-50/90 dark:bg-sky-950/40",
   info: "border-blue-400/80 bg-blue-50/90 dark:bg-blue-950/40",
@@ -26,7 +28,8 @@ type Props = {
 };
 
 /**
- * Renders `aside.doc-callout` from remark directives. `doc-expand` becomes `<details>`.
+ * Renders remark directives mapped to `<aside>`: `doc-diagram` → DiagramFigure;
+ * `doc-expand` → `<details>`; callouts → tinted aside.
  */
 export function MarkdownDocAside({
   className,
@@ -35,6 +38,12 @@ export function MarkdownDocAside({
   dataDocTitle,
 }: Props) {
   const title = dataDocTitle ?? dataKebab;
+  const isDiagram = className?.includes("doc-diagram");
+
+  if (isDiagram) {
+    return <DiagramFigure title={title}>{children}</DiagramFigure>;
+  }
+
   const isExpand = className?.includes("doc-expand");
 
   if (isExpand) {
