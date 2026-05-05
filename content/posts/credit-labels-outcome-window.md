@@ -119,11 +119,11 @@ Một vài **definition patterns** (dạng khung, bạn điền tham số theo s
 
 Outcome window là khoảng thời gian từ **điểm quan sát** (thường là thời điểm phê duyệt hồ sơ) đến khi bạn **gắn label**.
 
-```mermaid
-flowchart LR
-  A["Origination_date"] --> B["Label_date"]
-  A -->|"Outcome_window"| B
-```
+:::diagram[Từ origination (quan sát) tới ngày gắn nhãn]
+
+![](/blog/diagrams/credit-labels-outcome-window/outcome-window-section.svg)
+
+:::
 
 Ví dụ với window 12 tháng: khách vay tháng 1/2023, bạn nhìn hành vi đến tháng 1/2024. Nếu trong period đó có DPD ≥ 60 → label = bad.
 
@@ -296,11 +296,11 @@ Never let label names hide the actual definition. Always specify **observation p
 
 The outcome window is the period from the **observation point** (usually loan origination) to when you **assign the label**.
 
-```mermaid
-flowchart LR
-  A["Origination_date"] --> B["Label_date"]
-  A -->|"Outcome_window"| B
-```
+:::diagram[Observation point to label date]
+
+![](/blog/diagrams/credit-labels-outcome-window/outcome-window-section.svg)
+
+:::
 
 Example with a 12-month window: a loan originated in Jan 2023 is observed through Jan 2024. If DPD ≥ 60 occurs during that period → label = bad.
 
