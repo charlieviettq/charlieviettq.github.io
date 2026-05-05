@@ -22,6 +22,14 @@ Bài dùng [remark-directive](https://github.com/remarkjs/remark-directive): kh�
 | Divider | `---` trên một dòng | `<hr>` có style chấm. |
 | **BeGuru flow (React Flow)** | Fence ` ```beguru-flow ` + JSON | [`@xyflow/react`](https://reactflow.dev/): `layers`, `nodes`, `edges` — pan/zoom, hover highlight. Dùng cho sơ đồ kiến trúc tùy chỉnh. |
 | Mermaid | Fence ` ```mermaid ` | Render SVG qua `mermaid` (sequenceDiagram, flowchart, …). **Sequence / diagram đặc thù** vẫn dùng Mermaid; sơ đồ runtime có cấu trúc cột nên ưu tiên `beguru-flow`. |
+| Diagram (SVG/PNG tĩnh) | `:::diagram[Caption ngắn]` + `![](/blog/diagrams/<slug>/…)` … `:::` | Khung/caption đồng bộ `chart-glow-frame`; asset commit vào repo (không generate trong CI). |
+
+### Diagrams (Fireworks / static assets)
+
+- **Khi nào:** Sơ đồ “hero”, typography/legend rõ, hoặc brand look — export **SVG** (tuỳ chọn **PNG** ~1920px cho Retina/social) và commit vào repo.
+- **Khi nào không:** Sơ đồ nhanh, lặp lại, sequence đơn giản → dùng **Mermaid** (đã có).
+- **Đường dẫn:** `public/blog/diagrams/<post-slug>/<tên-mô-tả>.svg` — URL trong Markdown: `/blog/diagrams/<post-slug>/<tên>.svg`.
+- **Quy trình (tóm tắt):** phân loại diagram → chọn layout → style reference (Flat Icon / warm palette blog) → viết/validate SVG → commit → embed trong bài; có thể validate PNG bằng `rsvg-convert` nếu bạn export PNG local.
 
 Ví dụ:
 
@@ -32,6 +40,12 @@ API có thể đổi theo version beguru-ai — đối chiếu `docs/API_SPEC.md
 
 :::expand[Chi tiết thêm]
 Đoạn dài có thể thu gọn.
+:::
+
+:::diagram[Caption dưới khung — ví dụ outcome window]
+
+![Mô tả alt ngắn](/blog/diagrams/my-post-slug/my-diagram.svg)
+
 :::
 ```
 

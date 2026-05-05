@@ -21,6 +21,12 @@ category: banking
 - **Label maturity** là điều kiện tiên quyết trước khi chia train/test — không phải sau.
 - Charge-off, write-off, settlement đều là bad nhưng **không tương đương nhau** về timing và business implication.
 
+:::diagram[Outcome window — từ origination (T₀) đến label maturity]
+
+![Outcome window — origination to label maturity](/blog/diagrams/credit-labels-outcome-window/outcome-window.svg)
+
+:::
+
 ---
 
 ## VI
