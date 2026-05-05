@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 132" role="img" aria-labelledby="stitle sdesc">
+  <title id="stitle">Outcome window from origination to label date</title>
+  <desc id="sdesc">Two milestones connected by an outcome window span.</desc>
+  <defs>
+    <linearGradient id="sec-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fffbeb"/>
+      <stop offset="100%" stop-color="#fef3c7"/>
+    </linearGradient>
+    <filter id="sec-soft" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <rect width="680" height="132" fill="#fafaf9" rx="10"/>
+  <!-- left node -->
+  <g filter="url(#sec-soft)">
+    <rect x="28" y="36" width="168" height="60" rx="10" fill="url(#sec-bg)" stroke="#f59e0b" stroke-width="1.25" stroke-opacity="0.55"/>
+  </g>
+  <text x="112" y="64" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="600" fill="#78350f">Origination</text>
+  <text x="112" y="82" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10.5" fill="#92400e">(observation)</text>
+  <!-- connector -->
+  <path d="M 204 66 L 448 66" stroke="#78716c" stroke-width="2" stroke-linecap="round"/>
+  <polygon points="448,66 438,61 438,71" fill="#78716c"/>
+  <rect x="268" y="38" width="144" height="22" rx="6" fill="#fef9c3" stroke="#eab308" stroke-width="1" stroke-opacity="0.45"/>
+  <text x="340" y="54" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="600" fill="#854d0e">Outcome window</text>
+  <!-- right node -->
+  <g filter="url(#sec-soft)">
+    <rect x="484" y="36" width="168" height="60" rx="10" fill="#fafafa" stroke="#c4b5fd" stroke-width="1.25"/>
+  </g>
+  <text x="568" y="72" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="600" fill="#4c1d95">Label date</text>
+</svg>
