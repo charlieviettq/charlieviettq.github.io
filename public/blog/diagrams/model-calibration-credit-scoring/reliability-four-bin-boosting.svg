@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 460" role="img" aria-labelledby="title desc">
+  <title id="title">Four-bin reliability diagram for uncorrected boosting</title>
+  <desc id="desc">Illustrative four quantile bins with curve below perfect calibration diagonal.</desc>
+  <rect width="900" height="460" fill="#fafaf9" rx="12"/>
+  <text x="450" y="34" text-anchor="middle" font-size="16" font-weight="700" fill="#292524" font-family="ui-sans-serif, system-ui, sans-serif">Reliability diagram  -  raw boosting (illustrative)</text>
+  <text x="450" y="54" text-anchor="middle" font-size="11" fill="#78716c" font-family="ui-sans-serif, system-ui, sans-serif">Test 4,000 accounts | overall observed bad rate 7.5%</text>
+
+  <rect x="64" y="72" width="400" height="340" fill="#ffffff" stroke="#e7e5e4" rx="8"/>
+  <line x1="84" y1="392" x2="444" y2="392" stroke="#57534e" stroke-width="1.5"/>
+  <line x1="84" y1="92" x2="84" y2="392" stroke="#57534e" stroke-width="1.5"/>
+  <text x="264" y="424" text-anchor="middle" font-size="12" fill="#44403c" font-family="ui-sans-serif, system-ui, sans-serif">Mean predicted PD</text>
+  <text x="38" y="242" text-anchor="middle" font-size="12" fill="#44403c" transform="rotate(-90 38 242)" font-family="ui-sans-serif, system-ui, sans-serif">Observed default rate</text>
+
+  <line x1="94" y1="382" x2="434" y2="122" stroke="#a8a29e" stroke-width="2" stroke-dasharray="6 4"/>
+
+  <circle cx="118" cy="370" r="6" fill="#dc2626"/>
+  <circle cx="178" cy="338" r="6" fill="#dc2626"/>
+  <circle cx="268" cy="278" r="6" fill="#dc2626"/>
+  <circle cx="398" cy="178" r="6" fill="#dc2626"/>
+  <path d="M 118 370 L 178 338 L 268 278 L 398 178" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+
+  <text x="118" y="358" text-anchor="middle" font-size="9" fill="#dc2626" font-family="ui-sans-serif, system-ui, sans-serif">B1</text>
+  <text x="178" y="326" text-anchor="middle" font-size="9" fill="#dc2626" font-family="ui-sans-serif, system-ui, sans-serif">B2</text>
+  <text x="268" y="266" text-anchor="middle" font-size="9" fill="#dc2626" font-family="ui-sans-serif, system-ui, sans-serif">B3</text>
+  <text x="398" y="166" text-anchor="middle" font-size="9" fill="#dc2626" font-family="ui-sans-serif, system-ui, sans-serif">B4</text>
+
+  <text x="94" y="408" font-size="9" fill="#78716c" font-family="ui-sans-serif, system-ui, sans-serif">0</text>
+  <text x="434" y="408" font-size="9" fill="#78716c" font-family="ui-sans-serif, system-ui, sans-serif">0.25</text>
+
+  <rect x="488" y="72" width="348" height="340" rx="10" fill="#ffffff" stroke="#e7e5e4"/>
+  <text x="508" y="100" font-size="13" font-weight="700" fill="#292524" font-family="ui-sans-serif, system-ui, sans-serif">Bin summary (N=1,000 each)</text>
+
+  <text x="508" y="128" font-size="10" font-weight="600" fill="#78716c" font-family="ui-sans-serif, system-ui, sans-serif">Bin | Pred | Obs | vs diagonal</text>
+  <line x1="508" y1="134" x2="820" y2="134" stroke="#e7e5e4"/>
+
+  <text x="508" y="158" font-size="11" fill="#44403c" font-family="ui-monospace, monospace">1   | 2.0% | 0.8% | near</text>
+  <text x="508" y="182" font-size="11" fill="#44403c" font-family="ui-monospace, monospace">2   | 5.0% | 3.5% | below</text>
+  <text x="508" y="206" font-size="11" fill="#44403c" font-family="ui-monospace, monospace">3   | 10%  | 8.2% | below</text>
+  <text x="508" y="230" font-size="11" fill="#44403c" font-family="ui-monospace, monospace">4   | 22%  | 17.5%| below (tail)</text>
+
+  <rect x="508" y="252" width="308" height="72" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="520" y="276" font-size="11" font-weight="600" fill="#92400e" font-family="ui-sans-serif, system-ui, sans-serif">Rank can still look good</text>
+  <text x="520" y="294" font-size="10.5" fill="#78350f" font-family="ui-sans-serif, system-ui, sans-serif">Bin 4 worse than bin 1, so AUC/Gini may be strong</text>
+  <text x="520" y="310" font-size="10.5" fill="#78350f" font-family="ui-sans-serif, system-ui, sans-serif">while PD scale is wrong for pricing / ECL</text>
+
+  <rect x="508" y="338" width="308" height="58" rx="6" fill="#fef2f2" stroke="#fca5a5"/>
+  <text x="520" y="360" font-size="11" font-weight="600" fill="#991b1b" font-family="ui-sans-serif, system-ui, sans-serif">Curve below diagonal = overconfident</text>
+  <text x="520" y="378" font-size="10.5" fill="#7f1d1d" font-family="ui-sans-serif, system-ui, sans-serif">Typical for gradient boosting before calibration</text>
+</svg>

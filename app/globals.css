@@ -123,7 +123,8 @@
   --font-heading: var(--font-exo);
   --font-sans:    var(--font-exo);
   --font-serif:   var(--font-lora);
-  --font-mono:    var(--font-roboto-mono);
+  --font-mono:    var(--font-jetbrains-mono);
+  --font-blog:    "JetBrains Sans", var(--font-exo), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ── Body background ────────────────────────────────────────────────────────── */
@@ -165,14 +166,25 @@ h1, h2, h3 { letter-spacing: -0.022em; }
 h1          { letter-spacing: -0.03em; }
 h4, h5      { letter-spacing: -0.01em; }
 
-/* ── Blog prose: serif body, warm headings ──────────────────────────────────── */
+/* ── Blog prose: JetBrains Sans body (readable technical), warm Exo headings ─ */
 .beguru-docs.prose p,
 .beguru-docs.prose li,
-.beguru-docs.prose blockquote p {
-  font-family: var(--font-serif), "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  font-size: 1.05rem;
-  line-height: 1.78;
+.beguru-docs.prose blockquote p,
+.beguru-docs.prose td,
+.beguru-docs.prose th {
+  font-family: var(--font-blog);
+  font-size: 1rem;
+  line-height: 1.72;
   color: var(--foreground);
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+.beguru-docs.prose h1,
+.beguru-docs.prose h2,
+.beguru-docs.prose h3,
+.beguru-docs.prose h4 {
+  font-family: var(--font-blog);
+  letter-spacing: -0.02em;
 }
 
 .dark .beguru-docs.prose p,

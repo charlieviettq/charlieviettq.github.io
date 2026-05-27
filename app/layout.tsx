@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Exo_2, Lora, Roboto_Mono } from "next/font/google";
+import { Exo_2, JetBrains_Mono, Lora } from "next/font/google";
 import "./globals.css";
 import { SiteNav } from "@/components/SiteNav";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -21,10 +21,10 @@ const lora = Lora({
   display: "swap",
 });
 
-const robotoMono = Roboto_Mono({
-  variable: "--font-roboto-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -57,8 +57,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=JetBrains+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
-        className={`${exo2.variable} ${lora.variable} ${robotoMono.variable} min-h-screen font-sans antialiased`}
+        className={`${exo2.variable} ${lora.variable} ${jetbrainsMono.variable} min-h-screen font-sans antialiased`}
       >
         <ThemeProvider>
           <TopProgressBar />
