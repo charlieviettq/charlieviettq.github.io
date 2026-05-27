@@ -9,6 +9,8 @@ import remarkDocDirectives from "@/lib/remark-doc-directives";
 import { MarkdownDocAside } from "@/components/doc/MarkdownDocAside";
 import { PrettyCodeBlock } from "@/components/doc/PrettyCodeBlock";
 import { MermaidBlock } from "@/components/MermaidBlock";
+import { ThemedDiagram } from "@/components/blog/ThemedDiagram";
+import { isThemedDiagramSrc } from "@/lib/themed-diagram";
 
 type Props = {
   content: string;
@@ -52,6 +54,20 @@ export function BlogPostBody({ content }: Props) {
         components={{
           aside: (props) => <MarkdownDocAside {...props} />,
           code: (props) => <CodeBlock {...props} />,
+          img: ({ src, alt }) => {
+            const url = typeof src === "string" ? src : undefined;
+            if (url && isThemedDiagramSrc(url)) {
+              return <ThemedDiagram src={url} alt={alt} />;
+            }
+            return (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={url}
+                alt={alt ?? ""}
+                className="mx-auto block max-w-full"
+              />
+            );
+          },
         }}
       >
         {content}

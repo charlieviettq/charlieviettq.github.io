@@ -56,6 +56,28 @@
     0 12px 32px -20px color-mix(in srgb, var(--foreground) 10%, transparent);
   --diagram-radius: 1rem;
   --diagram-grid-dot: color-mix(in srgb, var(--foreground) 12%, transparent);
+
+  /* Inline SVG diagram tokens (ThemedDiagram) */
+  --diagram-svg-canvas: #fafaf9;
+  --diagram-svg-panel: #ffffff;
+  --diagram-svg-panel-muted: #f5f5f4;
+  --diagram-svg-text: #292524;
+  --diagram-svg-text-secondary: #44403c;
+  --diagram-svg-muted: #78716c;
+  --diagram-svg-axis: #57534e;
+  --diagram-svg-line-muted: #a8a29e;
+  --diagram-svg-border: #e7e5e4;
+  --diagram-svg-tint-amber: #fffbeb;
+  --diagram-svg-tint-amber-2: #fef3c7;
+  --diagram-svg-tint-amber-stroke: #fcd34d;
+  --diagram-svg-tint-blue: #eff6ff;
+  --diagram-svg-tint-blue-2: #dbeafe;
+  --diagram-svg-tint-blue-stroke: #93c5fd;
+  --diagram-svg-tint-green: #ecfdf5;
+  --diagram-svg-tint-green-2: #d1fae5;
+  --diagram-svg-tint-green-stroke: #6ee7b7;
+  --diagram-svg-tint-red: #fef2f2;
+  --diagram-svg-tint-red-stroke: #fca5a5;
 }
 
 .dark {
@@ -93,6 +115,27 @@
     0 28px 56px -24px color-mix(in srgb, var(--brand-from) 14%, transparent),
     0 16px 40px -22px color-mix(in srgb, #000000 55%, transparent);
   --diagram-grid-dot: color-mix(in srgb, var(--foreground) 22%, transparent);
+
+  --diagram-svg-canvas: #1a1814;
+  --diagram-svg-panel: #2a261e;
+  --diagram-svg-panel-muted: #242019;
+  --diagram-svg-text: #e8e6de;
+  --diagram-svg-text-secondary: #c9c6bc;
+  --diagram-svg-muted: #a8a29e;
+  --diagram-svg-axis: #d6d3d1;
+  --diagram-svg-line-muted: #78716c;
+  --diagram-svg-border: color-mix(in srgb, var(--foreground) 18%, transparent);
+  --diagram-svg-tint-amber: color-mix(in srgb, #f59e0b 14%, #1a1814);
+  --diagram-svg-tint-amber-2: color-mix(in srgb, #f59e0b 22%, #242019);
+  --diagram-svg-tint-amber-stroke: color-mix(in srgb, #fcd34d 55%, transparent);
+  --diagram-svg-tint-blue: color-mix(in srgb, #3b82f6 12%, #1a1814);
+  --diagram-svg-tint-blue-2: color-mix(in srgb, #3b82f6 20%, #242019);
+  --diagram-svg-tint-blue-stroke: color-mix(in srgb, #93c5fd 45%, transparent);
+  --diagram-svg-tint-green: color-mix(in srgb, #10b981 12%, #1a1814);
+  --diagram-svg-tint-green-2: color-mix(in srgb, #10b981 18%, #242019);
+  --diagram-svg-tint-green-stroke: color-mix(in srgb, #6ee7b7 40%, transparent);
+  --diagram-svg-tint-red: color-mix(in srgb, #ef4444 12%, #1a1814);
+  --diagram-svg-tint-red-stroke: color-mix(in srgb, #fca5a5 40%, transparent);
 }
 
 @theme inline {
@@ -301,6 +344,12 @@ h4, h5      { letter-spacing: -0.01em; }
 }
 .dark .architecture-figure__scroll::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--foreground) 35%, transparent);
+}
+
+/* Inline blog diagrams — inherit theme via CSS variables inside SVG */
+.themed-diagram svg text,
+.themed-diagram svg tspan {
+  font-family: var(--font-blog);
 }
 
 /* React Flow grid */
