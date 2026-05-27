@@ -2,17 +2,17 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 420" role="img" aria-labelledby="title desc">
   <title id="title">Reliability diagram before and after Platt scaling</title>
   <desc id="desc">Raw boosting curve below diagonal moves closer after Platt on the same test set; AUC nearly unchanged.</desc>
-  <rect width="820" height="420" fill="#fafaf9" rx="12"/>
-  <text x="410" y="36" text-anchor="middle" font-size="16" font-weight="700" fill="#292524" font-family="ui-sans-serif, system-ui, sans-serif">Same test set: raw boosting vs after Platt</text>
-  <text x="410" y="56" text-anchor="middle" font-size="11" fill="#78716c" font-family="ui-sans-serif, system-ui, sans-serif">Calibration fit on separate holdout; evaluate once on test</text>
+  <rect width="820" height="420" fill="var(--diagram-svg-canvas)" rx="12"/>
+  <text x="410" y="36" text-anchor="middle" font-size="16" font-weight="700" fill="var(--diagram-svg-text)" font-family="ui-sans-serif, system-ui, sans-serif">Same test set: raw boosting vs after Platt</text>
+  <text x="410" y="56" text-anchor="middle" font-size="11" fill="var(--diagram-svg-muted)" font-family="ui-sans-serif, system-ui, sans-serif">Calibration fit on separate holdout; evaluate once on test</text>
 
-  <rect x="88" y="78" width="400" height="300" fill="#ffffff" stroke="#e7e5e4" rx="8"/>
-  <line x1="108" y1="358" x2="468" y2="358" stroke="#57534e" stroke-width="1.5"/>
-  <line x1="108" y1="98" x2="108" y2="358" stroke="#57534e" stroke-width="1.5"/>
-  <text x="288" y="392" text-anchor="middle" font-size="12" fill="#44403c" font-family="ui-sans-serif, system-ui, sans-serif">Mean predicted PD</text>
-  <text x="52" y="228" text-anchor="middle" font-size="12" fill="#44403c" transform="rotate(-90 52 228)" font-family="ui-sans-serif, system-ui, sans-serif">Observed default rate</text>
+  <rect x="88" y="78" width="400" height="300" fill="var(--diagram-svg-panel)" stroke="var(--diagram-svg-border)" rx="8"/>
+  <line x1="108" y1="358" x2="468" y2="358" stroke="var(--diagram-svg-axis)" stroke-width="1.5"/>
+  <line x1="108" y1="98" x2="108" y2="358" stroke="var(--diagram-svg-axis)" stroke-width="1.5"/>
+  <text x="288" y="392" text-anchor="middle" font-size="12" fill="var(--diagram-svg-text-secondary)" font-family="ui-sans-serif, system-ui, sans-serif">Mean predicted PD</text>
+  <text x="52" y="228" text-anchor="middle" font-size="12" fill="var(--diagram-svg-text-secondary)" transform="rotate(-90 52 228)" font-family="ui-sans-serif, system-ui, sans-serif">Observed default rate</text>
 
-  <line x1="118" y1="348" x2="458" y2="108" stroke="#a8a29e" stroke-width="2" stroke-dasharray="6 4"/>
+  <line x1="118" y1="348" x2="458" y2="108" stroke="var(--diagram-svg-line-muted)" stroke-width="2" stroke-dasharray="6 4"/>
 
   <path d="M 128 342 L 188 310 L 258 258 L 388 168" fill="none" stroke="#dc2626" stroke-width="2.5"/>
   <circle cx="128" cy="342" r="4" fill="#dc2626"/>
@@ -26,20 +26,20 @@
   <circle cx="268" cy="288" r="4" fill="#059669"/>
   <circle cx="378" cy="198" r="4" fill="#059669"/>
 
-  <rect x="508" y="98" width="280" height="260" rx="10" fill="#ffffff" stroke="#e7e5e4"/>
-  <text x="528" y="128" font-size="13" font-weight="700" fill="#292524" font-family="ui-sans-serif, system-ui, sans-serif">Legend</text>
-  <line x1="528" y1="152" x2="568" y2="152" stroke="#a8a29e" stroke-width="2" stroke-dasharray="6 4"/>
-  <text x="578" y="156" font-size="12" fill="#44403c" font-family="ui-sans-serif, system-ui, sans-serif">Perfect calibration</text>
+  <rect x="508" y="98" width="280" height="260" rx="10" fill="var(--diagram-svg-panel)" stroke="var(--diagram-svg-border)"/>
+  <text x="528" y="128" font-size="13" font-weight="700" fill="var(--diagram-svg-text)" font-family="ui-sans-serif, system-ui, sans-serif">Legend</text>
+  <line x1="528" y1="152" x2="568" y2="152" stroke="var(--diagram-svg-line-muted)" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="578" y="156" font-size="12" fill="var(--diagram-svg-text-secondary)" font-family="ui-sans-serif, system-ui, sans-serif">Perfect calibration</text>
   <line x1="528" y1="182" x2="568" y2="182" stroke="#dc2626" stroke-width="2.5"/>
-  <text x="578" y="186" font-size="12" fill="#44403c" font-family="ui-sans-serif, system-ui, sans-serif">Raw boosting (test)</text>
+  <text x="578" y="186" font-size="12" fill="var(--diagram-svg-text-secondary)" font-family="ui-sans-serif, system-ui, sans-serif">Raw boosting (test)</text>
   <line x1="528" y1="212" x2="568" y2="212" stroke="#059669" stroke-width="2.5"/>
-  <text x="578" y="216" font-size="12" fill="#44403c" font-family="ui-sans-serif, system-ui, sans-serif">After Platt (test)</text>
+  <text x="578" y="216" font-size="12" fill="var(--diagram-svg-text-secondary)" font-family="ui-sans-serif, system-ui, sans-serif">After Platt (test)</text>
 
-  <text x="528" y="252" font-size="11" font-weight="600" fill="#57534e" font-family="ui-sans-serif, system-ui, sans-serif">Example bin shifts (illustrative)</text>
-  <text x="528" y="272" font-size="10.5" fill="#44403c" font-family="ui-monospace, monospace">Bin 2: pred 5.0% to ~3.8% | obs 3.5%</text>
-  <text x="528" y="290" font-size="10.5" fill="#44403c" font-family="ui-monospace, monospace">Bin 4: pred 22% to ~17.8% | obs 17.5%</text>
+  <text x="528" y="252" font-size="11" font-weight="600" fill="var(--diagram-svg-axis)" font-family="ui-sans-serif, system-ui, sans-serif">Example bin shifts (illustrative)</text>
+  <text x="528" y="272" font-size="10.5" fill="var(--diagram-svg-text-secondary)" font-family="ui-monospace, monospace">Bin 2: pred 5.0% to ~3.8% | obs 3.5%</text>
+  <text x="528" y="290" font-size="10.5" fill="var(--diagram-svg-text-secondary)" font-family="ui-monospace, monospace">Bin 4: pred 22% to ~17.8% | obs 17.5%</text>
 
-  <rect x="528" y="308" width="248" height="40" rx="6" fill="#ecfdf5" stroke="#6ee7b7"/>
+  <rect x="528" y="308" width="248" height="40" rx="6" fill="var(--diagram-svg-tint-green)" stroke="var(--diagram-svg-tint-green-stroke)"/>
   <text x="540" y="328" font-size="10.5" fill="#065f46" font-family="ui-sans-serif, system-ui, sans-serif">AUC on test: usually almost unchanged</text>
   <text x="540" y="342" font-size="10" fill="#047857" font-family="ui-sans-serif, system-ui, sans-serif">Brier / ECE should improve if calibration worked</text>
 </svg>
