@@ -58,6 +58,12 @@ App B không “sai thứ tự” ngày nào mưa nhiều hơn — nhưng **con 
 
 ### Hai mục đích khác nhau: RANK vs ESTIMATE PD
 
+:::diagram[Hai câu hỏi — rank (discrimination) vs estimate PD (calibration)]
+
+![Rank vs calibrated PD — metrics and when calibration is required](/blog/diagrams/model-calibration-credit-scoring/rank-vs-pd-purpose.svg)
+
+:::
+
 | Mục đích | Câu hỏi | Metric phù hợp | Cần calibration? |
 |----------|---------|----------------|-------------------|
 | **A — Rank** | Ai rủi ro hơn ai? | AUC, Gini, KS | Không |
@@ -121,6 +127,87 @@ Hầu hết model được train và chọn bằng metric **rank** (AUC/Gini), n
 | Underconfident | **Trên** đường chéo | Model quá thận trọng |
 
 Với boosting trong credit scoring, **overconfident** là pattern gặp nhiều nhất — đừng nhầm AUC tốt với PD đúng.
+
+#### Cách gom bin (trước khi vẽ)
+
+1. Lấy tập đánh giá (thường **test** hoặc **OOT** — không phải train/calibration).
+2. Sắp xếp theo `PD_predicted` tăng dần.
+3. Chia thành `n_bins` nhóm (hay dùng 10):
+   - **Equal-frequency (quantile):** mỗi bin gần bằng số hồ sơ — ổn khi PD lệch (credit scoring thường dùng cách này).
+   - **Equal-width:** chia theo khoảng PD (0–0.1, 0.1–0.2, …) — bin vùng thấp có thể rất ít case.
+
+Với mỗi bin `b`:
+
+- `conf_b` = mean(PD predicted) trong bin  
+- `acc_b` = tỷ lệ bad thực tế trong bin (= số bad / N bin)
+
+Điểm `(conf_b, acc_b)` là một điểm trên reliability diagram. Nối các điểm theo thứ tự PD tăng dần → đường calibration của model.
+
+:::diagram[Equal-frequency bins — từ PD sort tới điểm trên reliability diagram]
+
+![Quantile binning for calibration curve — four bins with equal N](/blog/diagrams/model-calibration-credit-scoring/calibration-binning-quantile.svg)
+
+:::
+
+#### Ví dụ đọc **một** điểm trên đồ thị
+
+:::diagram[Một bin = một điểm (0.10, 0.06) dưới đường chéo perfect calibration]
+
+![Reading one reliability diagram point — predicted 10% vs observed 6%](/blog/diagrams/model-calibration-credit-scoring/reliability-read-one-point.svg)
+
+:::
+
+Giả sử sau outcome window, bạn gom **2.000** hồ sơ có PD dự báo trung bình **10%** và **120** bad → observed **6%**. Điểm **(0.10, 0.06)** nằm **dưới** đường chéo: model **nói rủi ro cao hơn thực tế** trong nhóm này. Ngược lại **(0.08, 0.11)** nằm **trên** chéo → underconfident cục bộ.
+
+#### Ví dụ 4 bin — boosting chưa calibrate
+
+:::diagram[Bốn bin quantile trên test — đường đỏ lệch dưới đường chéo (overconfident)]
+
+![Four-bin reliability diagram — raw boosting below diagonal](/blog/diagrams/model-calibration-credit-scoring/reliability-four-bin-boosting.svg)
+
+:::
+
+Test set **4.000** hồ sơ, bad rate tổng **7.5%** (illustrative). Bảng chi tiết:
+
+| Bin | N | Mean pred PD | Observed | vs chéo |
+|-----|---|--------------|----------|---------|
+| 1 | 1.000 | 2.0% | 0.8% | Gần chéo |
+| 2 | 1.000 | 5.0% | 3.5% | Dưới |
+| 3 | 1.000 | 10.0% | 8.2% | Dưới |
+| 4 | 1.000 | 22.0% | 17.5% | Dưới (đuôi) |
+
+:::note[Cùng data, AUC vẫn tốt]
+Thứ tự bin vẫn đúng (bin 4 xấu hơn bin 1) nên **AUC/Gini có thể đẹp**, trong khi diagram vẫn báo **miscalibration** — cần khi PD dùng cho số tuyệt đối.
+:::
+
+#### Trước và sau Platt (cùng test set)
+
+:::diagram[Cùng test: raw boosting vs sau Platt — xanh ôm sát đường chéo hơn]
+
+![Reliability diagram before and after Platt scaling on test set](/blog/diagrams/model-calibration-credit-scoring/reliability-raw-vs-platt.svg)
+
+:::
+
+Platt fit trên **calibration set** riêng; vẽ lại trên **test** một lần. Bin 2–4: mean PD raw kéo xuống gần observed (ví dụ 5.0% → ~3.8% khi actual 3.5%). **AUC** trên test thường gần như không đổi; **Brier / ECE** nên cải thiện nếu calibration đúng.
+
+```python
+from sklearn.calibration import calibration_curve
+
+frac_pos_raw, mean_pred_raw = calibration_curve(
+    y_test, prob_raw, n_bins=10, strategy="quantile"
+)
+frac_pos_cal, mean_pred_cal = calibration_curve(
+    y_test, prob_cal, n_bins=10, strategy="quantile"
+)
+# Plot mean_pred_* vs frac_pos_* — same logic as SVG above
+```
+
+#### Checklist đọc nhanh khi review diagram
+
+- Điểm có nằm **dưới** chéo ở đại đa số bin không? → cân nhắc Platt/isotonic.
+- Lệch tập trung ở **đuôi PD cao** hay **vùng PD thấp**? → quyết định có cần **calibration theo segment** (NTB/ETB, product).
+- Sau calibrate, đường có sát chéo hơn **và** Brier/ECE giảm trên test không?
+- AUC thay đổi > ~0.01 không? → kiểm tra lại pipeline (hiếm khi là do calibration đúng).
 
 ---
 
@@ -318,6 +405,10 @@ Discrimination metrics (AUC, Gini, KS) answer **who is riskier than whom**. Cali
 - **Brier Score**: primary scalar KPI for probability quality.
 - **ECE / MCE**: bin-wise gaps; useful for monitoring and regulatory views.
 - **Reliability diagram**: diagnostic; overconfident curves sit **below** the diagonal.
+
+### Reliability diagram — worked example (see SVG figures in VI)
+
+Static diagrams in the VI section cover: **quantile binning**, **one point (0.10, 0.06)**, **four-bin overconfident boosting**, and **raw vs Platt** on the same test set. Use `calibration_curve(..., strategy="quantile")` for equal-frequency bins.
 
 ### Implementation essentials
 
