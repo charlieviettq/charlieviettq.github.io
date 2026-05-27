@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 420" role="img" aria-labelledby="title desc">
+  <title id="title">Reliability diagram calibration patterns</title>
+  <desc id="desc">Perfect calibration on the diagonal, overconfident curve below, underconfident curve above.</desc>
+  <defs>
+    <filter id="soft" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+  <style>
+    text { font-family: ui-sans-serif, system-ui, sans-serif; }
+  </style>
+  <rect width="820" height="420" fill="#fafaf9" rx="12"/>
+  <text x="410" y="36" text-anchor="middle" font-size="16" font-weight="700" fill="#292524">Reliability diagram - calibration patterns</text>
+  <text x="410" y="56" text-anchor="middle" font-size="11" fill="#78716c">X: mean predicted PD per bin | Y: observed default rate</text>
+
+  <rect x="88" y="78" width="320" height="300" fill="#ffffff" stroke="#e7e5e4" stroke-width="1" rx="8"/>
+  <line x1="108" y1="358" x2="388" y2="358" stroke="#57534e" stroke-width="1.5"/>
+  <line x1="108" y1="98" x2="108" y2="358" stroke="#57534e" stroke-width="1.5"/>
+  <text x="248" y="392" text-anchor="middle" font-size="12" fill="#44403c">Mean predicted probability</text>
+  <text x="52" y="228" text-anchor="middle" font-size="12" fill="#44403c" transform="rotate(-90 52 228)">Observed default rate</text>
+
+  <line x1="118" y1="348" x2="378" y2="108" stroke="#a8a29e" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="300" y="175" font-size="10" fill="#78716c">Perfect calibration</text>
+
+  <path d="M 118 348 Q 200 320 260 250 T 378 140" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+  <circle cx="118" cy="348" r="4" fill="#dc2626"/>
+  <circle cx="200" cy="305" r="4" fill="#dc2626"/>
+  <circle cx="260" cy="250" r="4" fill="#dc2626"/>
+  <circle cx="320" cy="195" r="4" fill="#dc2626"/>
+  <circle cx="378" cy="140" r="4" fill="#dc2626"/>
+
+  <g filter="url(#soft)">
+    <rect x="440" y="98" width="340" height="280" rx="10" fill="#ffffff" stroke="#e7e5e4"/>
+  </g>
+  <text x="460" y="128" font-size="13" font-weight="700" fill="#292524">How to read</text>
+
+  <line x1="460" y1="158" x2="500" y2="158" stroke="#a8a29e" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="512" y="162" font-size="12" fill="#44403c">On diagonal: predicted approx actual</text>
+
+  <path d="M 460 188 L 500 188" stroke="#dc2626" stroke-width="2.5"/>
+  <text x="512" y="192" font-size="12" fill="#44403c">Below diagonal: overconfident</text>
+  <text x="512" y="210" font-size="11" fill="#78716c">Model predicts higher PD than reality</text>
+  <text x="512" y="226" font-size="11" fill="#78716c">Common with gradient boosting</text>
+
+  <path d="M 460 252 L 500 252" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="512" y="256" font-size="12" fill="#44403c">Above diagonal: underconfident</text>
+  <text x="512" y="274" font-size="11" fill="#78716c">Model is too cautious vs actual bad rate</text>
+  <text x="512" y="290" font-size="11" fill="#78716c">Seen with some ensemble averages</text>
+
+  <rect x="460" y="310" width="300" height="52" rx="6" fill="#fffbeb" stroke="#fcd34d"/>
+  <text x="472" y="332" font-size="11" font-weight="600" fill="#92400e">Credit scoring takeaway</text>
+  <text x="472" y="350" font-size="10.5" fill="#78350f">AUC/Gini can look strong while PD scale is wrong for pricing or ECL.</text>
+</svg>
