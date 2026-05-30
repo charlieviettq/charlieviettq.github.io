@@ -33,11 +33,11 @@ export function MermaidBlock({ code }: Props) {
               }
             : {
                 fontFamily: "var(--font-blog), ui-sans-serif, system-ui, sans-serif",
-                primaryColor: "rgba(245,158,11,0.18)",
-                primaryBorderColor: "rgba(245,158,11,0.45)",
+                primaryColor: "rgba(37,99,235,0.12)",
+                primaryBorderColor: "rgba(37,99,235,0.35)",
                 primaryTextColor: "var(--diagram-svg-text)",
                 lineColor: "rgba(120,113,108,0.6)",
-                secondaryColor: "rgba(139,92,246,0.10)",
+                secondaryColor: "rgba(37,99,235,0.08)",
                 tertiaryColor: "rgba(14,165,233,0.08)",
               },
         });
@@ -56,8 +56,11 @@ export function MermaidBlock({ code }: Props) {
 
   if (!svg) {
     return (
-      <div className="chart-glow-frame my-5 rounded-2xl p-3">
-        <div className="rounded-xl border border-zinc-200 bg-white/70 p-4 text-sm text-zinc-700 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-200">
+      <div className="doc-media-frame">
+        <div
+          className="doc-media-frame__body text-sm"
+          style={{ color: "var(--foreground-secondary)" }}
+        >
           Mermaid diagram failed to render.
         </div>
       </div>
@@ -65,13 +68,11 @@ export function MermaidBlock({ code }: Props) {
   }
 
   return (
-    <div className="chart-glow-frame my-5 rounded-2xl p-3">
+    <div className="doc-media-frame">
       <div
-        className="rounded-xl border border-zinc-200 bg-white/70 p-4 shadow-sm backdrop-blur dark:border-zinc-700 dark:bg-zinc-900/40"
-        // mermaid already outputs <svg>; strict securityLevel prevents scripts
+        className="doc-media-frame__body overflow-x-auto"
         dangerouslySetInnerHTML={{ __html: svg }}
       />
     </div>
   );
 }
-

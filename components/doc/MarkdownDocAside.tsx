@@ -4,16 +4,6 @@ import type { ReactNode } from "react";
 
 import { DiagramFigure } from "@/components/blog/DiagramFigure";
 
-const variantStyles: Record<string, string> = {
-  note: "border-sky-400/80 bg-sky-50/90 dark:bg-sky-950/40",
-  info: "border-blue-400/80 bg-blue-50/90 dark:bg-blue-950/40",
-  tip: "border-emerald-400/80 bg-emerald-50/90 dark:bg-emerald-950/35",
-  warning: "border-amber-400/90 bg-amber-50/90 dark:bg-amber-950/35",
-  success: "border-green-400/80 bg-green-50/90 dark:bg-green-950/35",
-  quote: "border-violet-400/70 bg-violet-50/80 dark:bg-violet-950/30",
-  todo: "border-orange-400/80 bg-orange-50/85 dark:bg-orange-950/35",
-};
-
 function variantFromClass(className: string | undefined): string | undefined {
   if (!className) return undefined;
   const m = /doc-callout--(\w+)/.exec(className);
@@ -53,7 +43,10 @@ export function MarkdownDocAside({
           className="cursor-pointer list-none px-4 py-3 font-semibold marker:hidden [&::-webkit-details-marker]:hidden"
           style={{ color: "var(--foreground)" }}
         >
-          <span className="mr-1.5 inline-block text-sky-600 dark:text-sky-400">
+          <span
+            className="mr-1.5 inline-block"
+            style={{ color: "var(--accent-blue)" }}
+          >
             ▸
           </span>
           {title ?? "Details"}
@@ -68,23 +61,14 @@ export function MarkdownDocAside({
     );
   }
 
-  const v = variantFromClass(className) ?? "note";
-  const palette = variantStyles[v] ?? variantStyles.note;
+  const variant = variantFromClass(className) ?? "note";
 
   return (
     <aside
-      className={`doc-callout my-4 rounded-r-lg border-l-4 pl-4 pr-3 py-3 text-[0.95em] leading-relaxed shadow-sm ${palette} ${className ?? ""}`}
-      style={{ color: "var(--foreground)" }}
+      className={`doc-callout doc-callout--${variant} ${className ?? ""}`.trim()}
     >
-      {title ? (
-        <p
-          className="mb-2 mt-0 font-semibold"
-          style={{ color: "var(--foreground)" }}
-        >
-          {title}
-        </p>
-      ) : null}
-      {children}
+      {title ? <p className="doc-callout__title">{title}</p> : null}
+      <div className="doc-callout__body">{children}</div>
     </aside>
   );
 }
