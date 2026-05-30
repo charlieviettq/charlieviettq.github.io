@@ -16,6 +16,19 @@ type Props = {
   content: string;
 };
 
+function getNodeText(node: React.ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node);
+  }
+  if (Array.isArray(node)) {
+    return node.map(getNodeText).join("");
+  }
+  if (React.isValidElement<{ children?: React.ReactNode }>(node)) {
+    return getNodeText(node.props.children);
+  }
+  return "";
+}
+
 function CodeBlock({
   inline,
   className,
@@ -54,6 +67,15 @@ export function BlogPostBody({ content }: Props) {
         components={{
           aside: (props) => <MarkdownDocAside {...props} />,
           code: (props) => <CodeBlock {...props} />,
+          p: ({ children }) => {
+            const text = getNodeText(children).trim();
+            const isFigureCaption = /^Hình\s+\d+\./.test(text);
+            return (
+              <p className={isFigureCaption ? "blog-figure-caption" : undefined}>
+                {children}
+              </p>
+            );
+          },
           img: ({ src, alt }) => {
             const url = typeof src === "string" ? src : undefined;
             if (url && isThemedDiagramSrc(url)) {
@@ -75,4 +97,3 @@ export function BlogPostBody({ content }: Props) {
     </div>
   );
 }
-

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const links = [
@@ -17,70 +18,41 @@ export function SiteNav() {
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
-    <header
-      className="sticky top-0 z-40 backdrop-blur-md"
-      style={{
-        backgroundColor: "color-mix(in srgb, var(--background) 85%, transparent)",
-        borderBottom: "1px solid var(--border-warm)",
-      }}
-    >
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3">
-        {/* Logotype */}
-        <Link
-          href="/"
-          className="font-heading text-base font-bold tracking-tight transition-colors hover:text-amber-600 dark:hover:text-amber-400"
-          style={{ color: "var(--foreground)", letterSpacing: "-0.03em" }}
-        >
-          Trần Quốc Việt
+    <header className="sticky top-0 z-40 border-b border-[var(--border-warm)] bg-[color-mix(in_srgb,var(--background)_88%,transparent)] backdrop-blur-xl">
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5">
+        <Link href="/" className="group min-w-0">
+          <span className="block truncate text-sm font-bold tracking-[-0.01em] text-[var(--foreground)]">
+            Tran Quoc Viet
+          </span>
+          <span className="hidden text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-[var(--foreground-tertiary)] sm:block">
+            Data · ML · Credit
+          </span>
         </Link>
 
-        <div className="flex flex-wrap items-center gap-3 sm:gap-5">
-          {/* Nav links */}
-          <nav className="flex gap-4 text-sm font-medium sm:gap-6" aria-label="Main navigation">
-            {links.map(({ href, label }) => {
-              const active = isActive(href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  className="group relative transition-colors"
-                  style={{
-                    color: active ? "var(--brand-from)" : "var(--foreground-secondary)",
-                    fontWeight: active ? 600 : 400,
-                  }}
-                  onMouseEnter={(e) =>
-                    ((e.currentTarget as HTMLElement).style.color = "var(--brand-from)")
-                  }
-                  onMouseLeave={(e) =>
-                    ((e.currentTarget as HTMLElement).style.color = active
-                      ? "var(--brand-from)"
-                      : "var(--foreground-secondary)")
-                  }
-                >
-                  {label}
-                  {/* Active underbar */}
-                  <span
-                    className="pointer-events-none absolute -bottom-1 left-0 right-0 h-px rounded-full transition-all duration-200"
+        <div className="flex shrink-0 items-center gap-2">
+          <nav
+            className="rounded-full border border-[var(--border-warm)] bg-[color-mix(in_srgb,var(--surface-100)_72%,transparent)] p-1 shadow-sm"
+            aria-label="Main navigation"
+          >
+            <div className="flex items-center gap-1">
+              {links.map(({ href, label }) => {
+                const active = isActive(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="rounded-full px-3 py-1.5 text-sm font-semibold transition-colors"
                     style={{
-                      backgroundColor: "var(--brand-from)",
-                      opacity: active ? 1 : 0,
-                      width: active ? "100%" : "0%",
+                      background: active ? "var(--foreground)" : "transparent",
+                      color: active ? "var(--background)" : "var(--foreground-secondary)",
                     }}
-                    aria-hidden
-                  />
-                  {/* Hover underbar */}
-                  {!active && (
-                    <span
-                      className="pointer-events-none absolute -bottom-1 left-0 h-px w-0 rounded-full transition-all duration-200 group-hover:w-full"
-                      style={{ backgroundColor: "var(--brand-from)", opacity: 0.5 }}
-                      aria-hidden
-                    />
-                  )}
-                </Link>
-              );
-            })}
+                  >
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
           </nav>
-
           <ThemeToggle />
         </div>
       </div>

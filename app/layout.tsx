@@ -44,28 +44,33 @@ export default function RootLayout({
           <SiteNav />
           <main>{children}</main>
           <ScrollToTop />
-          <footer
-            className="mx-auto max-w-6xl px-4 py-8 text-center text-sm"
-            style={{
-              borderTop: "1px solid var(--border-warm)",
-              color: "var(--foreground-secondary)",
-            }}
-          >
-            <a
-              href="https://github.com/charlieviettq"
-              className="font-medium transition-colors hover:text-amber-600 dark:hover:text-amber-400"
-              style={{ color: "var(--foreground-secondary)" }}
-            >
-              GitHub
-            </a>
-            {" · "}
-            <a
-              href="https://www.linkedin.com/in/aivietqt/"
-              className="font-medium transition-colors hover:text-amber-600 dark:hover:text-amber-400"
-              style={{ color: "var(--foreground-secondary)" }}
-            >
-              LinkedIn
-            </a>
+          <footer className="border-t border-[var(--border-warm)]">
+            <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-8 text-sm sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-semibold" style={{ color: "var(--foreground)" }}>
+                  Tran Quoc Viet / Charlie
+                </p>
+                <p className="mt-1" style={{ color: "var(--foreground-secondary)" }}>
+                  Credit risk ML, data platforms, and production GenAI.
+                </p>
+              </div>
+              <div className="flex items-center gap-4 font-semibold">
+                <a
+                  href="https://github.com/charlieviettq"
+                  className="transition-colors hover:text-[var(--brand-from)]"
+                  style={{ color: "var(--foreground-secondary)" }}
+                >
+                  GitHub
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/aivietqt/"
+                  className="transition-colors hover:text-[var(--brand-from)]"
+                  style={{ color: "var(--foreground-secondary)" }}
+                >
+                  LinkedIn
+                </a>
+              </div>
+            </div>
           </footer>
         </ThemeProvider>
       </body>

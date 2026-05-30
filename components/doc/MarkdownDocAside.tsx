@@ -10,6 +10,13 @@ function variantFromClass(className: string | undefined): string | undefined {
   return m ? m[1] : undefined;
 }
 
+const FALLBACK_TITLES: Record<string, string> = {
+  note: "Note",
+  warning: "Warning",
+  info: "Info",
+  tip: "Tip",
+};
+
 type Props = {
   className?: string;
   children?: ReactNode;
@@ -38,36 +45,23 @@ export function MarkdownDocAside({
 
   if (isExpand) {
     return (
-      <details className="doc-expand my-4 rounded-lg border border-[var(--border-warm)] bg-surface-100/80 shadow-sm open:pb-3 dark:bg-surface-300/40">
-        <summary
-          className="cursor-pointer list-none px-4 py-3 font-semibold marker:hidden [&::-webkit-details-marker]:hidden"
-          style={{ color: "var(--foreground)" }}
-        >
-          <span
-            className="mr-1.5 inline-block"
-            style={{ color: "var(--accent-blue)" }}
-          >
-            ▸
-          </span>
+      <details className="doc-expand">
+        <summary>
           {title ?? "Details"}
         </summary>
-        <div
-          className="border-t px-4 pt-3"
-          style={{ borderColor: "var(--border-warm)" }}
-        >
-          {children}
-        </div>
+        <div className="doc-expand__body">{children}</div>
       </details>
     );
   }
 
   const variant = variantFromClass(className) ?? "note";
+  const calloutTitle = title ?? FALLBACK_TITLES[variant];
 
   return (
     <aside
       className={`doc-callout doc-callout--${variant} ${className ?? ""}`.trim()}
     >
-      {title ? <p className="doc-callout__title">{title}</p> : null}
+      {calloutTitle ? <p className="doc-callout__title">{calloutTitle}</p> : null}
       <div className="doc-callout__body">{children}</div>
     </aside>
   );
