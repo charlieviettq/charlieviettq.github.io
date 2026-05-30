@@ -6,16 +6,23 @@ export default function BlogLayout({ children }: { children: ReactNode }) {
     <main className="mx-auto w-full max-w-5xl px-5 pb-16 pt-10">
       <div className="mb-10 flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
+          <h1
+            className="font-heading text-2xl font-semibold tracking-tight"
+            style={{ color: "var(--foreground)" }}
+          >
             Blog
           </h1>
-          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+          <p
+            className="mt-1 text-sm"
+            style={{ color: "var(--foreground-secondary)" }}
+          >
             Technical notes — credit risk, data, and engineering.
           </p>
         </div>
         <Link
           href="/"
-          className="rounded-lg border border-zinc-200 bg-white/60 px-3 py-1.5 text-sm font-semibold text-zinc-800 shadow-sm backdrop-blur transition hover:bg-white/80 dark:border-zinc-700 dark:bg-zinc-900/40 dark:text-zinc-100 dark:hover:bg-zinc-900/55"
+          className="rounded-lg border border-[var(--border-warm)] bg-surface-100/80 px-3 py-1.5 text-sm font-semibold shadow-sm backdrop-blur transition hover:bg-surface-300/50 dark:bg-surface-300/40"
+          style={{ color: "var(--foreground)" }}
         >
           Home
         </Link>
@@ -24,4 +31,3 @@ export default function BlogLayout({ children }: { children: ReactNode }) {
     </main>
   );
 }
-

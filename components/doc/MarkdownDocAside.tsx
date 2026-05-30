@@ -48,14 +48,20 @@ export function MarkdownDocAside({
 
   if (isExpand) {
     return (
-      <details className="doc-expand my-4 rounded-lg border border-zinc-200 bg-zinc-50/80 shadow-sm open:pb-3 dark:border-zinc-600 dark:bg-zinc-900/50">
-        <summary className="cursor-pointer list-none px-4 py-3 font-semibold text-zinc-800 marker:hidden dark:text-zinc-100 [&::-webkit-details-marker]:hidden">
+      <details className="doc-expand my-4 rounded-lg border border-[var(--border-warm)] bg-surface-100/80 shadow-sm open:pb-3 dark:bg-surface-300/40">
+        <summary
+          className="cursor-pointer list-none px-4 py-3 font-semibold marker:hidden [&::-webkit-details-marker]:hidden"
+          style={{ color: "var(--foreground)" }}
+        >
           <span className="mr-1.5 inline-block text-sky-600 dark:text-sky-400">
             ▸
           </span>
           {title ?? "Details"}
         </summary>
-        <div className="border-t border-zinc-200/80 px-4 pt-3 dark:border-zinc-600/80">
+        <div
+          className="border-t px-4 pt-3"
+          style={{ borderColor: "var(--border-warm)" }}
+        >
           {children}
         </div>
       </details>
@@ -67,10 +73,14 @@ export function MarkdownDocAside({
 
   return (
     <aside
-      className={`doc-callout my-4 rounded-r-lg border-l-4 pl-4 pr-3 py-3 text-[0.95em] leading-relaxed text-zinc-800 shadow-sm dark:text-zinc-100 ${palette} ${className ?? ""}`}
+      className={`doc-callout my-4 rounded-r-lg border-l-4 pl-4 pr-3 py-3 text-[0.95em] leading-relaxed shadow-sm ${palette} ${className ?? ""}`}
+      style={{ color: "var(--foreground)" }}
     >
       {title ? (
-        <p className="mb-2 mt-0 font-semibold text-zinc-900 dark:text-zinc-50">
+        <p
+          className="mb-2 mt-0 font-semibold"
+          style={{ color: "var(--foreground)" }}
+        >
           {title}
         </p>
       ) : null}
