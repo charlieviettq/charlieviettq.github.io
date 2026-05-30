@@ -14,10 +14,16 @@
   --foreground: #26251e;
   --foreground-secondary: rgba(38, 37, 30, 0.55);
 
-  /* Prose heading hierarchy — slate-blue */
-  --heading-h2: #1e3a5f;
-  --heading-h3: #334155;
-  --heading-h4: #475569;
+  /* Prose heading hierarchy — Update blue */
+  --heading-h2: #2563eb;
+  --heading-h3: #1d4ed8;
+  --heading-h4: #3b82f6;
+
+  /* Accent blue (Update pill) */
+  --accent-blue: #2563eb;
+  --accent-blue-hover: #1d4ed8;
+  --accent-blue-muted: #eff6ff;
+  --accent-blue-border: rgba(37, 99, 235, 0.22);
 
   /* Brand — Chainpage gold */
   --brand-from:  #E2B34B;   /* Chainpage gold — primary accent (UI + CTA) */
@@ -96,9 +102,14 @@
   --foreground: #e8e6de;
   --foreground-secondary: rgba(232, 230, 222, 0.55);
 
-  --heading-h2: #93c5fd;
-  --heading-h3: #cbd5e1;
-  --heading-h4: #94a3b8;
+  --heading-h2: #60a5fa;
+  --heading-h3: #93c5fd;
+  --heading-h4: #bfdbfe;
+
+  --accent-blue: #60a5fa;
+  --accent-blue-hover: #93c5fd;
+  --accent-blue-muted: color-mix(in srgb, #2563eb 14%, var(--surface-300));
+  --accent-blue-border: rgba(96, 165, 250, 0.28);
 
   --brand-from:  #E2B34B;   /* Chainpage gold — same hue, pops on dark bg */
   --brand-to:    #C4912A;   /* darker gold — secondary */
@@ -325,24 +336,116 @@ h4, h5      { letter-spacing: -0.01em; }
   color: #e8e6de;
 }
 
-/* ── Chart (BeGuru flow / Mermaid) ──────────────────────────────────────────── */
-.chart-glow-frame {
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--brand-from) 30%, transparent) 0%,
-    color-mix(in srgb, var(--brand-to)   22%, transparent) 50%,
-    color-mix(in srgb, var(--brand-from) 14%, transparent) 100%
-  );
-  box-shadow:
-    0 0 0 1px var(--diagram-border-strong),
-    0 0 36px -10px color-mix(in srgb, var(--brand-from) 22%, transparent),
-    0 0 52px -16px color-mix(in srgb, var(--brand-to)   14%, transparent);
+/* ── Doc callouts (Key Takeaways, warning, etc.) ─────────────────────────── */
+.beguru-docs .doc-callout {
+  margin-block: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-warm);
+  background: var(--surface-100);
+  box-shadow: var(--shadow-ambient);
+  overflow: hidden;
+  font-size: 0.95em;
+  line-height: 1.72;
+  color: var(--foreground);
 }
-.dark .chart-glow-frame {
-  box-shadow:
-    0 0 0 1px var(--diagram-border-strong),
-    0 0 44px -12px color-mix(in srgb, var(--brand-from) 18%, transparent),
-    0 0 64px -18px color-mix(in srgb, var(--brand-to)   12%, transparent);
+
+.beguru-docs .doc-callout__title {
+  margin: 0;
+  padding: 0.625rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent-blue);
+  border-bottom: 1px solid var(--border-warm);
+  background: var(--accent-blue-muted);
+}
+
+.beguru-docs .doc-callout__body {
+  padding: 0.875rem 1rem 1rem;
+}
+
+.beguru-docs .doc-callout__body > :first-child {
+  margin-top: 0;
+}
+
+.beguru-docs .doc-callout__body > :last-child {
+  margin-bottom: 0;
+}
+
+.beguru-docs .doc-callout--note {
+  border-color: var(--accent-blue-border);
+}
+
+.beguru-docs .doc-callout--warning {
+  border-color: color-mix(in srgb, var(--brand-from) 35%, transparent);
+}
+
+.beguru-docs .doc-callout--warning .doc-callout__title {
+  color: var(--brand-to);
+  background: color-mix(in srgb, var(--brand-from) 10%, var(--surface-100));
+  border-bottom-color: color-mix(in srgb, var(--brand-from) 22%, transparent);
+}
+
+.beguru-docs .doc-callout--info .doc-callout__title {
+  color: var(--accent-blue);
+}
+
+.beguru-docs .doc-callout--tip .doc-callout__title {
+  color: #059669;
+  background: color-mix(in srgb, #10b981 8%, var(--surface-100));
+}
+
+.dark .beguru-docs .doc-callout--tip .doc-callout__title {
+  color: #6ee7b7;
+  background: color-mix(in srgb, #10b981 12%, var(--surface-300));
+}
+
+/* ── Doc media frame (diagrams / Mermaid) ─────────────────────────────────── */
+.doc-media-frame {
+  margin-block: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-warm);
+  background: var(--surface-100);
+  box-shadow: var(--shadow-ambient);
+  overflow: hidden;
+}
+
+.doc-media-frame__header {
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--accent-blue);
+  border-bottom: 1px solid var(--border-warm);
+  background: var(--accent-blue-muted);
+}
+
+.doc-media-frame__body {
+  padding: 1rem;
+  background: var(--surface-100);
+}
+
+.doc-media-frame__body img {
+  margin-inline: auto;
+  display: block;
+  max-height: min(65vh, 720px);
+  width: auto;
+  max-width: 100%;
+}
+
+.doc-media-frame__caption {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--foreground-secondary);
+}
+
+/* Legacy alias — same as doc-media-frame */
+.chart-glow-frame {
+  margin-block: 1.5rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-warm);
+  background: var(--surface-100);
+  box-shadow: var(--shadow-ambient);
+  overflow: hidden;
 }
 
 /* ── Architecture figure ────────────────────────────────────────────────────── */
