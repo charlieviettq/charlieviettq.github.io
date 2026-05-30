@@ -163,11 +163,11 @@
   --color-gold: var(--brand-to);
   --color-navy: #26251e;
 
-  --font-heading: var(--font-exo);
-  --font-sans:    var(--font-exo);
-  --font-serif:   var(--font-lora);
-  --font-mono:    var(--font-jetbrains-mono);
-  --font-blog:    "JetBrains Sans", var(--font-exo), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-geist-sans);
+  --font-sans:    var(--font-geist-sans);
+  --font-serif:   var(--font-geist-sans);
+  --font-mono:    var(--font-geist-mono);
+  --font-blog:    var(--font-geist-sans);
 }
 
 /* ── Body background ────────────────────────────────────────────────────────── */
