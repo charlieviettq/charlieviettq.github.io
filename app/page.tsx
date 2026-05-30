@@ -1,140 +1,175 @@
 import Link from "next/link";
+
 import { CharlieLogoSVG } from "@/components/CharlieLogoSVG";
 import { ConstellationBg } from "@/components/ConstellationBg";
-import { HeroTiltCard } from "@/components/HeroTiltCard";
+import { getCategoryLabel, getCategoryPillClasses } from "@/lib/category";
+import { getAllPosts } from "@/lib/posts";
 
-const FU = (delay: string) =>
-  `page-fade-up 0.58s cubic-bezier(0.22,1,0.36,1) ${delay} both`;
+const expertise = [
+  {
+    label: "Credit Risk ML",
+    title: "Credit decisions that survive production.",
+    body: "Label windows, OOT validation, drift checks, scorecards, boosting, and model monitoring for retail credit.",
+  },
+  {
+    label: "Data Platform",
+    title: "Pipelines built for repeatable analytics.",
+    body: "Airflow, dbt, BigQuery, GCP, feature stores, and BI models that keep ML and operations aligned.",
+  },
+  {
+    label: "GenAI Systems",
+    title: "RAG and agents with operational discipline.",
+    body: "Hybrid retrieval, function calling, evaluation loops, tracing, and production-minded automation.",
+  },
+  {
+    label: "MLOps",
+    title: "From experiments to governed workflows.",
+    body: "Training orchestration, validators, deployment handoffs, and monitoring paths for high-stakes models.",
+  },
+];
 
-// Glassmorphism style — semi-transparent so constellation shows through
-const GLASS: React.CSSProperties = {
-  backgroundColor: "color-mix(in srgb, var(--surface-400) 76%, transparent)",
-  backdropFilter: "blur(20px)",
-  WebkitBackdropFilter: "blur(20px)",
-  border: "1px solid var(--border-warm)",
-  boxShadow: "var(--shadow-card)",
-};
+const buildItems = [
+  "CakeAutoML for end-to-end credit scoring workflows",
+  "Alternative credit signals from transaction and app behavior",
+  "Feature store and production scoring patterns",
+  "Multi-agent customer support automation with hybrid RAG",
+];
 
 export default function Home() {
-  return (
-    // Full-viewport positioning context so the fixed canvas covers the whole screen
-    <div className="relative">
+  const posts = getAllPosts()
+    .filter((p) => (p.frontMatter.visibility ?? "public") === "public")
+    .slice(0, 3);
 
-      {/* ── Constellation canvas — fixed, covers full viewport ────────────── */}
-      <div
-        aria-hidden
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
-      >
+  return (
+    <div className="relative overflow-hidden">
+      <div className="home-constellation" aria-hidden>
         <ConstellationBg />
       </div>
 
-      {/* ── Page content — above canvas ──────────────────────────────────── */}
-      <div className="relative mx-auto max-w-6xl px-4 py-10" style={{ zIndex: 1 }}>
-        <div className="space-y-10">
+      <section className="relative mx-auto grid min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center gap-12 px-5 py-16 lg:grid-cols-[minmax(0,1fr)_320px] lg:py-20">
+        <div>
+          <p className="eyebrow">Tran Quoc Viet / Charlie · HCMC</p>
+          <h1 className="mt-5 max-w-4xl text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-balance sm:text-6xl lg:text-7xl">
+            I build data and ML systems for credit, banking, and production AI.
+          </h1>
+          <p
+            className="mt-6 max-w-2xl text-base leading-8 sm:text-lg"
+            style={{ color: "var(--foreground-secondary)" }}
+          >
+            Data Scientist focused on credit-risk ML, data platforms, and GenAI systems
+            that are measurable, auditable, and useful beyond notebooks.
+          </p>
 
-          {/* ── Hero card — glassmorphism + 3D tilt ─────────────────────────── */}
-          <HeroTiltCard className="relative overflow-hidden rounded-2xl" style={GLASS}>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <Link className="btn-primary" href="/about/">
+              About / Gioi thieu
+            </Link>
+            <Link className="btn-secondary" href="/blog/">
+              Read blog
+            </Link>
+          </div>
 
-            {/* ── Hero body ──────────────────────────────────────────────────── */}
-            <div className="space-y-8 p-6 sm:p-8">
-
-              {/* Logo + text — text left, logo right on desktop */}
-              <div className="flex flex-col-reverse gap-8 md:flex-row md:items-center md:gap-10">
-
-                {/* Left: text + CTAs */}
-                <div className="flex-1 space-y-5 min-w-0">
-                  <p
-                    className="text-xs font-semibold uppercase tracking-widest"
-                    style={{ color: "var(--brand-from)", animation: FU("0.05s") }}
-                  >
-                    Xin chào / Hello · TP. HCM
-                  </p>
-
-                  <h1
-                    className="font-heading text-4xl font-bold sm:text-5xl"
-                    style={{ letterSpacing: "-0.035em", lineHeight: 1.1, animation: FU("0.18s") }}
-                  >
-                    Analytics · Data platform · Credit-risk ML · GenAI
-                  </h1>
-
-                  <p
-                    className="max-w-2xl text-base leading-relaxed"
-                    style={{ color: "var(--foreground-secondary)", animation: FU("0.32s") }}
-                  >
-                    <strong style={{ color: "var(--foreground)" }}>VI:</strong> Mình là{" "}
-                    <strong style={{ color: "var(--foreground)" }}>Trần Quốc Việt</strong>{" "}
-                    — làm nền dữ liệu (Airflow, dbt, BigQuery, GCP), mô hình rủi ro tín
-                    dụng bán lẻ (OOT, drift, scorecard / boosting), và GenAI có thể vận
-                    hành (RAG, agent, observability). Trang này tổng hợp giới thiệu và
-                    blog ghi chép kỹ thuật theo bốn chuyên mục.
-                  </p>
-
-                  <p
-                    className="max-w-2xl text-base leading-relaxed"
-                    style={{ color: "var(--foreground-secondary)", animation: FU("0.46s") }}
-                  >
-                    <strong style={{ color: "var(--foreground)" }}>EN:</strong> I&apos;m{" "}
-                    <strong style={{ color: "var(--foreground)" }}>Tran Quoc Viet (Charlie)</strong>{" "}
-                    — I work on data platforms (Airflow, dbt, BigQuery, GCP), retail
-                    credit-risk ML (OOT, drift, scorecards / boosting), and
-                    production-minded GenAI (RAG, agents, observability). This site is my
-                    bio plus technical notes organized in four topics.
-                  </p>
-
-                  <div className="flex flex-wrap gap-3" style={{ animation: FU("0.60s") }}>
-                    <Link
-                      href="/about/"
-                      className="rounded-lg px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
-                      style={{ backgroundColor: "var(--brand-from)" }}
-                    >
-                      About / Giới thiệu
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Right: logo */}
-                <div className="flex shrink-0 justify-center">
-                  <CharlieLogoSVG size={240} />
-                </div>
+          <dl className="mt-10 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              ["Focus", "Credit Risk ML"],
+              ["Platform", "GCP · BigQuery"],
+              ["Stack", "Airflow · dbt · RAG"],
+              ["Base", "HCMC, Vietnam"],
+            ].map(([label, value]) => (
+              <div key={label} className="metric-card">
+                <dt>{label}</dt>
+                <dd>{value}</dd>
               </div>
-
-              {/* Stat strip */}
-              <div
-                className="grid grid-cols-2 gap-3 pt-2 sm:grid-cols-4"
-                style={{ borderTop: "1px solid var(--border-warm)" }}
-              >
-                {[
-                  { label: "Focus Domain", value: "Credit Risk ML" },
-                  { label: "Platform",     value: "GCP · BigQuery" },
-                  { label: "Stack",        value: "Airflow · dbt · RAG" },
-                  { label: "Location",     value: "HCMC, Vietnam" },
-                ].map((s, i) => (
-                  <div
-                    key={s.label}
-                    className="stat-card pl-3"
-                    style={{ animation: FU(`${0.70 + i * 0.10}s`) }}
-                  >
-                    <p className="text-[0.65rem] font-semibold uppercase tracking-wider"
-                      style={{ color: "var(--foreground-secondary)" }}>
-                      {s.label}
-                    </p>
-                    <p className="mt-0.5 font-heading text-sm font-semibold"
-                      style={{ color: "var(--foreground)" }}>
-                      {s.value}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </HeroTiltCard>
-
+            ))}
+          </dl>
         </div>
-      </div>
+
+        <aside className="hero-brand-panel" aria-label="Personal brand mark">
+          <CharlieLogoSVG size={190} />
+          <div>
+            <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
+              Technical notes on data, ML, and credit systems.
+            </p>
+            <p className="mt-2 text-sm leading-6" style={{ color: "var(--foreground-secondary)" }}>
+              Written in Vietnamese and English for practitioners who care about the
+              operational details.
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      <section className="page-band">
+        <div className="mx-auto max-w-6xl px-5 py-14">
+          <div className="section-header">
+            <p className="eyebrow">Expertise</p>
+            <h2>Systems thinking across the credit ML stack.</h2>
+          </div>
+          <div className="mt-8 grid gap-4 md:grid-cols-2">
+            {expertise.map((item) => (
+              <article key={item.label} className="editorial-panel">
+                <p className="panel-label">{item.label}</p>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid max-w-6xl gap-10 px-5 py-14 lg:grid-cols-[0.9fr_1.1fr]">
+        <div>
+          <p className="eyebrow">What I build</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-[-0.025em] text-balance sm:text-4xl">
+            Practical systems where messy data meets real decisions.
+          </h2>
+        </div>
+        <div className="build-list">
+          {buildItems.map((item, index) => (
+            <div key={item} className="build-row">
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <p>{item}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="page-band">
+        <div className="mx-auto max-w-6xl px-5 py-14">
+          <div className="section-header section-header-row">
+            <div>
+              <p className="eyebrow">Latest writing</p>
+              <h2>Technical notes from the field.</h2>
+            </div>
+            <Link className="text-link" href="/blog/">
+              View all posts
+            </Link>
+          </div>
+
+          <div className="mt-8 divide-y divide-[var(--border-warm)] border-y border-[var(--border-warm)]">
+            {posts.map((post) => {
+              const category = post.frontMatter.category ?? "banking";
+              return (
+                <article key={post.slug} className="post-preview-row">
+                  <div className="post-preview-meta">
+                    <span className={getCategoryPillClasses(category)}>
+                      {getCategoryLabel(category)}
+                    </span>
+                    <time>{post.frontMatter.date}</time>
+                  </div>
+                  <div className="min-w-0">
+                    <Link href={`/blog/${post.slug}/`} className="post-preview-title">
+                      {post.frontMatter.title}
+                    </Link>
+                    {post.frontMatter.excerpt ? (
+                      <p className="post-preview-excerpt">{post.frontMatter.excerpt}</p>
+                    ) : null}
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

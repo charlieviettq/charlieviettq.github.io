@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { AboutBody } from "@/components/AboutBody";
-import { GradientCard } from "@/components/GradientCard";
 
 export const metadata: Metadata = {
   title: "About",
@@ -10,8 +9,8 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <GradientCard>
+    <main className="mx-auto max-w-6xl px-5 py-12">
       <AboutBody />
-    </GradientCard>
+    </main>
   );
 }

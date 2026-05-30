@@ -9,6 +9,7 @@ type Props = {
   frontMatter: PostFrontMatter;
   lang: "vi" | "en";
   readTimeMinutes: number;
+  seriesName?: string;
 };
 
 export function BlogPostHeader({
@@ -16,21 +17,20 @@ export function BlogPostHeader({
   frontMatter,
   lang,
   readTimeMinutes,
+  seriesName,
 }: Props) {
   const category = frontMatter.category ?? "banking";
 
   return (
-    <header className="mb-10">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[var(--border-warm)] pb-4">
+    <header className="blog-post-header">
+      <div className="blog-post-kicker">
         <nav
           aria-label="Breadcrumb"
-          className="flex flex-wrap items-center gap-2 text-sm"
-          style={{ color: "var(--foreground-secondary)" }}
+          className="flex flex-wrap items-center gap-2"
         >
           <Link
             href="/blog/"
-            className="font-medium transition-colors hover:text-amber-600 dark:hover:text-amber-400"
-            style={{ color: "var(--foreground-secondary)" }}
+            className="font-semibold transition-colors hover:text-[var(--brand-from)]"
           >
             Blog
           </Link>
@@ -42,18 +42,15 @@ export function BlogPostHeader({
           </span>
         </nav>
 
-        <div
-          className="flex items-center gap-1 rounded-xl border border-[var(--border-warm)] bg-surface-100/80 p-1 shadow-sm backdrop-blur dark:bg-surface-300/40"
-        >
+        <div className="blog-lang-switch" aria-label="Language switcher">
           {lang === "vi" ? (
-            <span className="rounded-lg bg-amber-500/12 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:text-amber-200">
+            <span className="blog-lang-switch-active">
               VI
             </span>
           ) : (
             <Link
               href={`/blog/${slug}/`}
-              className="rounded-lg px-2.5 py-1 text-xs font-semibold transition hover:bg-surface-300/50"
-              style={{ color: "var(--foreground-secondary)" }}
+              className="blog-lang-switch-link"
             >
               VI
             </Link>
@@ -63,14 +60,13 @@ export function BlogPostHeader({
             style={{ backgroundColor: "var(--border-warm-md)" }}
           />
           {lang === "en" ? (
-            <span className="rounded-lg bg-amber-500/12 px-2.5 py-1 text-xs font-semibold text-amber-800 dark:text-amber-200">
+            <span className="blog-lang-switch-active">
               EN
             </span>
           ) : (
             <Link
               href={`/blog/${slug}/en/`}
-              className="rounded-lg px-2.5 py-1 text-xs font-semibold transition hover:bg-surface-300/50"
-              style={{ color: "var(--foreground-secondary)" }}
+              className="blog-lang-switch-link"
             >
               EN
             </Link>
@@ -78,28 +74,23 @@ export function BlogPostHeader({
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-3 text-xs font-medium">
-        <span
-          className={`inline-flex items-center rounded-md px-2 py-0.5 font-semibold tracking-wide ${getCategoryPillClasses(category)}`}
-        >
-          {getCategoryLabel(category)}
+      <div className="blog-reading-rail">
+        <span>
+          <strong>Updated</strong>{" "}
+          <time className="font-mono tabular-nums">{frontMatter.date}</time>
         </span>
-        <time
-          className="font-mono tabular-nums"
-          style={{ color: "var(--foreground-secondary)" }}
-        >
-          {frontMatter.date}
-        </time>
-        <span style={{ color: "var(--foreground-secondary)" }} aria-hidden="true">
-          ·
+        <span>
+          <strong>Read time</strong> {formatReadTime(readTimeMinutes, lang)}
         </span>
-        <span style={{ color: "var(--foreground-secondary)" }}>
-          {formatReadTime(readTimeMinutes, lang)}
-        </span>
+        {seriesName ? (
+          <span>
+            <strong>Series</strong> {seriesName}
+          </span>
+        ) : null}
       </div>
 
       <h1
-        className="mt-4 font-heading text-4xl font-bold tracking-tight"
+        className="blog-post-title"
         style={{ color: "var(--foreground)" }}
       >
         {frontMatter.title}
@@ -107,17 +98,12 @@ export function BlogPostHeader({
 
       {frontMatter.excerpt ? (
         <p
-          className="mt-4 max-w-2xl text-lg leading-relaxed"
+          className="blog-post-dek"
           style={{ color: "var(--foreground-secondary)" }}
         >
           {frontMatter.excerpt}
         </p>
       ) : null}
-
-      <div
-        className="mt-8 border-b border-[var(--border-warm)]"
-        aria-hidden="true"
-      />
     </header>
   );
 }

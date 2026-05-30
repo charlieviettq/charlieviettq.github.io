@@ -70,18 +70,15 @@ const SKILL_GROUPS_EN = [
 
 function LangToggle({ lang, setLanguage }: { lang: Lang; setLanguage: (l: Lang) => void }) {
   return (
-    <div className="mb-8 flex flex-wrap items-center gap-2" role="group" aria-label="Chọn ngôn ngữ / Language">
-      <span className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--foreground-secondary)" }}>
-        Language:
-      </span>
-      <div className="inline-flex rounded-lg p-0.5" style={{ border: "1px solid var(--border-warm)", background: "var(--surface-300)" }}>
+    <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Chọn ngôn ngữ / Language">
+      <div className="inline-flex rounded-full p-1" style={{ border: "1px solid var(--border-warm)", background: "var(--surface-100)" }}>
         {(["vi", "en"] as Lang[]).map((l) => (
           <button
             key={l}
             type="button"
             onClick={() => setLanguage(l)}
-            className="rounded-md px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition"
-            style={lang === l ? { background: "var(--brand-from)", color: "#fff" } : { color: "var(--foreground-secondary)" }}
+            className="rounded-full px-3 py-1.5 text-xs font-bold uppercase tracking-wide transition"
+            style={lang === l ? { background: "var(--foreground)", color: "var(--background)" } : { color: "var(--foreground-secondary)" }}
           >
             {l === "vi" ? "Tiếng Việt" : "English"}
           </button>
@@ -550,24 +547,28 @@ export function AboutBody() {
   return (
     <div>
       {/* ── Header ── */}
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
+      <div className="about-hero">
         <div>
-          <h1 className="font-heading text-2xl font-bold tracking-tight" style={{ color: "var(--foreground)" }}>
+          <p className="eyebrow">About</p>
+          <h1 className="mt-4 font-heading text-5xl font-semibold tracking-[-0.04em] sm:text-6xl" style={{ color: "var(--foreground)" }}>
             Trần Quốc Việt
           </h1>
-          <p className="mt-1 text-sm" style={{ color: "var(--foreground-secondary)" }}>
-            Data Scientist · Credit Scoring &amp; ML · TP. Hồ Chí Minh
+          <p className="mt-4 max-w-2xl text-lg leading-8" style={{ color: "var(--foreground-secondary)" }}>
+            Data Scientist building credit scoring systems, data platforms, and
+            production-minded AI automation in Ho Chi Minh City.
           </p>
         </div>
-        <div className="flex gap-3 text-sm font-medium">
+        <div className="flex flex-col items-start gap-4 sm:items-end">
+          <LangToggle lang={lang} setLanguage={setLanguage} />
+          <div className="flex gap-3 text-sm font-semibold">
           <a href="https://github.com/charlieviettq" target="_blank" rel="noopener noreferrer"
-            className="transition hover:opacity-70" style={{ color: "var(--brand-from)" }}>GitHub</a>
+            className="text-link">GitHub</a>
           <a href="https://www.linkedin.com/in/aivietqt/" target="_blank" rel="noopener noreferrer"
-            className="transition hover:opacity-70" style={{ color: "var(--brand-from)" }}>LinkedIn</a>
+            className="text-link">LinkedIn</a>
+          </div>
         </div>
       </div>
 
-      <LangToggle lang={lang} setLanguage={setLanguage} />
       <NowCard vi={vi} />
       <StatsStrip vi={vi} />
 
