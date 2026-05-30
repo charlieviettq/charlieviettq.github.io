@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 
 import { BlogPostBody } from "@/components/BlogPostBody";
 import { BlogPostHeader } from "@/components/blog/BlogPostHeader";
+import { BlogSeriesNav } from "@/components/blog/BlogSeriesNav";
 import { BlogToc } from "@/components/blog/BlogToc";
 import { splitBilingualMarkdown } from "@/lib/bilingual";
 import { getPostBySlug, getPostSlugs } from "@/lib/posts";
-import { prepareContent } from "@/lib/prepare-content";
+import { preparePostContent } from "@/lib/prepare-content";
 import { estimateReadTimeMinutes } from "@/lib/read-time";
 import { buildTocFromMarkdown } from "@/lib/toc";
 
@@ -32,7 +33,7 @@ export default async function BlogPostPage({
   const rawContent = [split.common, split.vi || split.en]
     .filter(Boolean)
     .join("\n\n");
-  const content = prepareContent(rawContent);
+  const { content, seriesNav } = preparePostContent(rawContent);
   const readTimeMinutes = estimateReadTimeMinutes(content);
 
   const toc = buildTocFromMarkdown(content).filter(
@@ -52,6 +53,7 @@ export default async function BlogPostPage({
         <div className="min-w-0 flex-1">
           <div className="mx-auto max-w-3xl">
             <BlogPostBody content={content} />
+            {seriesNav ? <BlogSeriesNav nav={seriesNav} lang="vi" /> : null}
           </div>
         </div>
         <BlogToc items={toc} lang="vi" />

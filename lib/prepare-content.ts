@@ -1,8 +1,22 @@
+import { extractSeriesNav, type SeriesNav } from "@/lib/series-nav";
+
 /**
  * Cleans markdown before TOC extraction and rendering:
+ * - extracts Series blockquote to render separately at bottom
  * - strips bilingual split markers (## VI / ## EN)
  * - wraps TL;DR bullets in a note callout
  */
+export function preparePostContent(text: string): {
+  content: string;
+  seriesNav: SeriesNav | null;
+} {
+  const { content: withoutSeries, seriesNav } = extractSeriesNav(text);
+  return {
+    content: prepareContent(withoutSeries),
+    seriesNav,
+  };
+}
+
 export function prepareContent(text: string): string {
   let out = text
     .replace(/^##\s+VI\s*$/m, "")

@@ -4,15 +4,20 @@
 
 /* ── Cursor-inspired warm design system ────────────────────────────────────── */
 :root {
-  /* Warm cream surface scale */
-  --background: #f2f1ed;
-  --surface-100: #f7f7f4;
-  --surface-200: #f2f1ed;
-  --surface-300: #ebeae5;
-  --surface-400: #e6e5e0;
-  --surface-500: #e1e0db;
+  /* Warm cream surface scale — brightened for Cursor-like light mode */
+  --background: #fafaf8;
+  --surface-100: #ffffff;
+  --surface-200: #fafaf8;
+  --surface-300: #f3f3f1;
+  --surface-400: #ececea;
+  --surface-500: #e4e4e1;
   --foreground: #26251e;
   --foreground-secondary: rgba(38, 37, 30, 0.55);
+
+  /* Prose heading hierarchy — slate-blue */
+  --heading-h2: #1e3a5f;
+  --heading-h3: #334155;
+  --heading-h4: #475569;
 
   /* Brand — Chainpage gold */
   --brand-from:  #E2B34B;   /* Chainpage gold — primary accent (UI + CTA) */
@@ -90,6 +95,10 @@
   --surface-500: #302c22;
   --foreground: #e8e6de;
   --foreground-secondary: rgba(232, 230, 222, 0.55);
+
+  --heading-h2: #93c5fd;
+  --heading-h3: #cbd5e1;
+  --heading-h4: #94a3b8;
 
   --brand-from:  #E2B34B;   /* Chainpage gold — same hue, pops on dark bg */
   --brand-to:    #C4912A;   /* darker gold — secondary */
@@ -179,12 +188,12 @@ body {
   background-image:
     radial-gradient(
       ellipse 110% 60% at 50% -20%,
-      color-mix(in srgb, var(--brand-from) 10%, transparent),
+      color-mix(in srgb, var(--brand-from) 6%, transparent),
       transparent 60%
     ),
     radial-gradient(
       ellipse 60% 40% at 90% 10%,
-      color-mix(in srgb, var(--brand-to) 8%, transparent),
+      color-mix(in srgb, var(--brand-to) 5%, transparent),
       transparent 50%
     );
 }
@@ -228,6 +237,22 @@ h4, h5      { letter-spacing: -0.01em; }
 .beguru-docs.prose h4 {
   font-family: var(--font-blog);
   letter-spacing: -0.02em;
+}
+
+.beguru-docs.prose h2 {
+  color: var(--heading-h2);
+  font-weight: 650;
+  margin-top: 2.25em;
+}
+
+.beguru-docs.prose h3 {
+  color: var(--heading-h3);
+  font-weight: 600;
+}
+
+.beguru-docs.prose h4 {
+  color: var(--heading-h4);
+  font-weight: 600;
 }
 
 .dark .beguru-docs.prose p,
