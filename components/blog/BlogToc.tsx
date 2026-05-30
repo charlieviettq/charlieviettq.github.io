@@ -9,7 +9,7 @@ type Props = {
   lang?: "vi" | "en";
 };
 
-export function BlogToc({ items, lang = "vi" }: Props) {
+export function BlogToc({ items }: Props) {
   const ids = useMemo(() => items.map((i) => i.id), [items]);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -40,43 +40,52 @@ export function BlogToc({ items, lang = "vi" }: Props) {
 
   if (items.length === 0) return null;
 
-  const label = lang === "vi" ? "Mục lục" : "Contents";
+  const label = "Contents";
 
   return (
-    <aside className="sticky top-24 hidden max-h-[calc(100vh-7rem)] w-64 shrink-0 overflow-auto pr-2 xl:block">
-      <div className="rounded-2xl border border-[var(--border-warm)] bg-surface-100/80 p-4 shadow-sm backdrop-blur dark:bg-surface-300/40">
-        <p
-          className="mb-3 text-xs font-semibold uppercase tracking-widest"
-          style={{ color: "var(--foreground-secondary)" }}
-        >
-          {label}
-        </p>
-        <nav aria-label="Table of contents" className="space-y-1 text-sm">
-          {items.map((it) => {
-            const active = activeId === it.id;
-            return (
-              <a
-                key={it.id}
-                href={`#${it.id}`}
-                className={[
-                  "block rounded-md border-l-2 py-1 pl-2.5 pr-2 transition",
-                  it.level === 3 ? "ml-3 text-[0.92em]" : "",
-                  active
-                    ? "toc-link-active border-amber-500/70 bg-amber-500/8"
-                    : "border-transparent hover:border-[var(--border-warm-md)] hover:bg-surface-300/40",
-                ].join(" ")}
-                style={
-                  active
-                    ? undefined
-                    : { color: "var(--foreground-secondary)" }
-                }
-              >
-                {it.title}
-              </a>
-            );
-          })}
-        </nav>
-      </div>
+    <aside className="blog-toc-desktop">
+      <p className="blog-toc-title">{label}</p>
+      <nav aria-label="Table of contents" className="blog-toc-nav">
+        {items.map((it) => {
+          const active = activeId === it.id;
+          return (
+            <a
+              key={it.id}
+              href={`#${it.id}`}
+              className={[
+                "blog-toc-link",
+                it.level === 3 ? "blog-toc-link-nested" : "",
+                active ? "toc-link-active" : "",
+              ].join(" ")}
+            >
+              {it.title}
+            </a>
+          );
+        })}
+      </nav>
     </aside>
+  );
+}
+
+export function MobileBlogToc({ items }: Props) {
+  if (items.length === 0) return null;
+
+  const label = "On this page";
+
+  return (
+    <details className="blog-toc-mobile">
+      <summary>{label}</summary>
+      <nav aria-label="Table of contents">
+        {items.map((it) => (
+          <a
+            key={it.id}
+            href={`#${it.id}`}
+            className={it.level === 3 ? "blog-toc-mobile-nested" : undefined}
+          >
+            {it.title}
+          </a>
+        ))}
+      </nav>
+    </details>
   );
 }

@@ -15,8 +15,8 @@ function SeriesLinkContent({ markdown }: { markdown: string }) {
         a: ({ href, children }) => (
           <Link
             href={href ?? "#"}
-            className="font-medium transition-colors hover:text-amber-600 dark:hover:text-amber-400"
-            style={{ color: "var(--heading-h2)" }}
+            className="font-semibold transition-colors hover:text-[var(--brand-from)]"
+            style={{ color: "var(--foreground)" }}
           >
             {children}
           </Link>
@@ -29,35 +29,31 @@ function SeriesLinkContent({ markdown }: { markdown: string }) {
   );
 }
 
-export function BlogSeriesNav({ nav, lang }: Props) {
-  const sectionTitle = lang === "vi" ? "Chuỗi bài viết" : "In this series";
+export function BlogSeriesNav({ nav }: Props) {
+  const episode = nav.episode.toLowerCase();
+  const sectionTitle =
+    episode.includes("related") || episode.includes("bài viết liên quan")
+      ? "Related Posts"
+      : "In This Series";
 
   return (
-    <section className="mt-12" aria-labelledby="series-nav-title">
+    <section className="blog-series-panel" aria-labelledby="series-nav-title">
       <h2
         id="series-nav-title"
-        className="mb-3 text-xs font-semibold uppercase tracking-widest"
-        style={{ color: "var(--foreground-secondary)" }}
+        className="blog-series-kicker"
       >
         {sectionTitle}
       </h2>
-      <div
-        className="warm-card rounded-xl border-l-[3px] p-5"
-        style={{ borderLeftColor: "var(--heading-h2)" }}
-      >
+      <div className="blog-series-card">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <p
-            className="text-base font-semibold"
+            className="text-base font-bold"
             style={{ color: "var(--foreground)" }}
           >
             {nav.seriesName}
           </p>
           <span
-            className="rounded-md px-2 py-0.5 font-mono text-xs tabular-nums"
-            style={{
-              backgroundColor: "color-mix(in srgb, var(--heading-h2) 12%, transparent)",
-              color: "var(--heading-h2)",
-            }}
+            className="blog-series-episode"
           >
             {nav.episode}
           </span>

@@ -56,18 +56,18 @@ export function ThemedDiagram({ src, alt }: Props) {
 
   if (!svg) {
     return (
-      <div
+      <span
         className="mx-auto flex min-h-[12rem] max-w-full items-center justify-center text-sm text-zinc-500 dark:text-zinc-400"
         aria-busy="true"
         aria-label={alt ?? "Loading diagram"}
       >
         Loading diagram…
-      </div>
+      </span>
     );
   }
 
   return (
-    <div
+    <span
       className="themed-diagram mx-auto max-w-full [&_svg]:mx-auto [&_svg]:block [&_svg]:h-auto [&_svg]:max-h-[min(65vh,720px)] [&_svg]:w-full [&_svg]:max-w-full"
       role="img"
       aria-label={alt ?? undefined}

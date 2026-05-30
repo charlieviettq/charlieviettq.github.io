@@ -23,9 +23,14 @@ type Listener = () => void;
 let fetchCount = 0;
 let routeActive = false;
 const listeners = new Set<Listener>();
+let notifyTimer: ReturnType<typeof setTimeout> | null = null;
 
 function notify() {
-  listeners.forEach((fn) => fn());
+  if (notifyTimer) return;
+  notifyTimer = setTimeout(() => {
+    notifyTimer = null;
+    listeners.forEach((fn) => fn());
+  }, 0);
 }
 
 function setFetchCount(n: number) {
