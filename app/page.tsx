@@ -7,32 +7,32 @@ import { getAllPosts } from "@/lib/posts";
 
 const expertise = [
   {
-    label: "Credit Risk ML",
-    title: "Credit decisions that survive production.",
-    body: "Label windows, OOT validation, drift checks, scorecards, boosting, and model monitoring for retail credit.",
+    label: "Decision Science",
+    title: "Optimize approvals with controlled risk.",
+    body: "Decision policies, thresholding, and experiment-ready analytics that connect model signals to approval and portfolio outcomes.",
   },
   {
-    label: "Data Platform",
-    title: "Pipelines built for repeatable analytics.",
-    body: "Airflow, dbt, BigQuery, GCP, feature stores, and BI models that keep ML and operations aligned.",
+    label: "Portfolio Optimization",
+    title: "Limits and pricing that balance risk-return.",
+    body: "Risk curves, segments, and constraints to improve growth while keeping bad-rate and loss targets measurable and stable.",
   },
   {
-    label: "GenAI Systems",
-    title: "RAG and agents with operational discipline.",
-    body: "Hybrid retrieval, function calling, evaluation loops, tracing, and production-minded automation.",
+    label: "Model Risk & Validation",
+    title: "Models you can trust beyond a single split.",
+    body: "Label windows, OOT validation, calibration, stability checks, and drift monitoring tied to real portfolio KPIs.",
   },
   {
-    label: "MLOps",
-    title: "From experiments to governed workflows.",
-    body: "Training orchestration, validators, deployment handoffs, and monitoring paths for high-stakes models.",
+    label: "Repeatable Decisioning",
+    title: "From messy data to governed decisions.",
+    body: "Practical DS systems that make scoring, monitoring, and iterative policy improvements repeatable across teams.",
   },
 ];
 
 const buildItems = [
-  "CakeAutoML for end-to-end credit scoring workflows",
-  "Alternative credit signals from transaction and app behavior",
-  "Feature store and production scoring patterns",
-  "Multi-agent customer support automation with hybrid RAG",
+  "Approval vs risk trade-offs with policy simulation and guardrails",
+  "Credit limits and pricing strategies using risk-return curves",
+  "Early warning and drift monitoring tied to portfolio KPIs",
+  "Alternative signals from transaction and app behavior for thin-file segments",
 ];
 
 export default function Home() {
@@ -50,14 +50,13 @@ export default function Home() {
         <div>
           <p className="eyebrow">Tran Quoc Viet / Charlie · HCMC</p>
           <h1 className="mt-5 max-w-4xl text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-balance sm:text-6xl lg:text-7xl">
-            I build data and ML systems for credit, banking, and production AI.
+            I optimize credit decisions with data science.
           </h1>
           <p
             className="mt-6 max-w-2xl text-base leading-8 sm:text-lg"
             style={{ color: "var(--foreground-secondary)" }}
           >
-            Data Scientist focused on credit-risk ML, data platforms, and GenAI systems
-            that are measurable, auditable, and useful beyond notebooks.
+            Data Scientist working on decisioning and portfolio optimization: turning risk signals into measurable outcomes across approval, limits, pricing, and monitoring.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -71,9 +70,9 @@ export default function Home() {
 
           <dl className="mt-10 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              ["Focus", "Credit Risk ML"],
-              ["Platform", "GCP · BigQuery"],
-              ["Stack", "Airflow · dbt · RAG"],
+              ["Focus", "Credit decisioning"],
+              ["Impact", "Risk-return"],
+              ["Levers", "Approval · Limit · Pricing"],
               ["Base", "HCMC, Vietnam"],
             ].map(([label, value]) => (
               <div key={label} className="metric-card">
@@ -88,11 +87,10 @@ export default function Home() {
           <CharlieLogoSVG size={190} />
           <div>
             <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-              Technical notes on data, ML, and credit systems.
+              Notes on credit analytics and business impact.
             </p>
             <p className="mt-2 text-sm leading-6" style={{ color: "var(--foreground-secondary)" }}>
-              Written in Vietnamese and English for practitioners who care about the
-              operational details.
+              Written in Vietnamese and English, focused on validation, calibration, monitoring, and how to ship decisions that hold up in real portfolios.
             </p>
           </div>
         </aside>
@@ -102,7 +100,7 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-5 py-14">
           <div className="section-header">
             <p className="eyebrow">Expertise</p>
-            <h2>Systems thinking across the credit ML stack.</h2>
+            <h2>Data science for credit outcomes.</h2>
           </div>
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {expertise.map((item) => (
@@ -118,9 +116,9 @@ export default function Home() {
 
       <section className="mx-auto grid max-w-6xl gap-10 px-5 py-14 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
-          <p className="eyebrow">What I build</p>
+          <p className="eyebrow">What I optimize</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-[-0.025em] text-balance sm:text-4xl">
-            Practical systems where messy data meets real decisions.
+            Where messy data becomes measurable decisions.
           </h2>
         </div>
         <div className="build-list">
@@ -138,7 +136,7 @@ export default function Home() {
           <div className="section-header section-header-row">
             <div>
               <p className="eyebrow">Latest writing</p>
-              <h2>Technical notes from the field.</h2>
+              <h2>Notes on credit data science and decisions.</h2>
             </div>
             <Link className="text-link" href="/blog/">
               View all posts
