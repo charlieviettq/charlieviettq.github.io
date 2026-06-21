@@ -7,32 +7,27 @@ import { getAllPosts } from "@/lib/posts";
 
 const expertise = [
   {
-    label: "Decision Science",
-    title: "Optimize approvals with controlled risk.",
-    body: "Decision policies, thresholding, and experiment-ready analytics that connect model signals to approval and portfolio outcomes.",
+    label: "Credit Decision Science",
+    title: "Turn risk signals into lending decisions.",
+    body: "Application score, behavioral score, PD bands, cutoff, limits, pricing, and portfolio monitoring built around real risk-return trade-offs.",
   },
   {
-    label: "Portfolio Optimization",
-    title: "Limits and pricing that balance risk-return.",
-    body: "Risk curves, segments, and constraints to improve growth while keeping bad-rate and loss targets measurable and stable.",
+    label: "GenAI & Agentic Systems",
+    title: "Automate fintech workflows with governed AI.",
+    body: "Hybrid RAG, multi-agent routing, customer support automation, analytics agents, evaluation, tracing, and human validation loops.",
   },
   {
-    label: "Model Risk & Validation",
-    title: "Models you can trust beyond a single split.",
-    body: "Label windows, OOT validation, calibration, stability checks, and drift monitoring tied to real portfolio KPIs.",
-  },
-  {
-    label: "Repeatable Decisioning",
-    title: "From messy data to governed decisions.",
-    body: "Practical DS systems that make scoring, monitoring, and iterative policy improvements repeatable across teams.",
+    label: "Data & ML Platform",
+    title: "Make models repeatable in production.",
+    body: "Airflow, dbt, BigQuery, streaming, feature store patterns, production scoring, and AutoML workflows that teams can operate.",
   },
 ];
 
 const buildItems = [
-  "Approval vs risk trade-offs with policy simulation and guardrails",
-  "Credit limits and pricing strategies using risk-return curves",
-  "Early warning and drift monitoring tied to portfolio KPIs",
-  "Alternative signals from transaction and app behavior for thin-file segments",
+  "Credit scoring workflows from label preparation to OOT validation, calibration, and production scoring",
+  "Decision simulations across approval, cutoff, limit, pricing, expected loss, and portfolio guardrails",
+  "GenAI agents for customer support, case triage, analytics, retrieval, evaluation, and tracing",
+  "Data and ML platform foundations with Airflow, dbt, BigQuery, Kafka, Doris, and feature stores",
 ];
 
 export default function Home() {
@@ -50,13 +45,13 @@ export default function Home() {
         <div>
           <p className="eyebrow">Tran Quoc Viet / Charlie · HCMC</p>
           <h1 className="mt-5 max-w-4xl text-5xl font-semibold leading-[0.98] tracking-[-0.045em] text-balance sm:text-6xl lg:text-7xl">
-            I optimize credit decisions with data science.
+            I build AI/ML systems for fintech decisions.
           </h1>
           <p
             className="mt-6 max-w-2xl text-base leading-8 sm:text-lg"
             style={{ color: "var(--foreground-secondary)" }}
           >
-            Data Scientist working on decisioning and portfolio optimization: turning risk signals into measurable outcomes across approval, limits, pricing, and monitoring.
+            Data Scientist focused on credit decisioning, GenAI agents, and ML platforms: turning messy banking data into scoring, automation, monitoring, and production decision systems.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -70,9 +65,9 @@ export default function Home() {
 
           <dl className="mt-10 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
             {[
-              ["Focus", "Credit decisioning"],
-              ["Impact", "Risk-return"],
-              ["Levers", "Approval · Limit · Pricing"],
+              ["Focus", "Fintech AI/ML"],
+              ["Depth", "Credit decisioning"],
+              ["Systems", "Agents · Platform · Scoring"],
               ["Base", "HCMC, Vietnam"],
             ].map(([label, value]) => (
               <div key={label} className="metric-card">
@@ -87,10 +82,10 @@ export default function Home() {
           <CharlieLogoSVG size={190} />
           <div>
             <p className="text-sm font-semibold" style={{ color: "var(--foreground)" }}>
-              Notes on credit analytics and business impact.
+              Notes on fintech AI systems and business impact.
             </p>
             <p className="mt-2 text-sm leading-6" style={{ color: "var(--foreground-secondary)" }}>
-              Written in Vietnamese and English, focused on validation, calibration, monitoring, and how to ship decisions that hold up in real portfolios.
+              Written in Vietnamese and English, focused on credit scoring, GenAI agents, model validation, monitoring, and how to ship systems that hold up in real operations.
             </p>
           </div>
         </aside>
@@ -100,9 +95,9 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-5 py-14">
           <div className="section-header">
             <p className="eyebrow">Expertise</p>
-            <h2>Data science for credit outcomes.</h2>
+            <h2>Data science for fintech systems.</h2>
           </div>
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
+          <div className="mt-8 grid gap-4 lg:grid-cols-3">
             {expertise.map((item) => (
               <article key={item.label} className="editorial-panel">
                 <p className="panel-label">{item.label}</p>
@@ -118,7 +113,7 @@ export default function Home() {
         <div>
           <p className="eyebrow">What I optimize</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-[-0.025em] text-balance sm:text-4xl">
-            Where messy data becomes measurable decisions.
+            Where messy banking data becomes reliable AI products.
           </h2>
         </div>
         <div className="build-list">
@@ -136,7 +131,7 @@ export default function Home() {
           <div className="section-header section-header-row">
             <div>
               <p className="eyebrow">Latest writing</p>
-              <h2>Notes on credit data science and decisions.</h2>
+              <h2>Notes on credit risk, decisioning, and production AI.</h2>
             </div>
             <Link className="text-link" href="/blog/">
               View all posts
