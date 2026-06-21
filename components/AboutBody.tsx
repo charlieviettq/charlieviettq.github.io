@@ -51,19 +51,19 @@ const TECH = {
 /* ── Shared skill groups ──────────────────────────────────────────────────── */
 
 const SKILL_GROUPS_VI = [
-  { cat: "Credit Scoring",  badges: ["AutoML Pipeline", "Feature Engineering", "Scorecard", "OOT / Stability", "Alternative Data"] },
-  { cat: "Data Platform",   badges: ["Airflow", "dbt", "BigQuery", "Kafka", "Doris", "MongoDB"] },
-  { cat: "ML Platform",     badges: ["FeatureStore (Feast)", "MLOps", "DAG Orchestration", "Production Scoring"] },
-  { cat: "GenAI & Agent",   badges: ["Hybrid RAG", "Multi-agent", "Function Calling", "Eval & Tracing", "Vertex AI"] },
-  { cat: "Cloud & BI",      badges: ["GCP", "Looker Studio", "Superset"] },
+  { cat: "Credit Scoring & Decisioning", badges: ["PD Band", "Cutoff", "Scorecard", "OOT / Stability", "Alternative Data"] },
+  { cat: "GenAI / Agentic AI", badges: ["Hybrid RAG", "Multi-agent", "Function Calling", "Eval & Tracing", "Vertex AI"] },
+  { cat: "ML Platform & MLOps", badges: ["CakeAutoML", "FeatureStore (Feast)", "DAG Orchestration", "Production Scoring"] },
+  { cat: "Data Platform", badges: ["Airflow", "dbt", "BigQuery", "Kafka", "Doris", "MongoDB"] },
+  { cat: "Governance / Monitoring", badges: ["Calibration", "PSI", "Gini / KS", "Model Validation", "Portfolio KPIs"] },
 ];
 
 const SKILL_GROUPS_EN = [
-  { cat: "Credit Scoring",  badges: ["AutoML Pipeline", "Feature Engineering", "Scorecard", "OOT / Stability", "Alternative Data"] },
-  { cat: "Data Platform",   badges: ["Airflow", "dbt", "BigQuery", "Kafka", "Doris", "MongoDB"] },
-  { cat: "ML Platform",     badges: ["FeatureStore (Feast)", "MLOps", "DAG Orchestration", "Production Scoring"] },
-  { cat: "GenAI & Agents",  badges: ["Hybrid RAG", "Multi-agent", "Function Calling", "Eval & Tracing", "Vertex AI"] },
-  { cat: "Cloud & BI",      badges: ["GCP", "Looker Studio", "Superset"] },
+  { cat: "Credit Scoring & Decisioning", badges: ["PD Band", "Cutoff", "Scorecard", "OOT / Stability", "Alternative Data"] },
+  { cat: "GenAI / Agentic AI", badges: ["Hybrid RAG", "Multi-agent", "Function Calling", "Eval & Tracing", "Vertex AI"] },
+  { cat: "ML Platform & MLOps", badges: ["CakeAutoML", "FeatureStore (Feast)", "DAG Orchestration", "Production Scoring"] },
+  { cat: "Data Platform", badges: ["Airflow", "dbt", "BigQuery", "Kafka", "Doris", "MongoDB"] },
+  { cat: "Governance / Monitoring", badges: ["Calibration", "PSI", "Gini / KS", "Model Validation", "Portfolio KPIs"] },
 ];
 
 /* ── Sub-components ───────────────────────────────────────────────────────── */
@@ -103,7 +103,7 @@ function NowCard({ vi }: { vi: boolean }) {
         </span>
       </div>
       <div className="flex flex-wrap gap-1.5">
-        {["CakeAutoML", "ML Workflow", vi ? "Alternative Credit Scoring" : "Alt. Credit Scoring", "Embedded Finance"].map((tag) => (
+        {["CakeAutoML", "Credit Decisioning", "GenAI Systems", "ML Platform"].map((tag) => (
           <span key={tag} className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold"
             style={{
               background: "color-mix(in srgb, var(--brand-from) 12%, transparent)",
@@ -272,16 +272,16 @@ function ExperienceVi() {
               </div>
               <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
                 <li className="leading-relaxed">
-                  Xây dựng <strong>CakeAutoML</strong> — tự động hoá toàn bộ pipeline credit scoring:{" "}
+                  Xây dựng <strong>CakeAutoML</strong> như một workflow credit scoring end-to-end:{" "}
                   <span style={{ color: "var(--foreground-secondary)" }}>Label Preparation → Data Preparation → Feature Selection → Training → Validator</span>{" "}
-                  — đưa thời gian training end-to-end xuống <strong>dưới 60 phút</strong>.
+                  — đưa thời gian training xuống <strong>dưới 60 phút</strong> và giúp model development lặp lại được.
                 </li>
                 <li className="leading-relaxed">
-                  Đóng góp vào <strong>ML workflow</strong>: orchestration DAG, chuẩn hoá quy trình training và deployment.
+                  Chuẩn hoá <strong>ML workflow</strong> cho scoring: orchestration DAG, train/validation/OOT, stability checks, và handoff sang production scoring.
                 </li>
                 <li className="leading-relaxed">
                   Nghiên cứu &amp; triển khai <strong>Alternative Credit Scoring</strong> từ tín hiệu{" "}
-                  <em>transaction behaviour</em> + <em>app usage</em> cho sản phẩm <strong>Embedded Finance</strong>.
+                  <em>transaction behaviour</em> + <em>app usage</em> cho use case thin-file và <strong>Embedded Finance</strong>.
                 </li>
               </ul>
               <TechChips chips={TECH.dataScientist.all} keyChips={TECH.dataScientist.key} />
@@ -297,27 +297,27 @@ function ExperienceVi() {
                 <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>T7/2023 — T11/2025</span>
               </div>
               <p className="text-xs mb-2.5 italic" style={{ color: "var(--foreground-secondary)" }}>
-                PIC cho phần lớn các sản phẩm AI — điều phối trực tiếp với PM, Backend Engineers, CS &amp; Ops teams.
+                PIC cho nhiều sản phẩm AI trong digital bank — làm việc trực tiếp với PM, Backend Engineers, CS &amp; Ops để đưa AI vào workflow vận hành.
               </p>
               <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
                 <li className="leading-relaxed">
-                  Dẫn triển khai end-to-end <strong>hệ chat agent multi-agent</strong> (supervisor + hybrid RAG) —
-                  automate <strong>70–80% lượt chat</strong> với <strong>90% chính xác</strong> (validated trên CS sample).
+                  Dẫn triển khai end-to-end <strong>multi-agent customer support system</strong> (supervisor + hybrid RAG) —
+                  automate <strong>70–80% lượt chat</strong> với <strong>90% chính xác</strong> trên mẫu CS validate.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>CMS</strong>: tự động phân loại case &amp; triage email — workflow nhận request → phân loại → assign downstream;
+                  Xây <strong>case &amp; email automation</strong>: nhận request → phân loại → assign downstream;
                   giảm <strong>~70% thao tác thủ công</strong>.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>Data Modeling</strong>: BigQuery &amp; Doris (Conversation Insight, Callbot, Feature Store); BI qua Looker Studio &amp; Superset.
+                  Xây nền dữ liệu cho AI product: BigQuery &amp; Doris cho Conversation Insight, Callbot, Feature Store; BI qua Looker Studio &amp; Superset.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>Data Pipeline</strong> batch &amp; streaming: Airflow, dbt, Kafka.
+                  Vận hành <strong>data pipelines</strong> batch &amp; streaming với Airflow, dbt, Kafka để phục vụ analytics, automation và scoring.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>ML Platform</strong>: FeatureStore (Feast), MLOps, scoring production (NTB/ETB).
+                  Đóng góp <strong>ML Platform</strong>: FeatureStore (Feast), MLOps, scoring production cho NTB/ETB workflows.
                 </li>
-                <li className="leading-relaxed"><strong>Auto EDA</strong> agent (MCP/DataHub style).</li>
+                <li className="leading-relaxed"><strong>AI Analytics / Auto EDA</strong> agent theo hướng metadata discovery, NL-to-SQL và charting workflow.</li>
               </ul>
               <TechChips chips={TECH.dataAIEngineer.all} keyChips={TECH.dataAIEngineer.key} />
             </div>
@@ -340,7 +340,7 @@ function ExperienceVi() {
                 <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>T3/2022 — T7/2023</span>
               </div>
               <p className="text-xs mb-2.5 italic" style={{ color: "var(--foreground-secondary)" }}>
-                Làm việc trực tiếp với CTO — xây dựng toàn bộ hệ thống Data &amp; AI từ raw log đến các sản phẩm AI production.
+                Làm việc trực tiếp với CTO — nền tảng đầu tiên về data stack, NLP moderation và recommendation/ranking ở production.
               </p>
               <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
                 <li className="leading-relaxed">
@@ -385,16 +385,16 @@ function ExperienceEn() {
               </div>
               <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
                 <li className="leading-relaxed">
-                  Building <strong>CakeAutoML</strong> — end-to-end automated credit scoring:{" "}
+                  Building <strong>CakeAutoML</strong> as an end-to-end credit scoring workflow:{" "}
                   <span style={{ color: "var(--foreground-secondary)" }}>Label Preparation → Data Preparation → Feature Selection → Training → Validator</span>{" "}
-                  — bringing training time down to <strong>under 60 minutes</strong>.
+                  — bringing training time down to <strong>under 60 minutes</strong> and making model development repeatable.
                 </li>
                 <li className="leading-relaxed">
-                  Contributing to the <strong>ML workflow</strong>: DAG orchestration, standardising training and deployment.
+                  Standardising the <strong>ML workflow</strong> for scoring: DAG orchestration, train/validation/OOT, stability checks, and production scoring handoff.
                 </li>
                 <li className="leading-relaxed">
                   Researching <strong>Alternative Credit Scoring</strong> using <em>transaction behaviour</em> + <em>app-usage</em> signals
-                  for <strong>Embedded Finance</strong> products.
+                  for thin-file and <strong>Embedded Finance</strong> use cases.
                 </li>
               </ul>
               <TechChips chips={TECH.dataScientist.all} keyChips={TECH.dataScientist.key} />
@@ -410,24 +410,24 @@ function ExperienceEn() {
                 <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>Jul 2023 — Nov 2025</span>
               </div>
               <p className="text-xs mb-2.5 italic" style={{ color: "var(--foreground-secondary)" }}>
-                PIC for most AI products — coordinating directly with PMs, Backend Engineers, CS &amp; Ops teams.
+                PIC for multiple AI products in a digital bank — working directly with PMs, Backend Engineers, CS &amp; Ops to put AI into operating workflows.
               </p>
               <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
                 <li className="leading-relaxed">
-                  Led end-to-end <strong>multi-agent chat system</strong> (supervisor + hybrid RAG) —
-                  automating <strong>70–80% of incoming chats</strong> at <strong>90% accuracy</strong> (CS-validated).
+                  Led an end-to-end <strong>multi-agent customer support system</strong> (supervisor + hybrid RAG) —
+                  automating <strong>70–80% of incoming chats</strong> at <strong>90% accuracy</strong> on CS-validated samples.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>CMS</strong>: automated case classification &amp; email triage — request → classify → assign downstream;
+                  Built <strong>case &amp; email automation</strong>: request → classify → assign downstream;
                   reduced <strong>~70% manual effort</strong>.
                 </li>
                 <li className="leading-relaxed">
-                  <strong>Data Modeling</strong>: BigQuery &amp; Doris (Conversation Insight, Callbot, Feature Store);
-                  BI via Looker Studio &amp; Superset.
+                  Built the data foundation for AI products: BigQuery &amp; Doris for Conversation Insight, Callbot, and Feature Store;
+                  BI through Looker Studio &amp; Superset.
                 </li>
-                <li className="leading-relaxed"><strong>Data Pipelines</strong>: Airflow, dbt, Kafka (batch &amp; streaming).</li>
-                <li className="leading-relaxed"><strong>ML Platform</strong>: FeatureStore (Feast), MLOps, production scoring (NTB/ETB).</li>
-                <li className="leading-relaxed"><strong>Auto EDA</strong> agent (MCP/DataHub-style).</li>
+                <li className="leading-relaxed"><strong>Data Pipelines</strong>: Airflow, dbt, Kafka for batch and streaming analytics, automation, and scoring workloads.</li>
+                <li className="leading-relaxed"><strong>ML Platform</strong>: FeatureStore (Feast), MLOps, production scoring for NTB/ETB workflows.</li>
+                <li className="leading-relaxed"><strong>AI Analytics / Auto EDA</strong> agent with metadata discovery, NL-to-SQL, and charting workflows.</li>
               </ul>
               <TechChips chips={TECH.dataAIEngineer.all} keyChips={TECH.dataAIEngineer.key} />
             </div>
@@ -450,7 +450,7 @@ function ExperienceEn() {
                 <span className="text-xs font-mono" style={{ color: "var(--foreground-secondary)" }}>Mar 2022 — Jul 2023</span>
               </div>
               <p className="text-xs mb-2.5 italic" style={{ color: "var(--foreground-secondary)" }}>
-                Worked directly with the CTO — built the entire Data &amp; AI stack from raw logs through to production AI products.
+                Worked directly with the CTO — early foundation in data stacks, NLP moderation, and recommendation/ranking in production.
               </p>
               <ul className="space-y-1.5 text-sm" style={{ color: "var(--foreground)" }}>
                 <li className="leading-relaxed">
@@ -480,21 +480,19 @@ function IntroVi() {
     <section className="mb-8">
       <p className="about-section-title">Giới thiệu</p>
       <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--foreground)" }}>
-        Ba năm trước mình đang build mô hình kiểm duyệt nội dung cho một mạng xã hội du lịch.
-        Bây giờ mình đang tự động hoá quyết định tín dụng tại một digital bank. Ở giữa là: data
-        pipeline, feature store, hệ thống chat agent đa tầng, và không ít đêm debug model tới sáng.
+        Tôi làm Data Science cho fintech: xây hệ thống AI/ML biến dữ liệu ngân hàng thành quyết định thực tế
+        như credit scoring, approval, limit, monitoring, customer automation và analytics agents.
       </p>
       <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--foreground)" }}>
-        Mình thích những bài toán mà <strong>data lộn xộn, hậu quả có thật</strong>, và không có
-        benchmark sạch nào để núp vào.
+        Điểm mạnh của tôi nằm ở vùng giao nhau giữa <strong>credit decision science</strong>,{" "}
+        <strong>GenAI agents</strong> và <strong>data/ML platform engineering</strong>. Tôi thích những bài toán mà
+        data lộn xộn, stakeholder cần quyết định thật, và model phải sống được trong workflow vận hành.
       </p>
       <p className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>
-        Hiện tại mình đang build <strong>CakeAutoML</strong> — hệ thống tự động hoá toàn bộ quy
-        trình từ chuẩn bị nhãn đến model tín dụng đã được validate — và nghiên cứu xem{" "}
-        <strong>lịch sử giao dịch &amp; hành vi ứng dụng</strong> có thể chấm điểm tín dụng cho
-        những người mà credit bureau truyền thống chưa từng &ldquo;thấy&rdquo;. Điểm giao nhau của{" "}
-        <strong>alternative data</strong>, <strong>embedded finance</strong> và{" "}
-        <strong>ML production</strong> là chỗ mình muốn dành thời gian.
+        Hiện tại tôi đang build <strong>CakeAutoML</strong> cho credit scoring workflow và nghiên cứu{" "}
+        <strong>alternative data</strong> từ lịch sử giao dịch, hành vi ứng dụng cho thin-file/embedded finance.
+        Trước đó, tôi xây multi-agent RAG, automation cho CS/Ops, analytics agents, data pipelines và feature store.
+        Vì vậy portfolio này kể một câu chuyện thống nhất: AI/ML trong fintech phải đi từ raw data đến production decision.
       </p>
     </section>
   );
@@ -505,21 +503,19 @@ function IntroEn() {
     <section className="mb-8">
       <p className="about-section-title">About</p>
       <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--foreground)" }}>
-        Three years ago I was building content moderation models at a travel startup. Today
-        I&apos;m automating credit decisions at a digital bank. In between: data pipelines,
-        feature stores, multi-agent chat systems, and more than a few sleepless model debugging sessions.
+        I&apos;m a Data Scientist building AI/ML systems for fintech: turning banking data into credit scoring,
+        approvals, limits, monitoring, customer automation, and analytics agents.
       </p>
       <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--foreground)" }}>
-        I like problems where <strong>data is messy, stakes are real</strong>, and there&apos;s
-        no clean benchmark to hide behind.
+        My work sits at the intersection of <strong>credit decision science</strong>,{" "}
+        <strong>GenAI agents</strong>, and <strong>data/ML platform engineering</strong>. I like problems where
+        data is messy, stakeholders need real decisions, and models have to survive operating workflows.
       </p>
       <p className="text-sm leading-relaxed" style={{ color: "var(--foreground)" }}>
-        Right now I&apos;m building <strong>CakeAutoML</strong> — an end-to-end system that takes
-        raw data all the way from label preparation to a validated credit model — and researching
-        whether <strong>transaction history &amp; app behaviour</strong> can score credit for people
-        traditional bureaus have never seen. The intersection of{" "}
-        <strong>alternative data</strong>, <strong>embedded finance</strong>, and{" "}
-        <strong>production ML</strong> is where I want to spend my time.
+        Right now I&apos;m building <strong>CakeAutoML</strong> for credit scoring workflows and researching{" "}
+        <strong>alternative data</strong> from transaction behaviour and app usage for thin-file/embedded finance.
+        Before that, I built multi-agent RAG, CS/Ops automation, analytics agents, data pipelines, and feature stores.
+        The common thread is simple: fintech AI/ML should move from raw data to production decisions.
       </p>
     </section>
   );
@@ -554,8 +550,8 @@ export function AboutBody() {
             Trần Quốc Việt
           </h1>
           <p className="mt-4 max-w-2xl text-lg leading-8" style={{ color: "var(--foreground-secondary)" }}>
-            Data Scientist building credit scoring systems, data platforms, and
-            production-minded AI automation in Ho Chi Minh City.
+            Data Scientist building fintech AI/ML systems across credit decisioning,
+            GenAI agents, data platforms, and production scoring in Ho Chi Minh City.
           </p>
         </div>
         <div className="flex flex-col items-start gap-4 sm:items-end">
