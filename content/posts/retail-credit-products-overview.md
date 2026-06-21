@@ -8,8 +8,9 @@ excerpt: >
 category: banking
 ---
 
-> **Series: Credit Scoring Foundation** — Bài viết liên quan  
-> Đã có: [A1 — Labels, outcome window và maturity](/blog/credit-labels-outcome-window/)
+> **Series: Credit Risk Modeling & Decisioning** — Bài viết liên quan  
+> Nền tảng: [Bài 2 — Labels, outcome window và maturity](/blog/credit-labels-outcome-window/)  
+> Đồng hành: [Bài 1 — Credit lifecycle và risk decisioning](/blog/credit-risk-lifecycle-scoring/)
 
 ---
 

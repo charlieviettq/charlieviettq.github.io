@@ -8,8 +8,10 @@ excerpt: >
 category: banking
 ---
 
-> **Series: Credit Scoring Foundation** — Bài 1 / 6  
-> Xem thêm: [A2 — Data Split & Leakage](#) · [A3 — OOT Evaluation](#)
+> **Series: Credit Risk Modeling & Decisioning** — Bài 2 / 8  
+> Trước: [Bài 1 — Credit lifecycle và risk decisioning](/blog/credit-risk-lifecycle-scoring/)  
+> Tiếp: [Bài 3 — DPD, MOB và vintage analysis](/blog/dpd-mob-vintage-analysis/)  
+> Liên quan: [Retail credit products — taxonomy theo cơ chế trả nợ](/blog/retail-credit-products-overview/)
 
 ---
 

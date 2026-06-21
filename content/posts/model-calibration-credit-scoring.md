@@ -8,9 +8,10 @@ excerpt: >
 category: data-science
 ---
 
-> **Series: Credit Scoring Foundation** — Bài 4 / 6  
-> Đã có: [A1 — Labels, outcome window và maturity](/blog/credit-labels-outcome-window/)  
-> Đồng hành: [Retail credit products — taxonomy theo cơ chế trả nợ](/blog/retail-credit-products-overview/)
+> **Series: Credit Risk Modeling & Decisioning** — Bài 5 / 8  
+> Trước: [Bài 4 — Scorecard và PD band](/blog/scorecard-pd-band-credit-scoring/)  
+> Tiếp: [Bài 6 — Cutoff simulation](/blog/cutoff-policy-simulation-credit-scoring/)  
+> Nền tảng: [Bài 2 — Labels, outcome window và maturity](/blog/credit-labels-outcome-window/)
 
 ---
 
