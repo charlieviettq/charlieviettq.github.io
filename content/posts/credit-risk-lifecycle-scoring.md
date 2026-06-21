@@ -2,9 +2,9 @@
 title: "Vòng Đời Tín Dụng: Credit Scoring Nằm Ở Đâu Trong Risk Decisioning"
 date: "2026-06-01"
 excerpt: >
-  Credit scoring không chỉ là một model dự báo bad. Nó nằm trong toàn bộ vòng đời
-  tín dụng, từ application, underwriting, booking, repayment đến collection. Bài này
-  đặt lại bản đồ để DS hiểu model của mình đang phục vụ quyết định nào.
+  Credit scoring không thất bại vì model đứng một mình. Nó thất bại khi DS không
+  hiểu model đang phục vụ quyết định nào trong lifecycle: approve, limit, pricing,
+  monitoring hay collection.
 category: banking
 ---
 
@@ -16,133 +16,134 @@ category: banking
 
 ## Điểm cần nhớ
 
-- Credit scoring là một phần của **risk decisioning**, không phải một notebook model độc lập.
-- Application score trả lời ai được duyệt, hạn mức bao nhiêu và pricing thế nào.
-- Behavioral score trả lời khách hàng đang khỏe lên hay xấu đi sau khi đã book.
-- NPL là chỉ số đến muộn; DS cần nối score với FPD, DPD, vintage, expected loss và portfolio risk.
-- Stakeholder không chỉ hỏi AUC. Họ hỏi approval, risk appetite, provision, profit và operational impact.
+- Credit scoring là một **decisioning system**, không phải chỉ là một model artifact.
+- Một score có thể phục vụ nhiều quyết định: approve/reject, limit, pricing, manual review, early warning, collection.
+- Application score và behavioral score khác nhau ở decision point, feature availability, label và stakeholder.
+- Model metric chỉ là lớp đầu. Risk, Portfolio, Finance và Business cần thấy tác động lên approval, loss, NPL, provision và profit.
+- DS mạnh không chỉ nói “model tốt hơn”, mà nói “decision nào nên đổi, đổi ở segment nào, monitor bằng gì”.
 
 ## VI
 
-## 1. Tổng quan: Model sống trong credit lifecycle
+## 1. Model không tự tạo ra quyết định tín dụng
 
-Một khoản vay bán lẻ thường đi qua chuỗi quyết định như sau:
+Credit scoring thường được giới thiệu như bài toán dự báo: khách hàng nào sẽ bad. Cách nói đó đúng nhưng chưa đủ. Trong lending, model chỉ có giá trị khi nó đi vào một quyết định cụ thể: duyệt hay từ chối, cấp bao nhiêu hạn mức, định giá thế nào, có cần review thủ công không, hoặc khách nào cần treatment sớm.
+
+Vấn đề thật không phải là “model có AUC bao nhiêu”. Vấn đề là **decisioning system** dùng model đó có đang tạo danh mục tốt hơn không.
 
 ```text
 Application -> Underwriting -> Approval/Reject -> Booking -> Repayment
 -> Delinquency -> Collection -> Write-off / Recovery
 ```
 
-Credit scoring xuất hiện ở nhiều điểm trong chuỗi này. Nếu DS không biết model được dùng ở đâu, rất dễ tối ưu sai mục tiêu: model đẹp trên validation nhưng khó dùng trong policy, pricing hoặc portfolio monitoring.
+Nếu DS không biết model nằm ở đâu trong dòng này, rất dễ tối ưu sai thứ. Một application model dùng feature sau booking là leakage. Một behavioral model dùng label quá xa action window sẽ khó vận hành. Một score dùng cho pricing nhưng không calibrated sẽ làm sai expected loss.
 
-:::note[Positioning của series]
-Series này đi theo tinh thần **Credit Scoring & Risk Decisioning for Data Scientists**: không chỉ build model, mà hiểu model đi vào quyết định tín dụng, danh mục và stakeholder conversation như thế nào.
-:::
+## 2. Application score: nơi growth và risk gặp nhau đầu tiên
 
-## 2. Application score: quyết định trước khi book
+Application score chạy trước khi khoản vay được book. Nó thường dùng application data, bureau data, affordability, fraud/device signals và channel information.
 
-Application score chạy tại thời điểm khách hàng apply hoặc underwriting. Dữ liệu thường gồm application form, bureau, affordability, device/fraud signals và channel.
+Điểm quan trọng: application score không chỉ nói “khách này rủi ro bao nhiêu”. Nó thường điều khiển một bộ quyết định.
 
-Các quyết định thường gặp:
-
-| Quyết định | Câu hỏi nghiệp vụ | Metric cần theo dõi |
+| Decision | Câu hỏi thật | Metric stakeholder nhìn |
 |---|---|---|
-| Approve/reject | Có nên cấp tín dụng không? | Approval rate, bad rate, expected loss |
-| Limit | Cấp bao nhiêu exposure? | EAD, utilization, loss per booked amount |
-| Pricing | Lãi suất/fee có bù rủi ro không? | Risk-adjusted margin, conversion |
-| Manual review | Hồ sơ nào cần kiểm tra thêm? | Review rate, overturn rate, SLA |
+| Approve/reject | Có nên cấp tín dụng không? | Approval rate, booked volume, bad rate |
+| Limit | Nếu duyệt thì cấp bao nhiêu exposure? | EAD, utilization, loss per booked amount |
+| Pricing | Giá có bù rủi ro không? | Margin, conversion, adverse selection |
+| Manual review | Case nào cần người kiểm tra? | Review rate, SLA, overturn rate |
 
-Điểm DS cần nhớ: application score không chỉ rank khách hàng. Nếu output là PD và đi vào limit/pricing, **calibration** trở thành yêu cầu quản trị mô hình.
+Một DS chỉ report AUC sẽ nhanh chóng bị hỏi tiếp: “Nếu dùng model này thì approval tăng bao nhiêu, bad rate đổi thế nào, có vượt risk appetite không?”. Đó là lúc model phải được dịch thành policy impact.
 
-## 3. Behavioral score: quyết định sau khi khách hàng active
+## 3. Behavioral score: khi dữ liệu thật bắt đầu xuất hiện
 
-Behavioral score chạy sau booking, thường theo snapshot tháng, tuần hoặc ngày. Model có thêm dữ liệu thật: repayment, utilization, balance trend, missed payment, transaction behavior và contactability.
+Sau booking, khách hàng bắt đầu để lại hành vi thật: repayment, utilization, missed payment, balance trend, payment ratio, usage pattern. Behavioral score sống ở đoạn này.
 
-Các use case phổ biến:
-
-| Use case | Câu hỏi | Output nên dùng |
+| Use case | Câu hỏi decisioning | Output hợp lý |
 |---|---|---|
-| Early warning | Ai có nguy cơ thành delinquent? | P(30+ DPD trong 3 tháng) |
-| Limit uplift | Ai nên được tăng hạn mức? | Risk + usage + profit |
-| Retention/cross-sell | Ai phù hợp offer mới? | Response + risk after take-up |
+| Early warning | Ai đang xấu đi trước khi vào delinquency? | P(30+ DPD trong 3 tháng) |
+| Limit uplift | Ai nên được tăng hạn mức? | Risk + need + expected profit |
+| Cross-sell | Ai nhận offer mà không làm risk xấu đi? | Response + post-take-up risk |
 | Collection prevention | Ai cần nhắc sớm? | Roll-forward probability |
 
-Với uplift, model không nên chỉ hỏi “ai ít rủi ro nhất”. Một khách PD thấp nhưng không có nhu cầu dùng thêm limit có thể không tạo incremental value.
+Với behavioral uplift, chọn khách PD thấp nhất chưa chắc đúng. Khách rất tốt nhưng không dùng thêm limit sẽ không tạo value. Khách PD vừa thấp, utilization cao và repayment ổn có thể là nhóm đáng uplift hơn.
 
-## 4. Stakeholder map
+## 4. Stakeholder map: cùng một model, năm ngôn ngữ
 
-Một DS scoring giỏi phải dịch cùng một model sang nhiều ngôn ngữ:
+Một model review tốt không dừng ở technical scorecard. Nó phải có bản dịch cho từng người trong phòng.
 
-| Stakeholder | Họ quan tâm | DS nên nói bằng |
+| Stakeholder | Họ đang bảo vệ điều gì? | DS nên mang gì vào meeting |
 |---|---|---|
-| Risk | Risk appetite, bad rate, NPL | PD band, actual bad rate, vintage |
-| Business | Growth, approval, conversion | Approval lift, booked volume |
+| Risk | Risk appetite, danh mục không xấu đi | Bad rate by PD band, vintage, guardrail |
+| Business | Growth và conversion | Approval lift, booked volume, take-up |
 | Finance | Profit, provision, ECL | Expected loss = PD x LGD x EAD |
-| Portfolio | Sức khỏe danh mục | MOB, vintage, roll rate, channel mix |
-| Collection | Workload, recovery | Cure rate, roll-forward, treatment value |
+| Portfolio | Sức khỏe danh mục | MOB, FPD, roll rate, channel mix |
+| Collection | Capacity và recovery | Cure rate, roll-forward, treatment value |
 
-Model metric là ngôn ngữ của DS. Portfolio metric là ngôn ngữ của Risk. P&L metric là ngôn ngữ của Business và Finance.
+Model metric là ngôn ngữ nội bộ của DS. Portfolio metric là ngôn ngữ của Risk. P&L metric là ngôn ngữ của Business và Finance. Một DS credit scoring tốt phải đi qua được cả ba lớp.
 
-## 5. Mini case: approval tăng nhưng NPL chưa tăng
+## 5. Mini case: model mới tốt hơn nhưng policy chưa chắc nên đổi toàn bộ
 
-Business giảm cutoff để tăng approval từ 35% lên 45%. Một tháng sau, NPL ratio vẫn ổn. Có thể kết luận policy mới an toàn không?
+Giả sử challenger model tăng AUC từ 0.74 lên 0.78. Nếu chỉ nhìn model metric, câu chuyện có vẻ xong. Nhưng khi simulate policy:
 
-Chưa nên. NPL là lagging metric. Khoản vay mới cần thời gian để đi qua repayment cycle, phát sinh DPD và mature thành NPL. DS nên đọc:
+| Segment | Approval lift | Expected bad rate | Recommendation |
+|---|---:|---:|---|
+| Salaried NTB | +6pp | 3.4% | Roll out |
+| Existing customer | +4pp | 2.8% | Roll out |
+| Affiliate channel | +8pp | 7.5% | Manual review hoặc exclude |
 
-```text
-Incremental approval group
-Score/PD band mix
-FPD và 30+ DPD at MOB 1-3
-Vintage by channel/product
-Expected loss và marginal profit
-```
+Kết luận tốt không phải “deploy challenger everywhere”. Kết luận tốt hơn là:
 
-Câu trả lời tốt trong meeting:
+> Challenger giúp tăng approval có kiểm soát ở salaried và existing customers, nhưng affiliate channel tạo marginal risk quá cao. Em đề xuất rollout có chọn lọc, giữ guardrail FPD và 30+ DPD at MOB 1-3 theo channel.
 
-> NPL chưa tăng chưa đủ để kết luận. Em sẽ so vintage của cohort sau policy với cohort trước đó tại cùng MOB, đặc biệt FPD và 30+ DPD. Nếu nhóm approve thêm có early delinquency cao hơn baseline, NPL có thể tăng muộn hơn.
+Đó là khác biệt giữa model owner và decision partner.
 
-## 6. Checklist cho DS
+## 6. Common mistakes
 
-- Model chạy tại submit application, underwriting hay trước disbursement?
+| Mistake | Vì sao nguy hiểm |
+|---|---|
+| Treat score như output cuối | Score chỉ là input cho policy, limit, pricing hoặc treatment |
+| Dùng cùng metric cho mọi stakeholder | AUC không trả lời câu hỏi profit, provision hay capacity |
+| Không rõ decision point | Dễ dùng feature chưa available hoặc label không khớp action |
+| Chỉ nhìn average impact | Marginal approval group có thể lỗ dù portfolio average vẫn đẹp |
+
+## 7. Checklist trước khi trình bày model
+
+- Model chạy tại submit, underwriting, booking hay monthly snapshot?
+- Score dùng cho rank, cutoff, limit, pricing hay collection treatment?
 - Feature có available tại decision point không?
-- Score dùng cho rank, cutoff, limit, pricing hay reporting?
-- Bad definition và performance window có khớp với monitoring không?
-- Có đo impact theo marginal group, không chỉ portfolio average không?
-- Có stakeholder translation cho Risk, Business, Finance và Collection không?
+- Bad definition và monitoring metric có khớp nhau không?
+- Impact có tách theo marginal group, product, channel và segment không?
+- Có rollback trigger nếu early delinquency vượt guardrail không?
+
+## 8. Takeaway
+
+Credit scoring không phải bài toán “build model rồi bàn giao score”. Nó là bài toán thiết kế quyết định. Khi DS hiểu lifecycle, policy, portfolio và economics, model review sẽ chuyển từ “metric này đẹp không?” sang “decision này có nên đổi không?”.
 
 ## EN
 
-### Credit scoring is part of risk decisioning
+### Credit scoring is a decisioning system
 
-A retail credit account usually moves through:
+Credit scoring does not fail because a model stands alone. It fails when the data scientist does not understand which lifecycle decision the model is supposed to serve: approval, limit, pricing, monitoring or collection.
+
+The credit lifecycle is a chain of decisions:
 
 ```text
 Application -> Underwriting -> Approval/Reject -> Booking -> Repayment
 -> Delinquency -> Collection -> Write-off / Recovery
 ```
 
-Credit scoring is not just a model that predicts bad customers. It supports decisions across the lifecycle: approval, limit, pricing, early warning, portfolio monitoring and collection.
+An application score supports approval, limit, pricing and manual review. A behavioral score supports early warning, limit uplift, cross-sell and collection prevention.
 
-### Application score
+### The stakeholder translation layer
 
-An application score is used before booking, usually at application submission or underwriting. It supports approve/reject, credit limit, pricing and manual review decisions. If the model output is used as PD in pricing or expected loss, calibration matters as much as ranking.
+The same model has to be translated into different languages:
 
-### Behavioral score
-
-A behavioral score is used after the account is active. It can use repayment, utilization, missed payment, balance trend and transaction behavior. Common use cases include early warning, limit uplift, cross-sell, retention and collection prevention.
-
-### Stakeholder translation
-
-Different stakeholders read the same model differently:
-
-| Stakeholder | Main concern | DS translation |
+| Stakeholder | What they care about | DS translation |
 |---|---|---|
-| Risk | Risk appetite, bad rate, NPL | PD bands, actual bad rate, vintage |
-| Business | Growth and conversion | Approval lift, booked volume |
+| Risk | Risk appetite and portfolio quality | Bad rate by PD band, vintage, guardrails |
+| Business | Growth and conversion | Approval lift, booked volume, take-up |
 | Finance | Profit and provision | Expected loss = PD x LGD x EAD |
-| Portfolio | Book health | MOB, vintage, roll rate |
-| Collection | Workload and recovery | Cure rate, roll-forward, treatment value |
+| Portfolio | Book health | MOB, FPD, roll rate, channel mix |
+| Collection | Capacity and recovery | Cure rate, roll-forward, treatment value |
 
 ### Practical takeaway
 
-If approval increases but NPL has not moved, do not conclude the new policy is safe. NPL is a lagging metric. Check FPD, 30+ DPD at early MOB, vintage performance and the marginal approval group.
+A challenger model with higher AUC is not automatically a better policy. The right question is: which decision changes, for which segment, with what marginal risk, and which monitoring guardrails?

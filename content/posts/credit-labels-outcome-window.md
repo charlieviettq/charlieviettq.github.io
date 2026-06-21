@@ -37,13 +37,13 @@ Sơ đồ dưới đây là cách nhìn tối thiểu về một label tín dụ
 
 ## VI
 
-## 1. Tổng quan: Label là nền móng của credit model
+## 1. Tổng quan: Label là hợp đồng rủi ro
 
-Lần đầu tiên tôi build credit model, tôi nghĩ phần khó nhất sẽ là feature engineering, chọn model, hoặc tuning tham số. Hóa ra phần làm chậm dự án nhiều nhất lại là một câu hỏi nghe rất đơn giản: **ai được gọi là "bad"?**
+Một credit model không bắt đầu từ XGBoost, feature store hay hyperparameter tuning. Nó bắt đầu từ một hợp đồng nghiệp vụ: **rủi ro nào đang được model hóa, quan sát từ đâu, trong bao lâu, và khi nào đủ chắc để gọi một hồ sơ là good hoặc bad**.
 
-Câu hỏi đó thường kéo theo vài cuộc họp với Risk, vài version document, và đôi khi một lần retrain không cần thiết vì business đang dùng definition khác data team. Với credit scoring, label không chỉ là target variable. Nó là cách tổ chức định nghĩa rủi ro để đưa vào quyết định thật.
+Nếu hợp đồng này mơ hồ, model vẫn có thể có AUC đẹp nhưng trả lời sai câu hỏi decisioning. Risk có thể đang review `60+ DPD within 12 months`, Product quan tâm early delinquency, còn DS lại train `30+ DPD within 6 months`. Khi đó vấn đề không nằm ở thuật toán; vấn đề là tổ chức chưa thống nhất rủi ro nào cần được đưa vào quyết định.
 
-Bài này đi qua các khái niệm tối thiểu cần chốt trước khi train model: DPD, bad flag, outcome window, label maturity, các họ label như Ever-90/FPD/MOB/roll-rate, và những lỗi khiến mô hình nhìn ổn trong notebook nhưng sai khi đưa vào policy.
+Bài này đi qua các khái niệm cần chốt trước khi modeling: DPD, bad flag, outcome window, label maturity, các họ label như Ever-90/FPD/MOB/roll-rate, và những lỗi khiến mô hình nhìn ổn trong notebook nhưng sai khi đưa vào cutoff, pricing, limit hoặc monitoring.
 
 ## 2. Vấn đề thường gặp: Data Science và Risk không dùng cùng một định nghĩa
 
@@ -196,7 +196,11 @@ Fraud case cần được xử lý riêng trước khi gắn label credit. Credi
 
 Nếu bạn mới làm credit scoring, hãy tập thói quen viết label spec trước khi viết notebook. Chỉ cần một trang cũng được, miễn là đủ rõ: bad là gì, quan sát từ đâu, chờ bao lâu, case nào exclude, và cohort nào đủ mature.
 
-Khi ngồi với Risk hoặc Product, đừng hỏi “anh/chị muốn AUC bao nhiêu?”. Hãy hỏi trước: “Hồ sơ nào được xem là bad, và sau bao lâu thì mình chắc điều đó?”.
+Khi ngồi với Risk hoặc Product, đừng hỏi “anh/chị muốn AUC bao nhiêu?”. Hãy hỏi trước: “Decision này đang cần dự báo rủi ro nào, và sau bao lâu thì mình đủ chắc để đo rủi ro đó?”.
+
+Stakeholder-ready answer:
+
+> Trước khi model performance có ý nghĩa, mình cần sign off label definition. Nếu Risk, Product và DS đang dùng các bad definition khác nhau, model có thể rank tốt nhưng vẫn không phục vụ đúng policy decision.
 
 ## 8. Hỏi đáp nhanh
 
@@ -220,11 +224,11 @@ Các tài liệu tham khảo chi tiết nằm ở phần cuối bài.
 
 ## EN
 
-### The uncomfortable first question: who counts as bad?
+### A label is a risk contract
 
-The first time I built a credit model, I assumed the hard parts would be feature engineering, model selection, or hyperparameter tuning. The harder part was aligning with Risk on one deceptively simple question: **who counts as "bad"?**
+A credit model does not start with XGBoost, a feature store, or hyperparameter tuning. It starts with a business contract: **which risk is being modeled, where observation starts, how long outcomes are measured, and when a case is mature enough to be called Good or Bad**.
 
-That question can lead to multiple meetings, several document versions, and sometimes a full retrain because business policy and data logic are not using the same target. In credit scoring, a label is not just a machine-learning target. It is the institution's operational definition of risk.
+If that contract is vague, a model can still have strong AUC and answer the wrong decisioning question. Risk may be reviewing `60+ DPD within 12 months`, Product may care about early delinquency, while DS trains on `30+ DPD within 6 months`.
 
 This post covers the minimum set of decisions to settle before modeling: DPD, outcome windows, label maturity, Ever-90/FPD/MOB/roll-rate labels, and the traps that make a model look clean in a notebook but fail policy review.
 

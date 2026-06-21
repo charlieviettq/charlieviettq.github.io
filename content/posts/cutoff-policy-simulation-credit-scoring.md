@@ -2,9 +2,9 @@
 title: "Cutoff Simulation: Approval Tăng Thì Risk Và Profit Đổi Thế Nào"
 date: "2026-06-09"
 excerpt: >
-  Cutoff không chỉ là một ngưỡng approve/reject. Đó là điểm cân bằng giữa growth,
-  risk appetite, expected loss, pricing, limit và marginal profit của nhóm khách
-  được approve thêm.
+  Cutoff là một business decision được ngụy trang dưới dạng model threshold. Bài này
+  đọc approval, marginal group, expected loss, profit và rollout guardrail như một
+  bài toán decisioning, không chỉ là chọn ngưỡng.
 category: data-science
 ---
 
@@ -16,34 +16,35 @@ category: data-science
 
 ## Điểm cần nhớ
 
-- Với PD model, cutoff thường có dạng `approve nếu PD <= threshold`.
-- Nới cutoff làm approval tăng nhưng risk không tăng đều ở mọi segment.
-- Quyết định cutoff nên dựa vào marginal group, không chỉ portfolio average.
-- Expected loss cần dùng PD đã calibrated hoặc actual bad rate đủ mature.
-- Một policy tốt có thể nới có chọn lọc theo segment/channel thay vì nới đồng loạt.
+- Cutoff không phải ngưỡng kỹ thuật; nó là nơi growth target, risk appetite và portfolio economics va vào nhau.
+- Với PD model, nới cutoff nghĩa là approve thêm một marginal group cụ thể, không phải làm cả portfolio xấu đều nhau.
+- Portfolio average có thể đẹp trong khi marginal group lỗ.
+- Expected loss nên dùng calibrated PD hoặc observed bad rate đã mature.
+- Recommendation tốt thường là nới có chọn lọc theo segment/channel, kèm guardrail và rollback trigger.
 
 ## VI
 
-## 1. Cutoff là gì?
+## 1. Cutoff là business decision đội lốt model threshold
 
-Cutoff là ngưỡng biến model score thành quyết định. Nếu model output là PD:
-
-```text
-Approve nếu PD <= 5%
-Reject hoặc manual review nếu PD > 5%
-```
-
-Khi Business muốn tăng approval, họ thường đề xuất nới cutoff:
+Trong notebook, cutoff nhìn như một dòng rule:
 
 ```text
-PD <= 5% -> PD <= 7.5%
+Approve nếu PD <= 7.5%
 ```
 
-DS cần trả lời: approve thêm bao nhiêu, risk tăng bao nhiêu và profit còn đáng không.
+Trong business, cutoff là quyết định về việc tổ chức muốn mua thêm bao nhiêu growth với bao nhiêu risk. Nếu cutoff bị xem như tham số kỹ thuật, DS sẽ bị kéo vào tranh luận “hạ thêm chút được không?”. Nếu cutoff được xem như decisioning lever, cuộc nói chuyện chuyển sang câu hỏi đúng hơn:
 
-## 2. Policy simulation table
+```text
+Approve thêm nhóm nào?
+Expected loss tăng bao nhiêu?
+Pricing/limit có bù được không?
+Segment nào nên exclude?
+Monitor bằng guardrail nào?
+```
 
-Bảng simulation tối thiểu nên có:
+## 2. Cutoff simulation không chỉ là approval curve
+
+Bảng cutoff tối thiểu phải nối approval với risk và economics.
 
 | Cutoff PD | Approval | Avg PD | Expected loss | Revenue | Profit |
 |---|---:|---:|---:|---:|---:|
@@ -52,31 +53,37 @@ Bảng simulation tối thiểu nên có:
 | <= 7.5% | 45% | 3.6% | 4.5B | 12.0B | 4.0B |
 | <= 10% | 55% | 4.8% | 7.0B | 14.0B | 2.5B |
 
-Cutoff approval cao nhất không nhất thiết là cutoff tốt nhất. Trong ví dụ này, `PD <= 5%` có profit cao hơn `PD <= 7.5%`.
+Cutoff có approval cao nhất không nhất thiết là cutoff tốt nhất. Ở ví dụ này, `PD <= 5%` tạo profit cao hơn `PD <= 7.5%`, dù growth thấp hơn.
 
-## 3. Marginal approval
+## 3. Marginal group là quyết định thật
 
-Nếu nới từ `PD <= 5%` lên `PD <= 7.5%`, nhóm quyết định mới là:
+Nếu policy đổi từ:
+
+```text
+PD <= 5%
+```
+
+sang:
+
+```text
+PD <= 7.5%
+```
+
+quyết định mới không phải toàn bộ nhóm `PD <= 7.5%`. Quyết định mới là:
 
 ```text
 5% < PD <= 7.5%
 ```
 
-Đây là **marginal group**. Phải đọc riêng:
+Đây là marginal group. Nếu nhóm này lỗ, việc portfolio sau cutoff vẫn dưới risk appetite chưa đủ để approve đồng loạt.
 
-```text
-Volume
-Actual bad rate
-Expected loss
-Revenue
-Profit
-Channel/segment mix
-Limit và pricing
-```
+| Population | Bad rate | Profit/account | Cách đọc |
+|---|---:|---:|---|
+| Existing approved `PD <= 5%` | 2.8% | +120K | Core book tốt |
+| Marginal `5% < PD <= 7.5%` | 6.5% | -20K | Approve thêm đang phá economics |
+| Combined `PD <= 7.5%` | 3.6% | +85K | Average che marginal loss |
 
-Portfolio cum bad rate có thể vẫn dưới risk appetite, nhưng marginal group có thể lỗ.
-
-## 4. Expected loss
+## 4. Expected loss: cần xác suất đáng tin
 
 Công thức nền:
 
@@ -84,68 +91,71 @@ Công thức nền:
 Expected loss = PD x LGD x EAD
 ```
 
-Ở mức portfolio:
+Nếu raw PD chưa calibrated, simulation pricing/limit sẽ sai scale. Nếu cohort chưa mature, actual bad rate cũng chưa đủ tin. Vì vậy cutoff simulation phải ghi rõ nguồn risk estimate:
 
-```text
-Total expected loss = sum(PD_i x LGD_i x EAD_i)
-```
+| Source | Khi nào dùng | Rủi ro |
+|---|---|---|
+| Calibrated PD | Policy simulation trước rollout | Phụ thuộc calibration và population stability |
+| Matured actual bad rate | Backtest hoặc policy review | Cần đủ performance window |
+| Proxy bad rate | Thiếu LGD/EAD hoặc data sớm | Phải ghi assumption rõ |
 
-Nếu chưa có LGD/EAD đủ tốt, có thể dùng proxy như bad rate x average outstanding, nhưng phải ghi rõ assumption.
+## 5. Segment/channel simulation
 
-## 5. Segment và channel simulation
+Cutoff hiếm khi nên nới đồng loạt. Một cutoff có thể tốt ở salaried customers nhưng xấu ở affiliate channel.
 
-Không nên chỉ simulate overall. Một cutoff mới có thể tốt ở salaried customers nhưng xấu ở affiliate channel.
+| Marginal segment | Approval lift | Actual bad rate | Expected profit | Recommendation |
+|---|---:|---:|---:|---|
+| Salaried NTB | +5pp | 4.2% | +60K/account | Roll out |
+| Existing customer | +2pp | 3.8% | +80K/account | Roll out |
+| Affiliate NTB | +3pp | 8.5% | -40K/account | Exclude/manual review |
 
-Ví dụ:
+Đây là nơi DS chuyển từ “model analysis” sang “policy recommendation”.
 
-| Marginal segment | Approval lift | Actual bad rate | Recommendation |
-|---|---:|---:|---|
-| Salaried | +5pp | 4.2% | Approve with standard limit |
-| Existing customer | +2pp | 3.8% | Approve |
-| Affiliate NTB | +3pp | 8.5% | Exclude or manual review |
-
-Đây là cách biến model analysis thành policy recommendation.
-
-## 6. Stakeholder translation
+## 6. Stakeholder-ready answer
 
 Nếu Business hỏi:
 
-> Hạ cutoff để approval tăng 10 điểm phần trăm được không?
+> Hạ cutoff để approval tăng thêm 10 điểm phần trăm được không?
 
-Câu trả lời tốt:
+Câu trả lời nên là:
 
-> Có thể, nhưng không nên nới đồng loạt. Nhóm marginal `5% < PD <= 7.5%` có risk cao hơn baseline. Em đề xuất approve phần salaried và existing customer, giữ manual review hoặc reject affiliate NTB, đồng thời monitor FPD và 30+ DPD at MOB 1-3.
+> Có thể tăng approval, nhưng không nên nới đồng loạt. Nhóm marginal `5% < PD <= 7.5%` tạo risk cao hơn baseline. Simulation cho thấy salaried và existing customer vẫn có expected profit dương, còn affiliate NTB âm sau khi tính expected loss. Em đề xuất rollout có chọn lọc và monitor FPD, 30+ DPD at MOB 1-3 theo channel.
 
-## 7. Checklist
+## 7. Common mistakes
+
+| Mistake | Vì sao nguy hiểm |
+|---|---|
+| Chọn cutoff theo approval target trước | Risk và profit thành hậu kiểm |
+| Chỉ đọc cum bad rate | Marginal group có thể lỗ |
+| Dùng raw PD chưa calibrated | Expected loss/pricing sai scale |
+| Không tính conversion/take-up | Revenue bị thổi phồng |
+| Không tách channel | Segment xấu bị average che |
+
+## 8. Checklist
 
 - PD đã calibrated chưa?
 - Population là application, approved hay booked?
-- Có tính conversion/take-up không?
-- Có EAD, LGD, limit, pricing và tenor không?
-- Có đọc marginal group không?
-- Có tách channel/product/segment không?
+- Có tính conversion từ approved sang booked không?
+- Có EAD, LGD, limit, pricing, tenor không?
+- Marginal group có profit dương không?
 - Có rollout guardrail và rollback trigger không?
+
+## 9. Takeaway
+
+Cutoff là nơi model gặp chiến lược kinh doanh. Một DS tốt không chỉ đưa ra ngưỡng; họ đưa ra policy package: approve ai, không approve ai, cấp bao nhiêu, định giá thế nào, và khi nào phải dừng.
 
 ## EN
 
-### Cutoff is a business decision
+### A cutoff is a business decision
 
-A cutoff turns model output into a decision. For a PD model, the rule may be `approve if PD <= threshold`. Relaxing a cutoff increases approval, but it also changes expected loss, pricing, limit and portfolio mix.
+A cutoff looks like a model threshold, but it is really a decision about how much growth the lender is willing to buy at what risk and economics.
 
-### Marginal group matters
+For a PD model, relaxing the rule from `PD <= 5%` to `PD <= 7.5%` adds the marginal group `5% < PD <= 7.5%`. This group should drive the decision.
 
-If the policy moves from `PD <= 5%` to `PD <= 7.5%`, the marginal group is `5% < PD <= 7.5%`. This is the group that should drive the decision. Portfolio averages may still look acceptable because better bands pull the average down.
+### The marginal group matters
 
-### Expected loss
-
-Use:
-
-```text
-Expected loss = PD x LGD x EAD
-```
-
-Use calibrated PD or mature observed bad rate when possible. If proxies are used, state the assumptions clearly.
+The combined portfolio can still look acceptable while the marginal group loses money. That is why cutoff simulation should include approval, bad rate, expected loss, revenue, profit and segment/channel mix.
 
 ### Practical takeaway
 
-A good cutoff recommendation is rarely “approve more everywhere”. It should specify which segments to approve, which channels to exclude, how to adjust limit/pricing and what early metrics to monitor.
+A good recommendation is rarely “lower the cutoff everywhere”. It should specify which segments to approve, which channels to exclude, how to adjust limit/pricing, and which early delinquency guardrails to monitor.

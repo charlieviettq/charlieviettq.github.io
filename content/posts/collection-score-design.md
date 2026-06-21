@@ -2,9 +2,8 @@
 title: "Collection Score: Thiết Kế Label, Treatment Và Recovery Strategy"
 date: "2026-06-16"
 excerpt: >
-  Collection score không chỉ dự báo ai dễ trả. Một model hữu ích phải nối label,
-  bucket, treatment, capacity, recovery amount và collection cost để giúp đội thu hồi
-  chọn đúng khách hàng và đúng hành động.
+  Collection score không chỉ tìm người dễ trả. Nó là bài toán phân bổ capacity:
+  gọi ai, dùng treatment nào, kỳ vọng thu được bao nhiêu và chi phí có đáng không.
 category: banking
 ---
 
@@ -16,48 +15,44 @@ category: banking
 
 ## Điểm cần nhớ
 
-- Collection score cần label rõ: payment, cure, roll-forward, recovery hay uplift.
-- Population nên tách theo bucket như 1-30, 31-60, 61-90, 90+ DPD.
-- Gọi nhóm dễ trả nhất chưa chắc tối ưu, vì họ có thể tự trả nếu chỉ nhận reminder nhẹ.
-- Lift@topK, recovery captured và cost per recovery thường hữu ích hơn chỉ nhìn AUC.
-- Treatment history dễ gây bias; cần phân biệt propensity với uplift.
+- Collection score là bài toán allocation: capacity, treatment, timing, recovery và cost.
+- Label phải khớp objective: payment, cure, roll-forward, recovery amount hoặc uplift.
+- Không nên trộn mọi DPD bucket vào một model nếu action và behavior khác nhau.
+- Propensity trả lời ai dễ trả; uplift trả lời action có làm họ trả thêm không.
+- Lift@topK, recovery captured và net recovery thường hữu ích hơn AUC trong vận hành.
 
 ## VI
 
-## 1. Collection score trả lời câu hỏi gì?
+## 1. Collection không chỉ là dự báo ai trả
 
-Application score hỏi:
-
-```text
-Có nên cho vay không?
-```
-
-Collection score hỏi:
+Một lỗi phổ biến là build collection score như một model dự báo “ai sẽ trả tiền”. Điều đó hữu ích, nhưng chưa đủ. Collection team không có vô hạn capacity. Họ phải quyết định:
 
 ```text
-Ai cần được tác động?
-Tác động bằng kênh nào?
-Kỳ vọng thu được bao nhiêu?
-Chi phí có đáng không?
+Ai nhận SMS?
+Ai cần call?
+Ai nên được offer restructuring?
+Ai không đáng tốn effort lúc này?
 ```
 
-Vì vậy collection score phải gắn với action thật của collection team.
+Vì vậy collection score không chỉ là risk score. Nó là công cụ phân bổ treatment và chi phí.
 
-## 2. Chọn objective trước khi chọn label
+## 2. Label đi theo objective
 
-Không có một label mặc định cho collection score. Label phụ thuộc objective.
+Không có label mặc định cho collection score. Label phải bắt đầu từ câu hỏi vận hành.
 
 | Objective | Label 1 | Label 0 | Metric tổng hợp |
 |---|---|---|---|
 | Payment propensity | Trả minimum due trong 14 ngày | Không trả | Payment rate |
-| Cure model | Quay về Current trong 30 ngày | Không cure | Cure rate |
-| Roll-forward risk | Roll sang bucket xấu hơn | Không roll | Roll rate |
-| Recovery model | Có trả tiền trong 30/60/90 ngày | Không trả | Recovery rate |
+| Cure | Quay về Current trong 30 ngày | Không cure | Cure rate |
+| Roll-forward prevention | Roll sang bucket xấu hơn | Không roll | Roll rate |
+| Recovery binary | Có trả bất kỳ amount trong 30/60/90 ngày | Không trả | Recovery rate |
 | Recovery amount | Số tiền thu hồi | - | Expected recovery |
 
-Label là nhãn ở cấp dòng dữ liệu. Roll rate, cure rate hoặc payment rate là metric tổng hợp từ nhiều dòng.
+Label là nhãn ở cấp account/snapshot. Roll rate, cure rate và recovery rate là metric tổng hợp từ nhiều label.
 
-## 3. Population và scoring date
+## 3. Population: bucket khác nhau là bài toán khác nhau
+
+Khách 5 DPD và khách 120 DPD không cùng một bài toán. Một người có thể chỉ cần reminder. Người kia có thể cần restructuring, field collection hoặc recovery strategy.
 
 Collection model nên tách theo bucket:
 
@@ -70,32 +65,18 @@ Current high risk
 Write-off
 ```
 
-Ví dụ model cho early collection:
+Ví dụ early collection:
 
 ```text
 Population = accounts entering 1-30 DPD
-Scoring date = ngày account vào 1-30 DPD
+Scoring date = ngày account vào bucket
 Performance window = 14 ngày
 Label 1 = paid minimum due trong 14 ngày
 ```
 
-Feature chỉ được lấy trước hoặc tại scoring date.
+Feature chỉ được lấy trước hoặc tại scoring date. Payment sau scoring date, collector note sau scoring date, hoặc DPD tương lai đều là leakage.
 
-## 4. Feature groups
-
-Các nhóm feature thường dùng:
-
-| Nhóm | Ví dụ |
-|---|---|
-| Delinquency | Current DPD, max DPD, bucket history |
-| Payment behavior | Last payment amount, partial payment, days since last payment |
-| Exposure | Outstanding, due amount, installment, tenor remaining |
-| Contactability | Valid phone, SMS delivered, app push opened |
-| Treatment history | Calls, reminders, promise-to-pay, field visit |
-
-Treatment history mạnh nhưng nguy hiểm. Nếu nhóm được gọi nhiều hơn có payment rate cao hơn, chưa chắc họ vốn dễ trả; có thể do họ được treatment nhiều hơn.
-
-## 5. Propensity khác uplift
+## 4. Propensity vs uplift
 
 Propensity model dự báo:
 
@@ -103,22 +84,43 @@ Propensity model dự báo:
 P(pay in 14 days)
 ```
 
-Nhưng nếu call center chỉ gọi được 20% khách hàng, gọi nhóm có P(pay) cao nhất có thể lãng phí capacity, vì nhiều người trong nhóm đó sẽ tự trả sau SMS.
+Nhưng gọi nhóm có propensity cao nhất có thể lãng phí capacity, vì họ có thể tự trả sau một reminder nhẹ.
 
-Uplift model hỏi câu khó hơn:
+Uplift hỏi câu khác:
 
 ```text
-Call có làm xác suất trả tăng thêm không?
+P(pay with call) - P(pay without call)
 ```
 
-Trong thực tế, nếu chưa có experiment tốt, có thể bắt đầu bằng propensity + business rules, sau đó thiết kế champion/challenger để đo treatment effect.
+Nếu chưa có experiment đủ tốt để làm uplift, có thể bắt đầu bằng propensity + business rules:
 
-## 6. Metrics đánh giá
+| Segment | Propensity | Suggested treatment |
+|---|---:|---|
+| High propensity | Cao | SMS/app reminder |
+| Medium propensity | Trung bình | Call center |
+| Low propensity, high balance | Thấp | Intensive treatment/restructure review |
+| Low propensity, low balance | Thấp | Low-cost treatment hoặc defer |
 
-Ngoài AUC/KS, collection nên đọc:
+## 5. Treatment history và bias
+
+Collection data rất dễ bị treatment bias. Nếu lịch sử cho thấy nhóm được gọi nhiều trả nhiều hơn, có thể là vì họ dễ trả, hoặc vì họ được gọi.
+
+Feature như `number_of_calls_last_7d`, `promise_to_pay_status`, `collector_note` có thể rất predictive nhưng cũng phản ánh strategy cũ. Nếu dùng không cẩn thận, model sẽ học lại bias của operation hiện tại.
+
+Governance câu hỏi nên hỏi:
 
 ```text
-Lift@top 10% hoặc top 20%
+Feature này có available trước scoring date không?
+Feature này là customer signal hay treatment artifact?
+Nếu strategy đổi, feature distribution có còn ý nghĩa không?
+```
+
+## 6. Metrics: AUC không đủ cho collection capacity
+
+Nếu call center chỉ gọi được 20% khách hàng, AUC toàn bộ population chưa trả lời được câu hỏi vận hành. Cần đọc:
+
+```text
+Lift@top 10% / top 20%
 Precision@topK
 Recovery captured@topK
 Cure rate
@@ -127,47 +129,61 @@ Cost per collected amount
 Net recovery = recovery amount - collection cost
 ```
 
-Nếu top 20% theo model capture 50% tổng recovery, model đang giúp allocation capacity tốt hơn.
+Ví dụ:
 
-## 7. Stakeholder translation
+| Ranking | Top 20% captured recovery | Cost per collected amount |
+|---|---:|---:|
+| Rule-based champion | 34% | 12% |
+| Model challenger | 52% | 8% |
 
-Nếu Collection hỏi vì sao không gọi nhóm dễ trả nhất:
+Đây là ngôn ngữ mà Head of Collection dùng được.
 
-> Nhóm dễ trả có thể tự cure với reminder nhẹ. Với call capacity giới hạn, mình nên ưu tiên nhóm có expected incremental recovery cao hơn sau khi trừ collection cost. Propensity score là bước đầu; để tối ưu hơn cần đo uplift hoặc champion/challenger.
+## 7. Mini case: gọi người dễ trả nhất chưa chắc tối ưu
 
-## 8. Checklist
+Collection có 50,000 account ở 1-30 DPD, nhưng chỉ gọi được 10,000. Model propensity xếp top 20% là nhóm dễ trả nhất. Nhưng analysis cho thấy nhiều account top score tự cure sau SMS.
+
+Recommendation:
+
+> Không dùng call cho toàn bộ top propensity. Nhóm high propensity nhận SMS/app reminder. Call center tập trung vào nhóm medium propensity có balance đủ lớn và historical response tốt. Nhóm low propensity high balance được đưa vào restructuring review. Success metric là net recovery và roll-forward reduction, không chỉ payment rate.
+
+## 8. Common mistakes
+
+| Mistake | Hậu quả |
+|---|---|
+| Một model cho mọi DPD bucket | Action không khớp behavior |
+| Label quá dài so với treatment window | Model khó vận hành |
+| Gọi top propensity | Lãng phí call cho người tự trả |
+| Không tính collection cost | Recovery gross đẹp nhưng net xấu |
+| Dùng treatment artifact làm feature vô tội vạ | Reinforce bias của strategy cũ |
+
+## 9. Checklist
 
 - Objective là payment, cure, roll-forward, recovery hay uplift?
-- Population là bucket nào?
-- Scoring date là ngày nào?
-- Performance window có khớp SLA collection không?
+- Population bucket là gì?
+- Scoring date có rõ không?
+- Performance window có khớp SLA action không?
 - Feature có leakage sau scoring date không?
-- Có treatment bias không?
-- Model được đánh giá bằng lift@capacity chưa?
+- Có đo lift@capacity không?
+- Có đo net recovery sau collection cost không?
+
+## 10. Takeaway
+
+Collection score tốt không chỉ giúp biết ai dễ trả. Nó giúp dùng capacity đúng chỗ. Trong collection, model value nằm ở treatment allocation và net recovery, không chỉ ở probability.
 
 ## EN
 
-### Collection score is action-oriented
+### Collection score is capacity allocation
 
-A collection score should not only predict who is risky. It should help decide who to contact, through which channel, when and at what expected net recovery.
+A collection score is not only about predicting who will pay. It helps decide who gets SMS, who gets a call, who receives restructuring treatment, and who is not worth expensive effort right now.
 
-### Label design
+### Label follows the objective
 
-The label depends on the objective:
+Payment, cure, roll-forward and recovery are different objectives. They need different labels, windows and populations. A 1-30 DPD model should not be casually mixed with a 90+ DPD or write-off model.
 
-| Objective | Label |
-|---|---|
-| Payment propensity | Paid minimum due within 14 days |
-| Cure | Returned to Current within 30 days |
-| Roll-forward | Rolled to a worse DPD bucket |
-| Recovery | Paid any amount or recovered amount within a window |
+### Propensity is not uplift
 
-Population and scoring date must be explicit. A model for 1-30 DPD customers should not be mixed casually with 90+ DPD or write-off accounts.
-
-### Propensity versus uplift
-
-Calling customers with the highest probability to pay is not always optimal. Some of them may pay without a call. With limited capacity, collection teams should target expected incremental recovery net of collection cost.
+Propensity predicts who is likely to pay. Uplift estimates whether an action makes payment more likely. Calling the highest propensity accounts can waste capacity if those accounts would have paid anyway.
 
 ### Practical takeaway
 
-Start with a clear label and lift@capacity. Then move toward champion/challenger or uplift modeling when treatment data is reliable enough.
+For collection, evaluate lift@capacity, recovery captured, roll-forward reduction and net recovery after cost. AUC is useful, but it does not answer the operational question alone.

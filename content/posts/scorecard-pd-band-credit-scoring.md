@@ -2,9 +2,8 @@
 title: "Scorecard Và PD Band: Biến Model Score Thành Ngôn Ngữ Policy"
 date: "2026-06-05"
 excerpt: >
-  Model score chỉ hữu ích khi Risk và Business dùng được nó trong policy. Bài này
-  giải thích scorecard, WOE/IV, PD band, actual bad rate, cum rate, cum bad rate
-  và cách đọc marginal risk.
+  Model score chỉ có giá trị khi nó được dịch thành policy language. Bài này đi từ
+  scorecard, WOE/IV đến PD band, actual bad rate, cum rate, cum bad rate và marginal risk.
 category: data-science
 ---
 
@@ -16,31 +15,35 @@ category: data-science
 
 ## Điểm cần nhớ
 
-- Scorecard vẫn quan trọng vì dễ giải thích, dễ audit và dễ policy hóa.
-- WOE/IV giúp đọc feature theo ngôn ngữ good/bad, nhưng IV quá cao cần kiểm tra leakage.
-- Nếu model output là PD, band thấp là rủi ro thấp; band cao là rủi ro cao.
-- Actual bad rate by band kiểm tra model có rank đúng không.
-- Cum rate và cum bad rate giúp đọc cutoff, nhưng marginal/bin bad rate mới cho thấy nhóm approve thêm rủi ro thế nào.
+- Model score không tự nói được policy; PD band mới giúp Risk và Business ra quyết định.
+- Scorecard vẫn sống khỏe trong credit risk vì explainability, auditability và reason code.
+- WOE/IV hữu ích để đọc feature, nhưng IV quá cao là tín hiệu phải kiểm tra leakage.
+- Actual bad rate by band kiểm tra risk ordering; predicted PD vs actual bad rate kiểm tra calibration.
+- Cum bad rate cho thấy portfolio tại cutoff; marginal/bin bad rate cho thấy nhóm approve thêm rủi ro thế nào.
 
 ## VI
 
-## 1. Scorecard là gì?
+## 1. Score không phải ngôn ngữ cuối cùng
 
-Scorecard là cách chấm điểm tín dụng truyền thống, thường dùng logistic regression với biến đã được binning và WOE. Dù nhiều team dùng XGBoost/LightGBM, scorecard vẫn phổ biến trong môi trường cần explainability, compliance và reason code.
+Trong notebook, model output là một con số. Trong credit policy, con số đó phải trở thành quyết định: approve tới band nào, giảm limit ở đâu, pricing tăng bao nhiêu, nhóm nào manual review.
 
-Ví dụ:
+Đó là lý do scorecard, score band và PD band vẫn quan trọng. Chúng biến model thành một ngôn ngữ mà Risk, Business, Finance và Operations có thể dùng chung.
 
-```text
-No overdue last 12M: +50 điểm
-Stable income: +30 điểm
-High bureau score: +80 điểm
-```
+## 2. Scorecard: vì sao cách cũ vẫn hữu ích
 
-Score cao thường nghĩa là risk thấp, nhưng mỗi tổ chức có convention riêng.
+Scorecard thường dùng logistic regression với binning và WOE. Nó không phải lúc nào cũng mạnh nhất về rank-order performance, nhưng có ba lợi thế lớn trong credit risk:
 
-## 2. WOE và IV
+| Lợi thế | Vì sao quan trọng |
+|---|---|
+| Explainability | Dễ giải thích vì sao khách bị điểm thấp |
+| Governance | Dễ audit, document, review policy |
+| Operationalization | Dễ chuyển thành reason code và policy rule |
 
-**WOE (Weight of Evidence)** đo một bin có thiên về Good hay Bad:
+ML model có thể tốt hơn về AUC/Gini, nhưng nếu không dịch được thành decision bands và reason story, stakeholder vẫn khó dùng.
+
+## 3. WOE/IV: đọc feature theo ngôn ngữ risk
+
+**WOE (Weight of Evidence)** cho biết một bin thiên về Good hay Bad:
 
 ```text
 WOE = ln(%Good in bin / %Bad in bin)
@@ -52,107 +55,101 @@ WOE = ln(%Good in bin / %Bad in bin)
 IV = sum((%Good - %Bad) x WOE)
 ```
 
-Rule of thumb:
-
 | IV | Cách đọc |
 |---:|---|
 | < 0.02 | Yếu |
 | 0.02-0.1 | Thấp |
 | 0.1-0.3 | Trung bình |
 | 0.3-0.5 | Mạnh |
-| > 0.5 | Rất mạnh, cần kiểm tra leakage/overfit |
+| > 0.5 | Rất mạnh, cần kiểm tra leakage hoặc proxy quá gần label |
 
-## 3. PD band
+Common mistake: thấy IV cao và mừng quá sớm. Trong credit, một feature quá mạnh có thể là future information, collection status sau booking, hoặc proxy cho chính label.
 
-Với ML model, output thường là predicted probability of bad, tức PD. Khi đó:
+## 4. PD band: nơi model gặp policy
+
+Nếu model output là probability of bad, band nên được đọc theo PD:
 
 ```text
-PD thấp = tốt
-PD cao = xấu
+PD thấp = rủi ro thấp
+PD cao = rủi ro cao
 ```
 
-Ví dụ band:
+Ví dụ:
 
 ```python
 ntb_bins = [-1, 0, 0.025, 0.04, 0.05, 0.075, 0.1, 0.125, 0.15, 0.2, 0.5, 1]
 ```
 
-Bins mịn ở vùng PD thấp vì đây thường là vùng quyết định approve, limit và pricing. Vùng PD cao có thể rộng hơn vì nhiều khách bị reject hoặc manual review.
+Bins thường mịn hơn ở vùng PD thấp vì đó là nơi decision thật xảy ra: approve, limit, pricing, manual review. Vùng PD rất cao có thể rộng hơn vì nhiều hồ sơ bị reject.
 
-## 4. Actual bad rate by band
+## 5. Actual bad rate by band
 
-Một PD band tốt nên có actual bad rate tăng dần:
+Một bảng band monitoring tốt không chỉ có volume. Nó phải cho thấy model có rank đúng và có calibrated không.
 
-| PD band | Avg predicted PD | Actual 30+ DPD |
-|---|---:|---:|
-| 0-2.5% | 1.6% | 1.8% |
-| 2.5-4% | 3.2% | 3.5% |
-| 4-5% | 4.5% | 4.7% |
-| 5-7.5% | 6.2% | 7.0% |
-| 7.5-10% | 8.4% | 9.5% |
+| PD band | Volume | Avg predicted PD | Actual 30+ DPD | Cách đọc |
+|---|---:|---:|---:|---|
+| 0-2.5% | 10,000 | 1.6% | 1.8% | Tốt |
+| 2.5-4% | 8,000 | 3.2% | 3.5% | Tốt |
+| 4-5% | 5,000 | 4.5% | 4.7% | Tốt |
+| 5-7.5% | 3,000 | 6.2% | 8.5% | Underestimate risk |
+| 7.5-10% | 1,500 | 8.4% | 11.0% | Underestimate risk |
 
-Nếu actual bad rate vẫn tăng đều, model rank ổn. Nếu actual cao hơn predicted ở hầu hết bin, đó chủ yếu là calibration issue.
+Nếu actual bad rate tăng đều theo band, rank ordering vẫn ổn. Nếu actual cao hơn predicted PD ở nhiều band, vấn đề chính là calibration hoặc population shift.
 
-## 5. Cum rate và cum bad rate
+## 6. Cum rate, cum bad rate và marginal risk
 
-Nếu sort từ PD thấp đến cao:
+Khi sort từ PD thấp đến cao:
 
 ```text
-Cum rate = volume tích lũy / total population
-Cum bad rate = bad tích lũy / volume tích lũy
+Cum rate = cumulative volume / total population
+Cum bad rate = cumulative bad / cumulative volume
 ```
-
-Trong policy, cum rate thường gần với approval rate nếu approve từ band tốt nhất đến cutoff.
 
 Ví dụ:
 
-| PD band | Volume | Bad | Cum rate | Cum bad rate |
-|---|---:|---:|---:|---:|
-| 0-2.5% | 1,000 | 10 | 10% | 1.0% |
-| 2.5-5% | 2,000 | 60 | 30% | 2.3% |
-| 5-7.5% | 1,500 | 90 | 45% | 3.6% |
+| PD band | Volume | Bad | Bin bad rate | Cum rate | Cum bad rate |
+|---|---:|---:|---:|---:|---:|
+| 0-2.5% | 1,000 | 10 | 1.0% | 10% | 1.0% |
+| 2.5-5% | 2,000 | 60 | 3.0% | 30% | 2.3% |
+| 5-7.5% | 1,500 | 90 | 6.0% | 45% | 3.6% |
 
-Nếu cutoff là `PD <= 7.5%`, approval/cum rate là 45%, cum bad rate là 3.6%.
+Nếu cutoff là `PD <= 7.5%`, approval/cum rate là 45%, cum bad rate là 3.6%. Nhưng nhóm approve thêm từ `5%` lên `7.5%` có bin bad rate 6.0%. Đây là marginal risk.
 
-## 6. Marginal risk
+## 7. Mini case: portfolio nhìn ổn, marginal group không ổn
 
-Cum bad rate có thể làm portfolio nhìn ổn vì các band tốt kéo trung bình xuống. Khi nới cutoff, hãy nhìn nhóm marginal.
+Risk appetite là bad rate tối đa 4%. Cutoff `PD <= 7.5%` có cum bad rate 3.6%, nhìn có vẻ pass. Nhưng marginal group `5% < PD <= 7.5%` có bad rate 6.0% và chủ yếu đến từ affiliate channel.
 
-Ví dụ nới từ `PD <= 5%` lên `PD <= 7.5%`:
+Recommendation tốt:
 
-```text
-Marginal group = 5% < PD <= 7.5%
-```
+> Overall cutoff vẫn dưới risk appetite, nhưng marginal risk của affiliate channel không tốt. Em đề xuất giữ cutoff cho salaried và existing customer, còn affiliate channel áp dụng lower limit hoặc manual review.
 
-Nếu marginal bad rate là 6% nhưng portfolio cum bad rate chỉ 3.6%, stakeholder cần biết nhóm approve thêm đang rủi ro hơn baseline.
+## 8. Checklist
 
-## 7. Checklist
-
-- Band có đủ volume không?
-- Actual bad rate có monotonic theo PD không?
-- Avg predicted PD có gần actual bad rate không?
-- Cum bad rate có nằm trong risk appetite không?
+- Band có đủ volume và bad count không?
+- Actual bad rate có monotonic theo PD band không?
+- Predicted PD có gần actual bad rate không?
+- Có đọc bin bad rate cùng với cum bad rate không?
 - Marginal group có profit dương không?
-- Có tách theo channel, product, NTB/ETB không?
+- Kết quả có tách theo channel, product, NTB/ETB không?
+
+## 9. Takeaway
+
+Model score là vật liệu thô. PD band là nơi model đi vào policy. Nếu DS không đọc được band, cum rate và marginal risk, model rất dễ bị dùng như một con số đẹp thay vì một công cụ quyết định.
 
 ## EN
 
-### From model score to policy language
+### A model score needs policy language
 
-A model score becomes useful when Risk and Business can use it in policy. Scorecards remain popular because they are explainable, auditable and easy to translate into rules.
+A model score is not the final language of credit decisioning. It has to become approval bands, limit rules, pricing tiers, manual review queues and monitoring guardrails.
 
-### WOE and IV
+### Why scorecards still matter
 
-WOE measures whether a bin is more Good-heavy or Bad-heavy. IV measures the discriminatory power of a feature. Very high IV should trigger leakage and overfit checks.
+Scorecards remain useful because they are explainable, auditable and easy to operationalize. ML models may rank better, but they still need to be translated into PD bands and decision rules.
 
-### PD bands
+### Band monitoring
 
-If the model output is PD, lower bands are lower risk and higher bands are higher risk. Monitor average predicted PD, actual bad rate, volume and approval by band.
-
-### Cum rate and cum bad rate
-
-Cum rate is the cumulative share of the population up to a cutoff. Cum bad rate is cumulative bads divided by cumulative accounts. These are useful for cutoff discussions, but marginal/bin bad rate tells you the risk of newly approved customers.
+Monitor volume, average predicted PD, actual bad rate, cum rate, cum bad rate and marginal/bin bad rate. Actual bad rate by band checks risk ordering. Predicted PD versus actual bad rate checks calibration.
 
 ### Practical takeaway
 
-When relaxing a cutoff from `PD <= 5%` to `PD <= 7.5%`, analyze the marginal group `5% < PD <= 7.5%`. The portfolio average may look acceptable while the incremental group is unprofitable.
+If `PD <= 7.5%` gives a cumulative bad rate below risk appetite, do not stop there. Check the marginal group `5% < PD <= 7.5%`. That is the group your new policy is actually adding.
