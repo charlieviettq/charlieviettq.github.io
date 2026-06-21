@@ -8,9 +8,10 @@ excerpt: >
 category: data-science
 ---
 
-> **Series: Credit Scoring Foundation** — Bài 4 / 6  
-> Đã có: [A1 — Labels, outcome window và maturity](/blog/credit-labels-outcome-window/)  
-> Đồng hành: [Retail credit products — taxonomy theo cơ chế trả nợ](/blog/retail-credit-products-overview/)
+> **Series: Credit Risk Modeling & Decisioning** — Bài 5 / 8  
+> Trước: [Bài 4 — Scorecard và PD band](/blog/scorecard-pd-band-credit-scoring/)  
+> Tiếp: [Bài 6 — Cutoff simulation](/blog/cutoff-policy-simulation-credit-scoring/)  
+> Nền tảng: [Bài 2 — Labels, outcome window và maturity](/blog/credit-labels-outcome-window/)
 
 ---
 
@@ -36,9 +37,11 @@ Sơ đồ dưới đây tóm tắt ba pattern calibration hay gặp. Khi đọc 
 
 ## VI
 
-## 1. Tổng quan: Xếp hạng tốt chưa chắc xác suất đúng
+## 1. Tổng quan: AUC trả lời thứ tự, tiền thật cần xác suất
 
-Một mô hình credit có thể xếp hạng khách rất tốt nhưng vẫn nói sai về xác suất tuyệt đối. Đây là điểm nhiều team bỏ qua: AUC đẹp giúp bạn biết ai rủi ro hơn ai, nhưng không đảm bảo con số PD đủ tin để đưa vào pricing, hạn mức hoặc ECL.
+AUC trả lời một câu hỏi quan trọng: **ai rủi ro hơn ai?** Nhưng pricing, hạn mức, provision và ECL cần một câu hỏi khác: **rủi ro là bao nhiêu?**
+
+Nhầm hai câu hỏi này là một trong những cách nhanh nhất để làm sai credit decisioning. Một model có thể rank khách rất tốt nhưng vẫn nói sai xác suất tuyệt đối. Khi PD đi vào `PD x LGD x EAD`, sai số trên thang xác suất không còn là vấn đề đẹp-xấu của biểu đồ; nó trở thành sai số tiền thật.
 
 Nói đơn giản, nếu mô hình gán PD khoảng 8% cho một nhóm khách, thì sau khi outcome window đủ mature, bad rate thực tế của nhóm đó cũng nên quanh 8%. Nếu thực tế chỉ 3% hoặc lên 15%, con số PD đang không đáng tin.
 
@@ -244,6 +247,10 @@ Checklist tối thiểu trước khi đưa PD vào policy:
 - Segment quan trọng như product, channel, NTB/ETB có lệch không?
 - Production có tách `raw_score` và `calibrated_pd` không?
 
+Stakeholder-ready answer:
+
+> Model vẫn có thể rank tốt, nhưng raw PD chưa đủ tin để dùng trực tiếp cho pricing hoặc expected loss. Em đề xuất tách `raw_score` cho ranking và `calibrated_pd` cho các quyết định dùng xác suất tuyệt đối, sau đó monitor predicted PD vs actual bad rate khi cohort mature.
+
 ## 8. Hỏi đáp nhanh
 
 **AUC cao có cần calibration không?**  
@@ -266,9 +273,11 @@ Các tài liệu tham khảo chi tiết nằm ở phần cuối bài.
 
 ## EN
 
-### The problem: ranking is not probability
+### Ranking is not probability
 
-A credit model can rank borrowers well and still give the wrong absolute probability. A strong AUC tells you who is riskier than whom; it does not guarantee that PD 8% means an 8% realized default rate.
+AUC answers **who is riskier than whom**. Pricing, limits, provision and ECL need a different answer: **how much risk is there?**
+
+A credit model can rank borrowers well and still give the wrong absolute probability. Once PD enters `PD x LGD x EAD`, probability scale errors become money errors, not just chart diagnostics.
 
 A model is **calibrated** when, among all cases with predicted probability `p`, the fraction of positives is approximately `p`. Formally: `P(Y=1 | f(X)=p) = p`.
 
